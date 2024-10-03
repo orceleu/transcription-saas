@@ -26,6 +26,9 @@ import {
   TrashIcon,
   UploadIcon,
 } from "lucide-react";
+import { Document, Packer, Paragraph, TextRun, PageBreak } from "docx";
+import { saveAs } from "file-saver";
+
 import { Player } from "react-simple-player";
 import { useRouter } from "next/navigation";
 import * as fal from "@fal-ai/serverless-client";
@@ -42,7 +45,7 @@ import {
   deleteObject,
 } from "firebase/storage";
 import { storage } from "@/app/firebase/config";
-
+import { jsPDF } from "jspdf";
 /*import {
   DropdownMenu,
   DropdownMenuContent,
@@ -187,17 +190,168 @@ export default function Dashboard() {
   const [isVideo, setIsVideo] = useState(false);
   const [isshunktext, setShunkText] = useState(false);
   const [items, setItems] = useState<ShunkItems[]>([]);
+  const doc = new jsPDF();
 
-  const [textcopy, setTextcopy] = useState("Voici le texte à copier.");
+  const downloadWordFile = async (text: string) => {
+    // Contenu du fichier Word
 
+    // Créer un Blob avec le contenu en type MIME spécifique à Word (.docx)
+    /* const blob = new Blob(["\ufeff", text], { type: "application/msword" });
+
+    // Créer une URL temporaire pour le Blob
+    const url = window.URL.createObjectURL(blob);
+
+    // Créer un lien de téléchargement
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "exemple1.docx"; // Nom du fichier Word
+
+    // Ajouter le lien au DOM, simuler un clic, puis le supprimer
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Libérer l'URL Blob
+    window.URL.revokeObjectURL(url);
+
+    */
+
+    // Exemple de texte long
+    const longText = `
+     Ceci est un long texte qui va générer plusieurs paragraphes et potentiellement
+     plusieurs pages dans un document Word. Lorem ipsum dolor sit amet, consectetur 
+     adipiscing elit. Pellentesque habitant morbi tristique senectus et netus et malesuada fames
+     ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, 
+     ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. 
+     Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. 
+     Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, 
+     elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. 
+     Donec non enim in turpis pulvinar facilisis. Ut felis. Praesent dapibus, neque id cursus faucibus, 
+     tortor neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat volutpat. Nam dui mi, 
+     tincidunt quis, accumsan porttitor, facilisis luctus, metus.
+   `;
+
+    // Diviser le texte en paragraphes (chaque nouvelle ligne dans un nouveau paragraphe)
+    const paragraphs = longText.split("\n").map((line) => new Paragraph(line));
+
+    // Si nécessaire, on peut aussi ajouter manuellement des sauts de page entre les paragraphes
+    const documentParagraphs: any = paragraphs.flatMap((paragraph, index) => [
+      paragraph,
+      ...(index % 10 === 0 && index !== 0 ? [new PageBreak()] : []), // Ajouter une nouvelle page tous les 10 paragraphes
+    ]);
+
+    // Créer un document avec les paragraphes
+    const doc = new Document({
+      sections: [
+        {
+          properties: {},
+          children: documentParagraphs,
+        },
+      ],
+    });
+
+    // Générer le fichier .docx
+    const blob = await Packer.toBlob(doc);
+
+    // Télécharger le fichier .docx
+    saveAs(blob, "exemple.docx");
+  };
+  const handleDownloadTxt = (text: string) => {
+    const lineHeight = 40; // Nombre de caractères par ligne
+    const linesPerPage = 20; // Nombre de lignes par "page"
+    let lineCount = 0; // Nombre de lignes actuelles
+
+    // Texte long à générer (simulé avec une répétition)
+    const longText = `
+    Ceci est un long texte qui sera utilisé pour tester la génération de plusieurs pages 
+    dans un fichier texte. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pretium 
+    pretium tempor. Ut eget imperdiet neque. In volutpat ante semper diam molestie, et aliquam 
+    erat laoreet. Sed sit amet arcu aliquet, malesuada nisi a, convallis odio. Pellentesque vitae 
+    dolor et nisl iaculis aliquet at vitae augue. Nulla efficitur odio nec lectus mattis, eget 
+    vehicula lorem ultricies. Mauris faucibus at nisl nec tempus. Quisque mollis sapien enim, 
+    et tempor felis lacinia nec. Donec mi orci, sollicitudin in luctus a, varius eget massa.
+    `.repeat(10); // Répéter pour simuler un texte plus long
+
+    // Diviser le texte en lignes basées sur une longueur fixe
+    const splitText = longText.split(" ").reduce((acc: any, word: any) => {
+      const lastLine = acc[acc.length - 1] || "";
+
+      if ((lastLine + " " + word).trim().length <= lineHeight) {
+        acc[acc.length - 1] = (lastLine + " " + word).trim();
+      } else {
+        acc.push(word); // Commencer une nouvelle ligne si la longueur est dépassée
+        lineCount++;
+      }
+
+      // Si on dépasse le nombre de lignes par page, ajouter une ligne vide pour marquer une nouvelle page
+      if (lineCount === linesPerPage) {
+        acc.push("--- Nouvelle page ---\n");
+        lineCount = 0; // Réinitialiser le compte de lignes
+      }
+
+      return acc;
+    }, []);
+
+    const finalText = splitText.join("\n"); // Joindre les lignes par des sauts de ligne
+
+    // Créer un Blob pour le fichier .txt
+    const blob = new Blob([finalText], { type: "text/plain" });
+
+    // Créer une URL temporaire pour le Blob et déclencher le téléchargement
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "exemple.txt"; // Nom du fichier à télécharger
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  const creatPDF = (text: string) => {
+    const doc = new jsPDF();
+    const pageHeight = doc.internal.pageSize.height; // Hauteur d'une page
+    const marginTop = 10; // Marge en haut de la page
+    const lineHeight = 10; // Hauteur d'une ligne de texte
+    let yPosition = marginTop; // Position verticale de départ
+
+    // Texte long à afficher
+    const longText = `
+    Ceci est un long texte qui sera utilisé pour tester la génération de plusieurs pages 
+    dans un document PDF. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pretium 
+    pretium tempor. Ut eget imperdiet neque. In volutpat ante semper diam molestie, et aliquam 
+    erat laoreet. Sed sit amet arcu aliquet, malesuada nisi a, convallis odio. Pellentesque vitae 
+    dolor et nisl iaculis aliquet at vitae augue. Nulla efficitur odio nec lectus mattis, eget 
+    vehicula lorem ultricies. Mauris faucibus at nisl nec tempus. Quisque mollis sapien enim, 
+    et tempor felis lacinia nec. Donec mi orci, sollicitudin in luctus a, varius eget massa.
+    `.repeat(10); // Répéter plusieurs fois pour simuler un long texte
+
+    // Diviser le texte en lignes en fonction de la largeur de la page
+    const splitText = doc.splitTextToSize(longText, 180); // Largeur du texte dans la page
+
+    // Ajouter chaque ligne de texte
+    splitText.forEach((line: any) => {
+      // Si la position Y dépasse la hauteur de la page, ajouter une nouvelle page
+      if (yPosition + lineHeight > pageHeight) {
+        doc.addPage(); // Ajouter une nouvelle page
+        yPosition = marginTop; // Réinitialiser la position Y au sommet de la nouvelle page
+      }
+
+      // Ajouter la ligne de texte au PDF
+      doc.text(line, 10, yPosition);
+      yPosition += lineHeight; // Incrémenter la position verticale pour la ligne suivante
+    });
+    //doc.setFontSize(12);
+    //doc.setFont("helvetica", "bold");
+    // Télécharger le fichier PDF
+    doc.save("exemple.pdf");
+  };
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(textcopy);
+      await navigator.clipboard.writeText(texte);
       alert("Texte copié dans le presse-papier !");
     } catch (err) {
       console.error("Échec de la copie du texte : ", err);
     }
   };
+
   const task = [
     {
       value: "transcribe",
@@ -454,13 +608,13 @@ export default function Dashboard() {
           `first text: (${result.chunks[0].timestamp}) ${result.chunks[0].text}`
         );*/
         for (let i = 0; i < result.chunks.length; i++) {
-          console.log(
+          /*console.log(
             ` text-${i}: (${result.chunks[i].timestamp}) ${result.chunks[i].text}`
+          );*/
+          const time = convertShunksTimeStampInMinute(
+            `${result.chunks[i].timestamp}`
           );
-          addItem(
-            ` text-${i}: (${result.chunks[i].timestamp}) ${result.chunks[i].text}`,
-            i
-          );
+          addItem(` text-${i}: (${time}) ${result.chunks[i].text}`, i);
         }
 
         setSubmitted(false);
@@ -474,6 +628,76 @@ export default function Dashboard() {
       console.log(error);
       setSubmitted(false);
     }
+  };
+
+  /*const addUsedChar = async () => {
+    try {
+      await updateDoc(doc(db, "usersPlan", userId), {
+        used_char: usedCharCurrent - textvalue.length,
+      });
+
+      console.log("great! .");
+    } catch (e) {
+      console.error("Error:", e);
+    }
+  };
+
+   const storedUrlSelected = localStorage.getItem("urlstored");
+      if (storedUrlSelected) {
+        const indexforVerif = stringToNumber(storedUrlSelected);
+
+        index = indexforVerif;
+        setUrlStored(storedUrlSelected);
+      }
+      
+      function stringToNumber(input: string): number {
+    const num = Number(input);
+
+    if (isNaN(num)) {
+      throw new Error("The input string is not a valid number.");
+    }
+
+    return num;
+  }
+  
+   const saveUrlToLocal = (value: string) => {
+    localStorage.setItem("urlstored", value);
+    console.log(`data added:${value}`);
+  };
+
+  let blob;
+
+function download() {
+  if (!blob) return;
+  var url = window.URL.createObjectURL(blob);
+  a.href = url;
+  a.download = 'test.pdf';
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
+
+stream.on("finish", function() {
+   // get a blob you can do whatever you like with
+  blob = stream.toBlob("application/pdf");
+
+  const url = stream.toBlobURL('application/pdf');
+  const iframe = document.querySelector('iframe')
+  iframe.src = url;
+});
+
+*/
+
+  const convertShunksTimeStampInMinute = (data: string): string => {
+    let first = Number(data.slice(0, 2));
+    let end = Number(data.slice(4, 5));
+    console.log(first);
+    console.log(end);
+    const minuteFirst = Math.floor(first / 60);
+    const remainingSecFirst = first % 60;
+    const minuteEnd = Math.floor(end / 60);
+    const remainingSecEnd = end % 60;
+
+    return `${minuteFirst}:${remainingSecFirst}, ${minuteEnd}:${remainingSecEnd}`;
   };
   const onDrop = (acceptedFiles: any) => {
     // On prend le premier fichier s'il est accepté
@@ -522,11 +746,25 @@ export default function Dashboard() {
           <div className="grid gap-2 max-w-[200px] h-[300px] shadow-sm rounded-sm p-10 bg-gray-100">
             <p className=" font-bold text-xl ">export</p>
             <Separator />
-            <p>
+            <p
+              className="hover:bg-green-100"
+              onClick={() => {
+                creatPDF(texte);
+              }}
+            >
               <FileTextIcon /> export to pdf.
             </p>
-            <p>
+            <p
+              className="hover:bg-green-100"
+              onClick={() => downloadWordFile(texte)}
+            >
               <FileTextIcon /> export to Docx.
+            </p>
+            <p
+              className="hover:bg-green-100"
+              onClick={() => handleDownloadTxt(texte)}
+            >
+              <FileTextIcon /> export to Txt.
             </p>
             <div>
               <Checkbox
@@ -718,7 +956,7 @@ export default function Dashboard() {
                   disabled={false}
                 />
               )}
-              <Button variant="outline" className="mt-4">
+              <Button variant="outline" className="mt-4" onClick={handleCopy}>
                 <CopyIcon />
               </Button>
             </div>
