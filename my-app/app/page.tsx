@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import capturetranscriptionapp from "../public/capture.jpg";
 import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
@@ -10,9 +11,59 @@ import {
   onAuthStateChanged,
   User,
 } from "firebase/auth";
+import { FcGoogle, FcSoundRecordingCopyright } from "react-icons/fc";
 import { auth } from "@/app/firebase/config";
 import { useEffect, useState } from "react";
+import { IoCloudUpload } from "react-icons/io5";
+import { AiOutlineSelect } from "react-icons/ai";
+import { SiConvertio } from "react-icons/si";
+import {
+  ArrowBigRight,
+  EditIcon,
+  FileIcon,
+  InfinityIcon,
+  LanguagesIcon,
+  MagnetIcon,
+  MoreHorizontal,
+  TimerIcon,
+  Upload,
+  UploadCloud,
+  UploadIcon,
+  UserIcon,
+} from "lucide-react";
+import { SelectIcon } from "@radix-ui/react-select";
 
+import {
+  Cloud,
+  CreditCard,
+  Github,
+  Keyboard,
+  LifeBuoy,
+  LogOut,
+  Mail,
+  MessageSquare,
+  Plus,
+  PlusCircle,
+  Settings,
+  UserPlus,
+  Users,
+} from "lucide-react";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
 export default function Home() {
   const router = useRouter();
 
@@ -38,115 +89,247 @@ export default function Home() {
     }
   };
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-
-        <Button onClick={handleLoginGoogle}>login with Google</Button>
-
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <main>
+      <div className="fixed top-0  w-full flex justify-between  p-5 bg-zinc-50  rounded-md">
+        <p className="text-xl font-semibold">AudiScribe</p>
+        <div className="hidden lg:flex items-center gap-5">
+          <p>Home</p>
+          <p>Pricing</p>
+          <p>Blog</p>
+          <Button>Login</Button>
+          <Button variant="outline">Sign up</Button>
+        </div>
+        <div className="lg:hidden flex items-center gap-5">
+          <Button>Login</Button>{" "}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="text-3xl ">
+                <MoreHorizontal />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+              <DropdownMenuLabel>More</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem>
+                  <UserIcon className="mr-2 h-4 w-4" />
+                  <span>Sign up</span>
+                  <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  <span>Pricing</span>
+                  <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Blog</span>
+                  <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Login</span>
+                <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
+      <div className="flex min-h-screen flex-col items-center justify-between p-5 md:p-24">
+        <div>
+          <br />
+          <br />
+          <br />
 
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
+          <p className="text-4xl md:text-6xl text-center font-bold">
+            <span className="text-amber-700">Audio & video</span> to text
+            converter
           </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
+          <p className="text-center my-5 text-gray-400">
+            convert any audio or video{" "}
+            <span className="text-violet-900 font-bold">
+              with high Acurracy{" "}
             </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
+            to text in few seconds.
           </p>
-        </a>
+        </div>
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
+        <div className=" grid gap-5 md:grid-cols-2 w-full my-10 p-5 max-w-[900px] bg-gray-50 rounded-md">
+          <p className="text-center">
+            <span className="text-2xl">🎯</span> Accuracy 98%
           </p>
-        </a>
+          <p className="text-center">
+            <span className="text-2xl">🌍</span>100+ language
+          </p>
+          <p className="text-center">
+            <span className="text-2xl">🤯</span>upload 10hours
+          </p>
+          <p className="text-center">
+            <span className="text-2xl">👥</span>speaker recognition
+          </p>
+          <p className="text-center">
+            <span className="text-2xl">🔒</span> private and secure
+          </p>
+        </div>
+        <div className="relative z-[-1] flex place-items-center before:absolute before:h-[500px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-amber-100 after:via-amber-300 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-amber-700 before:dark:opacity-10 after:dark:from-amber-900 after:dark:via-[#ffaf01] after:dark:opacity-40 sm:before:w-[580px] sm:after:w-[340px] before:lg:h-[460px]"></div>
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
+        <div className="w-full md:w-[500px] mt-[100px] shadow-md shadow-amber-200 rounded-md p-2">
+          <div className="grid gap-2 my-10">
+            <p className="text-center my-4">Upload file to transcribe them</p>
+            <Button variant="outline">
+              <IoCloudUpload className="mx-3 text-emerald-500" /> Upload audio
+              or video
+            </Button>
+            <p className="text-center text-gray-400">-----or-----</p>
+            <Button variant="outline">
+              <FcSoundRecordingCopyright className="mx-3" /> Record audio
+            </Button>
+          </div>
+        </div>
+        <Button size="lg" className="w-full my-5">
+          <FcGoogle className="mx-3 " />
+          start transcribing for free
+        </Button>
+        <p className="my-2 text-center text-gray-400">
+          3 transcription per month --- No CreditCard required
+        </p>
+        <div className="grid gap-5 md:gap-10 my-[80px]">
+          <div className="grid gap-2">
+            <p className="text-3xl text-center">
+              Online Transcription Made Easy.
+            </p>
+            <p className="text-gray-600 text-center">
+              All tools you need to transcribe your audio and video file.
+            </p>
+          </div>
+          <div className="grid gap-2">
+            <div className="flex justify-center">
+              <div className="p-4 rounded-full bg-slate-100">
+                <LanguagesIcon className="text-blue-300 " />
+              </div>
+            </div>
+            <p className="text-2xl text-center">100+ Languages.</p>
+            <p className="text-gray-600 text-center">
+              Supporting many languages with the option to translante .
+            </p>
+          </div>
+          <div className="grid gap-2">
+            <div className="flex justify-center">
+              <div className="p-4 rounded-full bg-slate-100">
+                <FileIcon className="text-red-300 " />
+              </div>
+            </div>
+            <p className="text-2xl text-center">Export.</p>
+            <p className="text-gray-600 text-center">
+              Export your transcriptions in many format (PDF,DOCX,TXT and more).
+            </p>
+          </div>
+          <div className="grid gap-2">
+            <div className="flex justify-center">
+              <div className="p-4 rounded-full bg-slate-100">
+                <UploadCloud className="text-lime-300 " />
+              </div>
+            </div>
+            <p className="text-2xl text-center">Upload any format.</p>
+            <p className="text-gray-600 text-center">
+              Upload files in all popular formats, including MP3, MP4, M4A, MOV,
+              AAC, WAV, OGG, OPUS, MPEG, WMA, YouTube, and more.
+            </p>
+          </div>
+          <div className="grid gap-2">
+            <div className="flex justify-center">
+              <div className="p-4 rounded-full bg-slate-100">
+                <TimerIcon className="text-amber-300 " />
+              </div>
+            </div>
+            <p className="text-2xl text-center">Get transcribe in Seconds.</p>
+            <p className="text-gray-600 text-center">
+              Recieve accurate transcriptions within seconds of uploading your
+              files.
+            </p>
+          </div>
+          <div className="grid gap-2">
+            <div className="flex justify-center">
+              <div className="p-4 rounded-full bg-slate-100">
+                <EditIcon className="text-violet-300 " />
+              </div>
+            </div>
+            <p className="text-2xl text-center">Edit.</p>
+            <p className="text-gray-600 text-center">
+              Edit your transcribed text.
+            </p>
+          </div>
+        </div>
+        <Separator className="my-10" />
+        <div className="bg-red-200 p-10 rounded-md my-[100px] w-full max-w-[600px]">
+          <div className="grid  gap-3 ">
+            <p className="text-center text-3xl font-semibold my-3 underline">
+              3 Step
+            </p>
+            <div className="p-2 bg-red-100 rounded-md w-full md:w-[500px]">
+              <p className="text-center  text-xl font-serif">
+                <AiOutlineSelect className="text-emerald-500 mx-3" />
+                Select.
+              </p>
+            </div>
+            <div className="p-2 bg-red-100 rounded-md w-full md:w-[500px]">
+              <p className="text-center  text-xl font-serif">
+                <IoCloudUpload className="text-emerald-500 mx-3" />
+                Upload.
+              </p>
+            </div>
+            <div className="p-2 bg-red-100 rounded-md w-full md:w-[500px]">
+              <p className="text-center  text-xl font-serif">
+                <SiConvertio className="text-emerald-500 mx-3" />
+                Convert
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-center">
+          <Image
+            alt="capture"
+            src={capturetranscriptionapp}
+            sizes="500"
+            className="rounded-md shadow-md shadow-amber-300"
+          />
+        </div>
+
+        <p className="text-center text-3xl font-bold mt-[200px]">
+          Simple and affordable pricing
+        </p>
+        <p className="text-gray-600 text-center my-2">
+          Sign up and start transcribing your first file.
+        </p>
+        <div className="w-full h-[900px] my-[100px]  max-w-[700px] bg-slate-900 rounded-md">
+          <p className="text-center text-3xl text-white my-2">
+            Audiscribe Free
           </p>
-        </a>
-      </div>
+          <Separator />
+        </div>
+
+        <div className="w-full h-[900px] max-w-[700px] my-10 bg-amber-900 rounded-md">
+          <p className="text-center text-3xl text-white my-2">Audiscribe Pro</p>
+          <Separator />
+        </div>
+        <div className="flex justify-center my-10">
+          <Button variant="outline" onClick={handleLoginGoogle}>
+            Get started <ArrowBigRight />{" "}
+          </Button>
+        </div>
+
+        <p className="text-center my-10 text-5xl font-bold">FAQ</p>
+
+        <Separator className="my-10" />
+        <p className="text-center">outils</p>
+        <p className="text-center">Blog</p>
+        <p className="text-center">review</p>
+        <p className="text-center">support</p>
+        <p className="text-center">terms</p>
+      </div>{" "}
     </main>
   );
 }

@@ -14,8 +14,10 @@ import { auth } from "@/app/firebase/config";
 import {
   ArrowBigLeft,
   AudioWaveformIcon,
+  Check,
   CheckIcon,
   ChevronDownIcon,
+  ChevronsUpDown,
   CopyIcon,
   DeleteIcon,
   Infinity,
@@ -24,6 +26,7 @@ import {
   PlayIcon,
   Settings,
   TrashIcon,
+  UploadCloud,
   UploadIcon,
 } from "lucide-react";
 import { Document, Packer, Paragraph, TextRun, PageBreak } from "docx";
@@ -62,6 +65,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -93,6 +97,15 @@ import ReactPlayer from "react-player";
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";*/
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 import { Input } from "@/components/ui/input";
 //import { Label } from "@/components/ui/label";
 import {
@@ -190,7 +203,19 @@ export default function Dashboard() {
   const [isVideo, setIsVideo] = useState(false);
   const [isshunktext, setShunkText] = useState(false);
   const [items, setItems] = useState<ShunkItems[]>([]);
-  const doc = new jsPDF();
+
+  const [value, setValue] = useState("transcribe");
+
+  const frameworks = [
+    {
+      value: "transcribe",
+      label: "Transcription",
+    },
+    {
+      value: "translate",
+      label: "Translation to (en)",
+    },
+  ];
 
   const downloadWordFile = async (text: string) => {
     // Contenu du fichier Word
@@ -257,204 +282,80 @@ export default function Dashboard() {
     saveAs(blob, "exemple.docx");
   };
   const handleDownloadTxt = (text: string) => {
-    const lineHeight = 40; // Nombre de caractères par ligne
-    const linesPerPage = 20; // Nombre de lignes par "page"
-    let lineCount = 0; // Nombre de lignes actuelles
+    if (text) {
+      const blob = new Blob([text], { type: "text/plain" });
 
-    // Texte long à générer (simulé avec une répétition)
-    const longText = `
-    Ceci est un long texte qui sera utilisé pour tester la génération de plusieurs pages 
-    dans un fichier texte. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pretium 
-    pretium tempor. Ut eget imperdiet neque. In volutpat ante semper diam molestie, et aliquam 
-    erat laoreet. Sed sit amet arcu aliquet, malesuada nisi a, convallis odio. Pellentesque vitae 
-    dolor et nisl iaculis aliquet at vitae augue. Nulla efficitur odio nec lectus mattis, eget 
-    vehicula lorem ultricies. Mauris faucibus at nisl nec tempus. Quisque mollis sapien enim, 
-    et tempor felis lacinia nec. Donec mi orci, sollicitudin in luctus a, varius eget massa.
-    `.repeat(10); // Répéter pour simuler un texte plus long
+      // Créer une URL temporaire pour le Blob
+      const url = window.URL.createObjectURL(blob);
 
-    // Diviser le texte en lignes basées sur une longueur fixe
-    const splitText = longText.split(" ").reduce((acc: any, word: any) => {
-      const lastLine = acc[acc.length - 1] || "";
+      // Créer un élément <a> pour télécharger le fichier
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "exemple.txt";
 
-      if ((lastLine + " " + word).trim().length <= lineHeight) {
-        acc[acc.length - 1] = (lastLine + " " + word).trim();
-      } else {
-        acc.push(word); // Commencer une nouvelle ligne si la longueur est dépassée
-        lineCount++;
-      }
+      // Ajouter le lien au DOM, cliquer dessus, puis le supprimer
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-      // Si on dépasse le nombre de lignes par page, ajouter une ligne vide pour marquer une nouvelle page
-      if (lineCount === linesPerPage) {
-        acc.push("--- Nouvelle page ---\n");
-        lineCount = 0; // Réinitialiser le compte de lignes
-      }
-
-      return acc;
-    }, []);
-
-    const finalText = splitText.join("\n"); // Joindre les lignes par des sauts de ligne
-
-    // Créer un Blob pour le fichier .txt
-    const blob = new Blob([finalText], { type: "text/plain" });
-
-    // Créer une URL temporaire pour le Blob et déclencher le téléchargement
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "exemple.txt"; // Nom du fichier à télécharger
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-  const creatPDF = (text: string) => {
-    const doc = new jsPDF();
-    const pageHeight = doc.internal.pageSize.height; // Hauteur d'une page
-    const marginTop = 10; // Marge en haut de la page
-    const lineHeight = 10; // Hauteur d'une ligne de texte
-    let yPosition = marginTop; // Position verticale de départ
-
-    // Texte long à afficher
-    const longText = `
-    Ceci est un long texte qui sera utilisé pour tester la génération de plusieurs pages 
-    dans un document PDF. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pretium 
-    pretium tempor. Ut eget imperdiet neque. In volutpat ante semper diam molestie, et aliquam 
-    erat laoreet. Sed sit amet arcu aliquet, malesuada nisi a, convallis odio. Pellentesque vitae 
-    dolor et nisl iaculis aliquet at vitae augue. Nulla efficitur odio nec lectus mattis, eget 
-    vehicula lorem ultricies. Mauris faucibus at nisl nec tempus. Quisque mollis sapien enim, 
-    et tempor felis lacinia nec. Donec mi orci, sollicitudin in luctus a, varius eget massa.
-    `.repeat(10); // Répéter plusieurs fois pour simuler un long texte
-
-    // Diviser le texte en lignes en fonction de la largeur de la page
-    const splitText = doc.splitTextToSize(longText, 180); // Largeur du texte dans la page
-
-    // Ajouter chaque ligne de texte
-    splitText.forEach((line: any) => {
-      // Si la position Y dépasse la hauteur de la page, ajouter une nouvelle page
-      if (yPosition + lineHeight > pageHeight) {
-        doc.addPage(); // Ajouter une nouvelle page
-        yPosition = marginTop; // Réinitialiser la position Y au sommet de la nouvelle page
-      }
-
-      // Ajouter la ligne de texte au PDF
-      doc.text(line, 10, yPosition);
-      yPosition += lineHeight; // Incrémenter la position verticale pour la ligne suivante
-    });
-    //doc.setFontSize(12);
-    //doc.setFont("helvetica", "bold");
-    // Télécharger le fichier PDF
-    doc.save("exemple.pdf");
-  };
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(texte);
-      alert("Texte copié dans le presse-papier !");
-    } catch (err) {
-      console.error("Échec de la copie du texte : ", err);
+      // Libérer la mémoire associée à l'URL temporaire
+      window.URL.revokeObjectURL(url);
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Text not found.",
+      });
     }
   };
+  const creatPDF = (text: string) => {
+    if (text) {
+      const finalText = ` GENERATED WITH AudiSribe AI ---Upgrade your plan to remove this text \n ${text} --- `;
+      const doc = new jsPDF();
+      const pageHeight = doc.internal.pageSize.height; // Hauteur d'une page
+      const marginTop = 10; // Marge en haut de la page
+      const lineHeight = 10; // Hauteur d'une ligne de texte
+      let yPosition = marginTop; // Position verticale de départ
+      // Diviser le texte en lignes en fonction de la largeur de la page
+      const splitText = doc.splitTextToSize(finalText, 180); // Largeur du texte dans la page
 
-  const task = [
-    {
-      value: "transcribe",
-      label: "transcription ",
-    },
-    {
-      value: "translation",
-      label: "translation",
-    },
-  ];
+      // Ajouter chaque ligne de texte
+      splitText.forEach((line: any) => {
+        // Si la position Y dépasse la hauteur de la page, ajouter une nouvelle page
+        if (yPosition + lineHeight > pageHeight) {
+          doc.addPage(); // Ajouter une nouvelle page
+          yPosition = marginTop; // Réinitialiser la position Y au sommet de la nouvelle page
+        }
 
-  const language = [
-    {
-      value: "en",
-      label: "to English ",
-    },
-    {
-      value: "sp",
-      label: "to Spanish",
-    },
-    {
-      value: "zh",
-      label: "to Shinese",
-    },
-    {
-      value: "it",
-      label: "to Italian",
-    },
-    {
-      value: "de",
-      label: "to Deutch",
-    },
-    {
-      value: "af",
-      label: "to African",
-    },
-    {
-      value: "am",
-      label: "to Deutch",
-    },
-    {
-      value: "ar",
-      label: "to Deutch",
-    },
-
-    {
-      value: "as",
-      label: "to Deutch",
-    },
-
-    {
-      value: "az",
-      label: "to Deutch",
-    },
-    {
-      value: "ba",
-      label: "to Deutch",
-    },
-    {
-      value: "be",
-      label: "to Deutch",
-    },
-    {
-      value: "bg",
-      label: "to Deutch",
-    },
-    {
-      value: "bn",
-      label: "to Deutch",
-    },
-    {
-      value: "bo",
-      label: "to Deutch",
-    },
-    {
-      value: "br",
-      label: "to Deutch",
-    },
-    {
-      value: "bs",
-      label: "to Deutch",
-    },
-    {
-      value: "ca",
-      label: "to Deutch",
-    },
-    {
-      value: "cs",
-      label: "to Deutch",
-    },
-    {
-      value: "cy",
-      label: "to Deutch",
-    },
-    {
-      value: "da",
-      label: "to Deutch",
-    },
-    {
-      value: "el",
-      label: "to Deutch",
-    },
-  ];
+        // Ajouter la ligne de texte au PDF
+        doc.text(line, 10, yPosition);
+        yPosition += lineHeight; // Incrémenter la position verticale pour la ligne suivante
+      });
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      // Télécharger le fichier PDF
+      doc.save("exemple.pdf");
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Text not found.",
+      });
+    }
+  };
+  const handleCopy = async () => {
+    if (texte) {
+      try {
+        await navigator.clipboard.writeText(texte);
+        alert("Texte copié dans le presse-papier !");
+      } catch (err) {
+        console.error("Échec de la copie du texte : ", err);
+      }
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Text not found.",
+      });
+    }
+  };
 
   const addItem = (text: string, id: number) => {
     // const newId = items.length;
@@ -471,7 +372,6 @@ export default function Dashboard() {
       prev.map((input) => (input.id === id ? { ...input, texte: text } : input))
     );
   };
-
   //upload audio
   const handleSubmit = (e: any) => {
     // e.preventDefault();
@@ -543,7 +443,6 @@ export default function Dashboard() {
       }
     }
   };
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -560,7 +459,7 @@ export default function Dashboard() {
         }
       }
       if (currentUser == null) {
-        router.push("/");
+        //router.push("/");
       }
     });
     return () => unsubscribe();
@@ -591,12 +490,12 @@ export default function Dashboard() {
           num_speakers: null,
           //language: selectedCurrentLanguage.current,
         },
-        logs: true,
-        onQueueUpdate: (update) => {
+        logs: false,
+        /* onQueueUpdate: (update) => {
           if (update.status === "IN_PROGRESS") {
             update.logs.map((log) => log.message).forEach(console.log);
           }
-        },
+        },*/
       });
 
       if (result) {
@@ -608,13 +507,11 @@ export default function Dashboard() {
           `first text: (${result.chunks[0].timestamp}) ${result.chunks[0].text}`
         );*/
         for (let i = 0; i < result.chunks.length; i++) {
-          /*console.log(
+          console.log(
             ` text-${i}: (${result.chunks[i].timestamp}) ${result.chunks[i].text}`
-          );*/
-          const time = convertShunksTimeStampInMinute(
-            `${result.chunks[i].timestamp}`
           );
-          addItem(` text-${i}: (${time}) ${result.chunks[i].text}`, i);
+          const time = convertSecondsToMinutes(result.chunks[i].timestamp);
+          addItem(`(${time}) ${result.chunks[i].text}`, i);
         }
 
         setSubmitted(false);
@@ -633,7 +530,7 @@ export default function Dashboard() {
   /*const addUsedChar = async () => {
     try {
       await updateDoc(doc(db, "usersPlan", userId), {
-        used_char: usedCharCurrent - textvalue.length,
+        used_char: usedCharCurrent - texte.length,
       });
 
       console.log("great! .");
@@ -641,7 +538,24 @@ export default function Dashboard() {
       console.error("Error:", e);
     }
   };
-
+const addCustomerSub_Id = async (
+  stripe_subscription_id,
+  stripe_customer_id,
+  userId
+) => {
+  try {
+    await setDoc(doc(db, "usersPlan", userId), {
+      having_plan: true,
+      subscription_id: stripe_subscription_id,
+      customer_id: stripe_customer_id,
+      plan: "starter",
+      used_char: 40000,
+    });
+    console.log("inserted to userPlan! .");
+  } catch (e) {
+    console.error("Error:", e);
+  }
+};
    const storedUrlSelected = localStorage.getItem("urlstored");
       if (storedUrlSelected) {
         const indexforVerif = stringToNumber(storedUrlSelected);
@@ -686,7 +600,18 @@ stream.on("finish", function() {
 });
 
 */
+  const convertSecondsToMinutes = (
+    secondsTuple: [number, number]
+  ): [string, string] => {
+    return secondsTuple.map((seconds) => {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = Math.floor(seconds % 60);
 
+      return `${minutes}:${
+        remainingSeconds < 10 ? "0" : ""
+      }${remainingSeconds}`;
+    }) as [string, string];
+  };
   const convertShunksTimeStampInMinute = (data: string): string => {
     let first = Number(data.slice(0, 2));
     let end = Number(data.slice(4, 5));
@@ -716,12 +641,6 @@ stream.on("finish", function() {
     }),
     [isFocused, isDragAccept, isDragReject]
   );
-
-  const handleDownload = () => {
-    // Ouvrir un nouvel onglet pour télécharger le fichier PDF
-    window.open("/api/download-pdf", "_blank");
-  };
-
   const logOut = async () => {
     await signOut(auth);
   };
@@ -849,7 +768,7 @@ stream.on("finish", function() {
                   ) : (
                     <div className="grid gap-2">
                       <div className="flex justify-center">
-                        <UploadIcon />
+                        <UploadCloud />
                       </div>
                       <p className="text-center">
                         Drag 'n' drop audio /video files here , or click to
@@ -877,55 +796,46 @@ stream.on("finish", function() {
                     aria-expanded={open}
                     className="w-[200px] justify-between"
                   >
-                    {selectedTask
-                      ? task.find((task) => task.value === selectedTask)?.label
+                    {value
+                      ? frameworks.find(
+                          (framework) => framework.value === value
+                        )?.label
                       : "Select task..."}
-                    <ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[200px] p-0">
                   <Command>
-                    <CommandInput
-                      placeholder="Search Task..."
-                      className="h-9"
-                    />
-                    <CommandEmpty>Task not found.</CommandEmpty>
-                    <CommandGroup>
-                      {task.map((task) => (
-                        <CommandItem
-                          key={task.value}
-                          value={task.value}
-                          onSelect={(currentValue: any) => {
-                            setSelectedTask(
-                              currentValue === selectedTask ? "" : currentValue
-                            );
-                            selectedCurrentTask.current = currentValue;
-                            if (currentValue === "transcribe") {
-                              selectedCurrentLanguage.current = undefined;
-                            }
-                            setOpen(false);
-                            console.log(
-                              ` task selected: ${selectedTask} : ${currentValue}`
-                            );
-                            if (currentValue == "translation") {
-                              setTranslanteMode(true);
-                            } else {
-                              setTranslanteMode(false);
-                            }
-                          }}
-                        >
-                          {task.label}
-                          <CheckIcon
-                            className={cn(
-                              "ml-auto h-4 w-4",
-                              selectedTask === task.value
-                                ? "opacity-100"
-                                : "opacity-0"
-                            )}
-                          />
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
+                    <CommandInput placeholder="Search task..." />
+                    <CommandList>
+                      <CommandEmpty>No task found.</CommandEmpty>
+                      <CommandGroup>
+                        {frameworks.map((framework) => (
+                          <CommandItem
+                            key={framework.value}
+                            value={framework.value}
+                            onSelect={(currentValue) => {
+                              setValue(
+                                currentValue === value ? "" : currentValue
+                              );
+                              selectedCurrentTask.current = currentValue;
+                              setOpen(false);
+                              console.log(selectedCurrentTask.current);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                value === framework.value
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                            />
+                            {framework.label}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
                   </Command>
                 </PopoverContent>
               </Popover>
@@ -934,13 +844,18 @@ stream.on("finish", function() {
               {isshunktext && (
                 <div>
                   {items.map((value, index) => (
-                    <Textarea
-                      className="mt-2"
-                      placeholder="Shunked text "
-                      key={index}
-                      value={value.texte}
-                      onChange={(e) => modifyText(index, e.target.value)}
-                    />
+                    <div key={index + 1}>
+                      <p className="my-1">
+                        Text-<span className="text-green-700">{index + 1}</span>
+                      </p>
+                      <Textarea
+                        className="mt-2"
+                        placeholder="Shunked text "
+                        key={index}
+                        value={value.texte}
+                        onChange={(e) => modifyText(index, e.target.value)}
+                      />
+                    </div>
                   ))}
                 </div>
               )}
