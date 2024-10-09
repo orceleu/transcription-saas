@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import capturetranscriptionapp from "../public/capture.jpg";
+import capturetranscriptionapp from "../public/capture1.jpg";
 import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
@@ -11,20 +11,30 @@ import {
   onAuthStateChanged,
   User,
 } from "firebase/auth";
-import { FcGoogle, FcSoundRecordingCopyright } from "react-icons/fc";
+import {
+  FcGoogle,
+  FcNegativeDynamic,
+  FcSoundRecordingCopyright,
+} from "react-icons/fc";
 import { auth } from "@/app/firebase/config";
 import { useEffect, useState } from "react";
 import { IoCloudUpload } from "react-icons/io5";
 import { AiOutlineSelect } from "react-icons/ai";
 import { SiConvertio } from "react-icons/si";
+import { MdDoNotDisturb } from "react-icons/md";
 import {
+  ArrowBigDown,
   ArrowBigRight,
+  Check,
+  DeleteIcon,
   EditIcon,
   FileIcon,
   InfinityIcon,
   LanguagesIcon,
+  LogInIcon,
   MagnetIcon,
   MoreHorizontal,
+  TextIcon,
   TimerIcon,
   Upload,
   UploadCloud,
@@ -100,7 +110,7 @@ export default function Home() {
           <Button variant="outline">Sign up</Button>
         </div>
         <div className="lg:hidden flex items-center gap-5">
-          <Button>Login</Button>{" "}
+          <Button onClick={handleLoginGoogle}>Login</Button>{" "}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="text-3xl ">
@@ -111,7 +121,7 @@ export default function Home() {
               <DropdownMenuLabel>More</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLoginGoogle}>
                   <UserIcon className="mr-2 h-4 w-4" />
                   <span>Sign up</span>
                   <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
@@ -122,14 +132,14 @@ export default function Home() {
                   <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <Settings className="mr-2 h-4 w-4" />
+                  <TextIcon className="mr-2 h-4 w-4" />
                   <span>Blog</span>
                   <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <LogOut className="mr-2 h-4 w-4" />
+              <DropdownMenuItem onClick={handleLoginGoogle}>
+                <LogInIcon className="mr-2 h-4 w-4" />
                 <span>Login</span>
                 <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
               </DropdownMenuItem>
@@ -137,8 +147,8 @@ export default function Home() {
           </DropdownMenu>
         </div>
       </div>
-      <div className="flex min-h-screen flex-col items-center justify-between p-5 md:p-24">
-        <div>
+      <div className=" flex min-h-screen flex-col items-center justify-between p-5 md:p-24">
+        <div className="bg-gridline w-full p-10">
           <br />
           <br />
           <br />
@@ -147,13 +157,24 @@ export default function Home() {
             <span className="text-amber-700">Audio & video</span> to text
             converter
           </p>
-          <p className="text-center my-5 text-gray-400">
-            convert any audio or video{" "}
-            <span className="text-violet-900 font-bold">
-              with high Acurracy{" "}
-            </span>
-            to text in few seconds.
-          </p>
+
+          <div className="flex justify-center">
+            <p className="text-center text-gray-600 max-w-[700px] my-10">
+              <span className="text-violet-900 font-bold mx-2 underline">
+                Fast
+              </span>
+              ,
+              <span className="text-violet-900 font-bold mx-2 underline">
+                safe
+              </span>
+              ,and
+              <span className="text-violet-900 font-bold mx-2 underline">
+                accurate
+              </span>
+              . For any language or dialect, no matter the clarity of the audio.
+              Just choose your file, press 'Transcribe,' and it's complete.
+            </p>
+          </div>
         </div>
 
         <div className=" grid gap-5 md:grid-cols-2 w-full my-10 p-5 max-w-[900px] bg-gray-50 rounded-md">
@@ -172,11 +193,14 @@ export default function Home() {
           <p className="text-center">
             <span className="text-2xl">🔒</span> private and secure
           </p>
+          <p className="text-center">
+            <span className="text-2xl">📝</span> edit and export
+          </p>
         </div>
         <div className="relative z-[-1] flex place-items-center before:absolute before:h-[500px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-amber-100 after:via-amber-300 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-amber-700 before:dark:opacity-10 after:dark:from-amber-900 after:dark:via-[#ffaf01] after:dark:opacity-40 sm:before:w-[580px] sm:after:w-[340px] before:lg:h-[460px]"></div>
 
         <div className="w-full md:w-[500px] mt-[100px] shadow-md shadow-amber-200 rounded-md p-2">
-          <div className="grid gap-2 my-10">
+          <div className="grid gap-2 my-10 p-5 rounded-md border-black border-[1px]">
             <p className="text-center my-4">Upload file to transcribe them</p>
             <Button variant="outline">
               <IoCloudUpload className="mx-3 text-emerald-500" /> Upload audio
@@ -188,7 +212,7 @@ export default function Home() {
             </Button>
           </div>
         </div>
-        <Button size="lg" className="w-full my-5">
+        <Button size="lg" className="w-full my-5" onClick={handleLoginGoogle}>
           <FcGoogle className="mx-3 " />
           start transcribing for free
         </Button>
@@ -263,30 +287,44 @@ export default function Home() {
           </div>
         </div>
         <Separator className="my-10" />
+        <p className="text-center text-3xl font-bold">
+          Simple and Easy to use cloud based AI software.
+        </p>
+
+        <p className="text-gray-400 my-5 text-center">
+          (no installation needed)
+        </p>
+
         <div className="bg-red-200 p-10 rounded-md my-[100px] w-full max-w-[600px]">
           <div className="grid  gap-3 ">
             <p className="text-center text-3xl font-semibold my-3 underline">
-              3 Step
+              3 Steps
             </p>
             <div className="p-2 bg-red-100 rounded-md w-full md:w-[500px]">
               <p className="text-center  text-xl font-serif">
-                <AiOutlineSelect className="text-emerald-500 mx-3" />
+                <AiOutlineSelect className="text-emerald-500 mx-3 my-auto" />
                 Select.
               </p>
             </div>
             <div className="p-2 bg-red-100 rounded-md w-full md:w-[500px]">
               <p className="text-center  text-xl font-serif">
-                <IoCloudUpload className="text-emerald-500 mx-3" />
+                <IoCloudUpload className="text-emerald-500 mx-3 my-auto" />
                 Upload.
               </p>
             </div>
             <div className="p-2 bg-red-100 rounded-md w-full md:w-[500px]">
               <p className="text-center  text-xl font-serif">
-                <SiConvertio className="text-emerald-500 mx-3" />
+                <SiConvertio className="text-emerald-500 mx-3" my-auto />
                 Convert
               </p>
             </div>
           </div>
+        </div>
+        <div className="flex items-center gap-5 md:gap-10 my-10">
+          <ArrowBigDown className="size-[50px] md:size-[100px]" />
+          <ArrowBigDown className="size-[50px] md:size-[100px]" />
+          <ArrowBigDown className="size-[50px] md:size-[100px]" />
+          <ArrowBigDown className="size-[50px] md:size-[100px]" />
         </div>
 
         <div className="flex justify-center">
@@ -304,32 +342,212 @@ export default function Home() {
         <p className="text-gray-600 text-center my-2">
           Sign up and start transcribing your first file.
         </p>
-        <div className="w-full h-[900px] my-[100px]  max-w-[700px] bg-slate-900 rounded-md">
+        <div className="w-full p-10 my-[100px]  max-w-[700px] bg-slate-900 rounded-md">
           <p className="text-center text-3xl text-white my-2">
             Audiscribe Free
           </p>
-          <Separator />
+          <Separator className="my-2" />
+          <div className="flex justify-center">
+            <div className="grid gap-2 mt-10">
+              <div className="flex items-center gap-3">
+                <Check className="text-blue-100" />
+                <p className="text-white text-center text-2xl">Free forever</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Check className="text-blue-100" />
+                <p className="text-white text-center text-2xl">
+                  3 transcriptions per month
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Check className="text-blue-100" />
+                <p className="text-white text-center text-2xl">
+                  15mb per file uploaded
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Check className="text-blue-100" />
+                <p className="text-white text-center text-2xl">
+                  access to additionnal tools
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Check className="text-blue-100" />
+                <p className="text-white text-center text-2xl">
+                  translation(to english only)
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <MdDoNotDisturb className=" text-red-400 size-6" />
+                <p className="text-white text-center text-2xl">
+                  export to PDF,DOCX,TXT
+                </p>
+              </div>
+              <div className="flex justify-center mt-10">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="font-bold"
+                  onClick={handleLoginGoogle}
+                >
+                  <FcGoogle className="mx-3 " /> Get started for free
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="w-full h-[900px] max-w-[700px] my-10 bg-amber-900 rounded-md">
+        <div className="w-full p-10 max-w-[700px] my-10 bg-amber-900 rounded-md">
           <p className="text-center text-3xl text-white my-2">Audiscribe Pro</p>
-          <Separator />
-        </div>
-        <div className="flex justify-center my-10">
-          <Button variant="outline" onClick={handleLoginGoogle}>
-            Get started <ArrowBigRight />{" "}
-          </Button>
+          <p className="text-center text-blue-100 font-semibold ">(9$/Month)</p>
+          <Separator className="my-2" />
+
+          <div className="flex justify-center">
+            <div className="grid gap-2 mt-10">
+              <div className="flex items-center gap-3">
+                <Check className="text-blue-200" />
+                <p className="text-white text-center text-2xl">
+                  30 hours of transcription/month
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Check className="text-blue-200" />
+                <p className="text-white text-center text-2xl">
+                  unlimited request
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Check className="text-blue-200" />
+                <p className="text-white text-center text-2xl">
+                  1gb per file uploaded
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Check className="text-blue-200" />
+                <p className="text-white text-center text-2xl">
+                  access to additionnal tools
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Check className="text-blue-200" />
+                <p className="text-white text-center text-2xl">
+                  translation(to english only)
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Check className="text-blue-200" />
+                <p className="text-white text-center text-2xl">
+                  export to PDF,DOCX,TXT
+                </p>
+              </div>
+              <div className="flex justify-center mt-10">
+                <Button variant="outline" size="lg" className="font-bold">
+                  <FcGoogle className="mx-3 " /> GO pro now
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <p className="text-center my-10 text-5xl font-bold">FAQ</p>
-
         <Separator className="my-10" />
-        <p className="text-center">outils</p>
-        <p className="text-center">Blog</p>
-        <p className="text-center">review</p>
-        <p className="text-center">support</p>
-        <p className="text-center">terms</p>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-10 ">
+          <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
+            <p>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
+              aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
+              perferendis modi repellat! Nobis odio enim adipisci voluptate
+              obcaecati incidunt ipsam illo!
+            </p>
+          </div>
+          <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
+            <p>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
+              aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
+              perferendis modi repellat! Nobis odio enim adipisci voluptate
+              obcaecati incidunt ipsam illo!
+            </p>
+          </div>{" "}
+          <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
+            <p>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
+              aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
+              perferendis modi repellat! Nobis odio enim adipisci voluptate
+              obcaecati incidunt ipsam illo!
+            </p>
+          </div>{" "}
+          <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
+            <p>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
+              aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
+              perferendis modi repellat! Nobis odio enim adipisci voluptate
+              obcaecati incidunt ipsam illo!
+            </p>
+          </div>{" "}
+          <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
+            <p>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
+              aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
+              perferendis modi repellat! Nobis odio enim adipisci voluptate
+              obcaecati incidunt ipsam illo!
+            </p>
+          </div>{" "}
+          <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
+            <p>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
+              aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
+              perferendis modi repellat! Nobis odio enim adipisci voluptate
+              obcaecati incidunt ipsam illo!
+            </p>
+          </div>
+        </div>
+        <Separator className="my-10" />
       </div>{" "}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full p-10 bg-slate-800">
+        <div className="grid gap-3">
+          <p className="text-center text-white text-2xl font-bold underline">
+            Tools
+          </p>
+          <Separator className="my-5" />
+          <p className="text-center text-white text-xl">
+            Audio to text converter
+          </p>
+          <p className="text-center text-white text-xl">
+            Video to text converter
+          </p>
+          <p className="text-center text-white text-xl">
+            Speech to text converter
+          </p>
+          <p className="text-center text-white text-xl">Ai translation</p>
+          <p className="text-center text-white text-xl">
+            Audio to PDF converter
+          </p>
+        </div>
+        <div className="grid gap-3">
+          <p className="text-center text-white text-2xl font-bold underline">
+            Tools
+          </p>
+          <Separator className="my-5" />
+          <p className="text-center text-white text-xl">outils</p>
+          <p className="text-center text-white text-xl">Blog</p>
+          <p className="text-center text-white text-xl">review</p>
+          <p className="text-center text-white text-xl">support</p>
+          <p className="text-center text-white text-xl">terms</p>
+        </div>
+        <div className="grid gap-3">
+          <p className="text-center text-white text-2xl font-bold underline">
+            Tools
+          </p>
+          <Separator className="my-5" />
+          <p className="text-center text-white text-xl">outils</p>
+          <p className="text-center text-white text-xl">Blog</p>
+          <p className="text-center text-white text-xl">review</p>
+          <p className="text-center text-white text-xl">support</p>
+          <p className="text-center text-white text-xl">terms</p>
+        </div>
+      </div>
     </main>
   );
 }

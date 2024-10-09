@@ -6,11 +6,19 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-
+import axios from "axios";
+import { FaRegFilePdf } from "react-icons/fa6";
+import { TbFileTypeDocx } from "react-icons/tb";
+import { GrDocumentTxt } from "react-icons/gr";
 import { useDropzone } from "react-dropzone";
 import { signOut, onAuthStateChanged, User } from "firebase/auth";
 import { auth } from "@/app/firebase/config";
-
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import {
   ArrowBigLeft,
   AudioWaveformIcon,
@@ -24,6 +32,7 @@ import {
   LoaderIcon,
   PauseIcon,
   PlayIcon,
+  PlusCircleIcon,
   Settings,
   TrashIcon,
   UploadCloud,
@@ -173,17 +182,22 @@ type LanguageType = undefined | string;
 interface ShunkItems {
   id: number;
   texte: string;
+  shunkedTime: string;
 }
 export default function Dashboard() {
   const [uploadedFile, setUploadedFile] = useState<any>(null);
   const [isAudioUrlDispo, setAudioUrlDispo] = useState(false);
   const router = useRouter();
   const [texte, setText] = useState("");
+  const [youtubeUrl, setYoutubeUrl] = useState("");
   const [changed, setChange] = useState(false);
   const selectedCurrentLanguage = useRef<LanguageType>("en");
   const [isSubmitted, setSubmitted] = useState(false);
   const [uploadIsLoaded, setUploadLoaded] = useState(false);
   const [open, setOpen] = useState(false);
+  const [openMobile, setOpenMobile] = useState(false);
+  const [openLanguage, setOpenLanguage] = useState(false);
+  const [openLanguageMobile, setOpenLanguageMobile] = useState(false);
   const [openLang, setOpenLang] = useState(false);
   const [progresspercent, setProgresspercent] = useState(0);
   const [selectedTask, setSelectedTask] = useState("transcribe");
@@ -202,10 +216,13 @@ export default function Dashboard() {
   const isTranslante = useRef(false);
   const [isVideo, setIsVideo] = useState(false);
   const [isshunktext, setShunkText] = useState(false);
+  const [autoDetectLanguage, setAutoDetectLanguage] = useState(true);
   const [items, setItems] = useState<ShunkItems[]>([]);
-
   const [value, setValue] = useState("transcribe");
-
+  const [valueLanguage, setLanguageValue] = useState("en");
+  const setUsedTextLengh = useRef(0);
+  const [checkingUrl, setCheckingYoutubeUrl] = useState(false);
+  const [youtubePlayerUrl, setYoutubePlayerUrl] = useState(false);
   const frameworks = [
     {
       value: "transcribe",
@@ -215,6 +232,108 @@ export default function Dashboard() {
       value: "translate",
       label: "Translation to (en)",
     },
+  ];
+  const language = [
+    { value: "af", label: "Afrikaans (Afrikaans)" },
+    { value: "am", label: "Amharic (አማርኛ)" },
+    { value: "ar", label: "Arabic (العربية)" },
+    { value: "as", label: "Assamese (অসমীয়া)" },
+    { value: "az", label: "Azerbaijani (Azərbaycan)" },
+    { value: "ba", label: "Bashkir (башҡорт теле)" },
+    { value: "be", label: "Belarusian (Беларуская)" },
+    { value: "bg", label: "Bulgarian (Български)" },
+    { value: "bn", label: "Bengali (বাংলা)" },
+    { value: "bo", label: "Tibetan (བོད་སྐད་)" },
+    { value: "br", label: "Breton (Brezhoneg)" },
+    { value: "bs", label: "Bosnian (Bosanski)" },
+    { value: "ca", label: "Catalan (Català)" },
+    { value: "cs", label: "Czech (Čeština)" },
+    { value: "cy", label: "Welsh (Cymraeg)" },
+    { value: "da", label: "Danish (Dansk)" },
+    { value: "de", label: "German (Deutsch)" },
+    { value: "el", label: "Greek (Ελληνικά)" },
+    { value: "en", label: "English (English)" },
+    { value: "es", label: "Spanish (Español)" },
+    { value: "et", label: "Estonian (Eesti)" },
+    { value: "eu", label: "Basque (Euskara)" },
+    { value: "fa", label: "Persian (فارسی)" },
+    { value: "fi", label: "Finnish (Suomi)" },
+    { value: "fo", label: "Faroese (Føroyskt)" },
+    { value: "fr", label: "French (Français)" },
+    { value: "gl", label: "Galician (Galego)" },
+    { value: "gu", label: "Gujarati (ગુજરાતી)" },
+    { value: "ha", label: "Hausa (Hausa)" },
+    { value: "haw", label: "Hawaiian (ʻŌlelo Hawaiʻi)" },
+    { value: "he", label: "Hebrew (עברית)" },
+    { value: "hi", label: "Hindi (हिन्दी)" },
+    { value: "hr", label: "Croatian (Hrvatski)" },
+    { value: "ht", label: "Haitian Creole (Kreyòl Ayisyen)" },
+    { value: "hu", label: "Hungarian (Magyar)" },
+    { value: "hy", label: "Armenian (Հայերեն)" },
+    { value: "id", label: "Indonesian (Bahasa Indonesia)" },
+    { value: "is", label: "Icelandic (Íslenska)" },
+    { value: "it", label: "Italian (Italiano)" },
+    { value: "ja", label: "Japanese (日本語)" },
+    { value: "jw", label: "Javanese (Basa Jawa)" },
+    { value: "ka", label: "Georgian (ქართული)" },
+    { value: "kk", label: "Kazakh (Қазақ)" },
+    { value: "km", label: "Khmer (ខ្មែរ)" },
+    { value: "kn", label: "Kannada (ಕನ್ನಡ)" },
+    { value: "ko", label: "Korean (한국어)" },
+    { value: "la", label: "Latin (Latina)" },
+    { value: "lb", label: "Luxembourgish (Lëtzebuergesch)" },
+    { value: "ln", label: "Lingala (Lingála)" },
+    { value: "lo", label: "Lao (ລາວ)" },
+    { value: "lt", label: "Lithuanian (Lietuvių)" },
+    { value: "lv", label: "Latvian (Latviešu)" },
+    { value: "mg", label: "Malagasy (Malagasy)" },
+    { value: "mi", label: "Maori (Māori)" },
+    { value: "mk", label: "Macedonian (Македонски)" },
+    { value: "ml", label: "Malayalam (മലയാളം)" },
+    { value: "mn", label: "Mongolian (Монгол)" },
+    { value: "mr", label: "Marathi (मराठी)" },
+    { value: "ms", label: "Malay (Bahasa Melayu)" },
+    { value: "mt", label: "Maltese (Malti)" },
+    { value: "my", label: "Burmese (ဗမာစာ)" },
+    { value: "ne", label: "Nepali (नेपाली)" },
+    { value: "nl", label: "Dutch (Nederlands)" },
+    { value: "nn", label: "Norwegian (Nynorsk)" },
+    { value: "no", label: "Norwegian (Norsk)" },
+    { value: "oc", label: "Occitan (Occitan)" },
+    { value: "pa", label: "Punjabi (ਪੰਜਾਬੀ)" },
+    { value: "pl", label: "Polish (Polski)" },
+    { value: "ps", label: "Pashto (پښتو)" },
+    { value: "pt", label: "Portuguese (Português)" },
+    { value: "ro", label: "Romanian (Română)" },
+    { value: "ru", label: "Russian (Русский)" },
+    { value: "sa", label: "Sanskrit (संस्कृतम्)" },
+    { value: "sd", label: "Sindhi (سنڌي)" },
+    { value: "si", label: "Sinhala (සිංහල)" },
+    { value: "sk", label: "Slovak (Slovenčina)" },
+    { value: "sl", label: "Slovenian (Slovenščina)" },
+    { value: "sn", label: "Shona (ChiShona)" },
+    { value: "so", label: "Somali (Soomaali)" },
+    { value: "sq", label: "Albanian (Shqip)" },
+    { value: "sr", label: "Serbian (Српски)" },
+    { value: "su", label: "Sundanese (Basa Sunda)" },
+    { value: "sv", label: "Swedish (Svenska)" },
+    { value: "sw", label: "Swahili (Kiswahili)" },
+    { value: "ta", label: "Tamil (தமிழ்)" },
+    { value: "te", label: "Telugu (తెలుగు)" },
+    { value: "tg", label: "Tajik (Тоҷикӣ)" },
+    { value: "th", label: "Thai (ไทย)" },
+    { value: "tk", label: "Turkmen (Türkmen)" },
+    { value: "tl", label: "Tagalog (Tagalog)" },
+    { value: "tr", label: "Turkish (Türkçe)" },
+    { value: "tt", label: "Tatar (Татар)" },
+    { value: "uk", label: "Ukrainian (Українська)" },
+    { value: "ur", label: "Urdu (اردو)" },
+    { value: "uz", label: "Uzbek (Oʻzbek)" },
+    { value: "vi", label: "Vietnamese (Tiếng Việt)" },
+    { value: "yi", label: "Yiddish (ייִדיש)" },
+    { value: "yo", label: "Yoruba (Yorùbá)" },
+    { value: "yue", label: "Cantonese (粵語)" },
+    { value: "zh", label: "Chinese (中文)" },
   ];
 
   const downloadWordFile = async (text: string) => {
@@ -357,12 +476,13 @@ export default function Dashboard() {
     }
   };
 
-  const addItem = (text: string, id: number) => {
+  const addItem = (text: string, shunkTime: string, id: number) => {
     // const newId = items.length;
     setItems((prevItems) => [
       ...prevItems,
       {
         texte: text,
+        shunkedTime: shunkTime,
         id: id,
       },
     ]);
@@ -372,6 +492,17 @@ export default function Dashboard() {
       prev.map((input) => (input.id === id ? { ...input, texte: text } : input))
     );
   };
+  const handleActiveButton = () => {
+    if (youtubeUrl.length < 5) {
+      console.log("url too short ");
+    } else {
+      convertYoutubeMp3();
+    }
+  };
+  useEffect(() => {
+    handleActiveButton();
+  }, [youtubeUrl]);
+
   //upload audio
   const handleSubmit = (e: any) => {
     // e.preventDefault();
@@ -477,6 +608,39 @@ export default function Dashboard() {
     }
   }, [progresspercent]);
 
+  const options = {
+    method: "GET",
+    url: "https://youtube-mp3-downloader2.p.rapidapi.com/ytmp3/ytmp3/",
+    params: {
+      url: youtubeUrl,
+    },
+    headers: {
+      "x-rapidapi-key": "ea3eb66b12mshb3815582d59c0fcp1ef05fjsnc501524b1af5",
+      "x-rapidapi-host": "youtube-mp3-downloader2.p.rapidapi.com",
+    },
+  };
+  const convertYoutubeMp3 = async () => {
+    setCheckingYoutubeUrl(true);
+    setYoutubePlayerUrl(true);
+    setIsVideo(true);
+    setAudioUrlDispo(true);
+    try {
+      const response = await axios.request(options);
+      console.log(response.data.dlink);
+      if (response) {
+        setCheckingYoutubeUrl(false);
+        audioUrl.current = response.data.dlink;
+        submitSpeech();
+      }
+    } catch (error) {
+      setCheckingYoutubeUrl(false);
+      setYoutubePlayerUrl(false);
+      setIsVideo(false);
+      setAudioUrlDispo(false);
+      console.error(error);
+    }
+  };
+
   const submitSpeech = async () => {
     setSubmitted(true);
     try {
@@ -488,7 +652,8 @@ export default function Dashboard() {
           version: "3",
           batch_size: 64,
           num_speakers: null,
-          //language: selectedCurrentLanguage.current,
+          diarize: true,
+          language: selectedCurrentLanguage.current,
         },
         logs: false,
         /* onQueueUpdate: (update) => {
@@ -501,6 +666,10 @@ export default function Dashboard() {
       if (result) {
         setLoading(false);
         setText(result.text as string);
+        setUsedTextLengh.current = result.text.length;
+
+        //used text for firebase update request limit
+        console.log(`used text: ${setUsedTextLengh.current}`);
         console.log(`array length : ${result.chunks.length}`);
         console.log(`language : ${result.inferred_languages}`);
         /* console.log(
@@ -511,7 +680,8 @@ export default function Dashboard() {
             ` text-${i}: (${result.chunks[i].timestamp}) ${result.chunks[i].text}`
           );
           const time = convertSecondsToMinutes(result.chunks[i].timestamp);
-          addItem(`(${time}) ${result.chunks[i].text}`, i);
+
+          addItem(`${result.chunks[i].text}`, `[${time}]`, i);
         }
 
         setSubmitted(false);
@@ -646,60 +816,445 @@ stream.on("finish", function() {
   };
 
   return (
-    <div className="flex justify-center">
-      <div className="w-1/5">
-        <div className="bg-amber-100 p-2 shadow-sm">
-          <p className="font-bold text-center mt-5"> Setting</p>
-        </div>
-        <div className="flex justify-center mt-8">
-          <div className="grid gap-1 w-[200px] p-3">
-            <p className="text-center">3 transciptions left</p>
-            <Progress />
-            <Button>
-              <Infinity />
-              Go unlimited
-            </Button>
+    <div>
+      {desktopScreen()}
+      {mobileScreen()}
+    </div>
+  );
+
+  function desktopScreen() {
+    return (
+      <div className="hidden lg:flex justify-center">
+        <div className="w-1/5">
+          <div className="bg-amber-100 p-2 shadow-sm">
+            <p className="font-bold text-center mt-5"> Setting</p>
           </div>
-        </div>
-        <div className="flex justify-center">
-          <div className="grid gap-2 max-w-[200px] h-[300px] shadow-sm rounded-sm p-10 bg-gray-100">
-            <p className=" font-bold text-xl ">export</p>
-            <Separator />
-            <p
-              className="hover:bg-green-100"
-              onClick={() => {
-                creatPDF(texte);
-              }}
-            >
-              <FileTextIcon /> export to pdf.
-            </p>
-            <p
-              className="hover:bg-green-100"
-              onClick={() => downloadWordFile(texte)}
-            >
-              <FileTextIcon /> export to Docx.
-            </p>
-            <p
-              className="hover:bg-green-100"
-              onClick={() => handleDownloadTxt(texte)}
-            >
-              <FileTextIcon /> export to Txt.
-            </p>
-            <div>
-              <Checkbox
-                id="terms1"
-                onCheckedChange={(e: boolean) => {
-                  setShunkText(e);
-                  //console.log(e);
-                }}
-                defaultChecked={false}
-              />
-              <br />
-              <p className="text-gray-500">Shunk the text?</p>
+          <div className="flex justify-center mt-8">
+            <div className="grid gap-1 w-[200px] p-3">
+              <p className="text-center">3 transciptions left</p>
+              <Progress />
+              <Button>
+                <Infinity />
+                Go unlimited
+              </Button>
             </div>
           </div>
-        </div>{" "}
-        <div className="fixed top-2 end-2 m-10">
+          <div className="flex justify-center">
+            <div className="grid gap-2 max-w-[200px]  shadow-sm rounded-sm p-5 bg-gray-100">
+              <p className=" font-bold text-xl ">Export:</p>
+              <Separator />
+              <Button
+                variant="outline"
+                className="hover:bg-green-100"
+                onClick={() => {
+                  creatPDF(texte);
+                }}
+              >
+                export to PDF. <FaRegFilePdf className="mx-2 text-red-600" />
+              </Button>
+              <Button
+                variant="outline"
+                className="hover:bg-green-100"
+                onClick={() => downloadWordFile(texte)}
+              >
+                export to Docx.
+                <TbFileTypeDocx className="mx-2 text-blue-600" />
+              </Button>
+              <Button
+                variant="outline"
+                className="hover:bg-green-100"
+                onClick={() => handleDownloadTxt(texte)}
+              >
+                export to Txt.
+                <GrDocumentTxt className="mx-2 text-gray-600" />
+              </Button>
+              <div>
+                <Checkbox
+                  id="terms1"
+                  onCheckedChange={(e: boolean) => {
+                    setShunkText(e);
+                    //console.log(e);
+                  }}
+                  defaultChecked={false}
+                />
+                <br />
+                <p className="text-gray-500">Shunk the text?</p>
+              </div>
+              <div>
+                <Checkbox
+                  id="terms2"
+                  onCheckedChange={(e: boolean) => {
+                    setAutoDetectLanguage(e);
+                    if (!e) {
+                      selectedCurrentLanguage.current = undefined;
+                    } else {
+                      selectedCurrentLanguage.current = valueLanguage;
+                    }
+                    //console.log(e);
+                  }}
+                  defaultChecked={true}
+                />
+                <br />
+                <p className="text-gray-500">Auto detect Language?</p>
+              </div>
+            </div>
+          </div>{" "}
+          <div className="flex justify-center mt-10">
+            <div className="grid gap-2 max-w-[200px]  shadow-sm rounded-sm p-5 bg-gray-100">
+              <p className="text-center font-bold">Tools</p>
+              <Separator />
+              <Button onClick={() => router.push("/youtube-to-mp3")}>
+                Youtube to mp3
+              </Button>
+              <Button>Tranlation</Button>
+              <Button>Sound effect gen</Button>
+            </div>
+          </div>
+          <br />
+          <br />
+          <div className="fixed top-2 end-2 m-10">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  {" "}
+                  {userName ? <p>{userName}</p> : <p>My...</p>}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel>{userEmail}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem>
+                    Profile
+                    <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      router.push("/billing");
+                    }}
+                  >
+                    Billing
+                    <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      // cancelSubscription();
+                    }}
+                  >
+                    Cancel subscription
+                    <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem>Support</DropdownMenuItem>
+                <DropdownMenuItem disabled>API</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logOut}>
+                  Log out
+                  <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+
+        <div className="w-4/5 flex justify-center">
+          <Separator orientation="vertical" />
+          <div className="w-full mx-3 mt-5">
+            <p className="text-3xl font bold m-10 text-center fixed top-2">
+              AudiScribe
+            </p>
+            <div className="grid gap-5">
+              <div className="grid gap-1">
+                <div className="flex justify-center">
+                  <div
+                    {...getRootProps({ style })}
+                    className="mt-[100px] mb-2 max-w-[400px]"
+                  >
+                    <input {...getInputProps()} />
+                    {uploadedFile ? (
+                      <div>
+                        <h4 className="text-center">Fichier uploadé:</h4>
+                        <p className="text-center">{uploadedFile.name}</p>
+                      </div>
+                    ) : (
+                      <div className="grid gap-2">
+                        <div className="flex justify-center">
+                          <UploadCloud />
+                        </div>
+                        <p className="text-center">
+                          Drag 'n' drop audio /video files here , or click to
+                          select files
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <p className="text-center text-gray-600">-----Or-----</p>
+                <div className="flex justify-center">
+                  <div className="flex items-center gap-3">
+                    <Input
+                      className="max-w-[500px] min-w-[400px]"
+                      placeholder="Paste youtube link Here..."
+                      value={youtubeUrl}
+                      onChange={(e) => {
+                        setYoutubeUrl(e.target.value);
+                      }}
+                    />
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setYoutubeUrl("");
+                      }}
+                    >
+                      <DeleteIcon />
+                    </Button>
+                    <div>
+                      {checkingUrl ? (
+                        <>
+                          <LoaderIcon className="animate-spin size-5" />
+                        </>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-4 mt-1 ml-4">
+                  <div className="flex justify-center">
+                    {uploadIsLoaded ? (
+                      <Progress value={progresspercent} className="w-[60%]" />
+                    ) : null}
+                  </div>
+                  <br />
+                  <br />
+                  <div className="flex items-center gap-5">
+                    <Popover open={open} onOpenChange={setOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={open}
+                          className="w-[200px] justify-between"
+                        >
+                          {value
+                            ? frameworks.find(
+                                (framework) => framework.value === value
+                              )?.label
+                            : "Select task..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[200px] p-0">
+                        <Command>
+                          <CommandInput placeholder="Search task..." />
+                          <CommandList>
+                            <CommandEmpty>No task found.</CommandEmpty>
+                            <CommandGroup>
+                              {frameworks.map((framework) => (
+                                <CommandItem
+                                  key={framework.value}
+                                  value={framework.value}
+                                  onSelect={(currentValue) => {
+                                    setValue(
+                                      currentValue === value ? "" : currentValue
+                                    );
+                                    selectedCurrentTask.current = currentValue;
+                                    setOpen(false);
+                                    console.log(selectedCurrentTask.current);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      value === framework.value
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {framework.label}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>{" "}
+                    {!autoDetectLanguage && (
+                      <Popover
+                        open={openLanguage}
+                        onOpenChange={setOpenLanguage}
+                      >
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={open}
+                            className="w-[200px] justify-between"
+                          >
+                            {valueLanguage
+                              ? language.find(
+                                  (framework) =>
+                                    framework.value === valueLanguage
+                                )?.label
+                              : "Select Language..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[200px] p-0">
+                          <Command>
+                            <CommandInput placeholder="Search Language..." />
+                            <CommandList>
+                              <CommandEmpty>Language not found.</CommandEmpty>
+                              <CommandGroup>
+                                {language.map((framework) => (
+                                  <CommandItem
+                                    key={framework.value}
+                                    value={framework.value}
+                                    onSelect={(currentValue) => {
+                                      setLanguageValue(
+                                        currentValue === valueLanguage
+                                          ? ""
+                                          : currentValue
+                                      );
+                                      selectedCurrentLanguage.current =
+                                        currentValue;
+                                      setOpenLanguage(false);
+                                      //console.log(selectedCurrentTask.current);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        valueLanguage === framework.value
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                    />
+                                    {framework.label}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    )}
+                  </div>
+                </div>
+              </div>{" "}
+              <div className="m-4">
+                {isshunktext && (
+                  <div>
+                    {items.map((value, index) => (
+                      <div key={index + 1}>
+                        <p className="my-1">
+                          Speaker
+                          <span className="mx-2">{value.shunkedTime}</span>
+                        </p>
+                        <Textarea
+                          className="mt-2"
+                          placeholder="Shunked text "
+                          key={index}
+                          value={value.texte}
+                          onChange={(e) => modifyText(index, e.target.value)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {!isshunktext && (
+                  <Textarea
+                    placeholder="result"
+                    className="h-[100px]"
+                    value={texte}
+                    onChange={(e) => {
+                      setText(e.target.value);
+                    }}
+                    disabled={false}
+                  />
+                )}
+                <Button variant="outline" className="mt-4" onClick={handleCopy}>
+                  <CopyIcon />
+                </Button>
+              </div>
+              <Button
+                className="m-4"
+                onClick={() => {
+                  if (uploadedFile) {
+                    //handleSubmit(uploadedFile);
+                    submitSpeech();
+                  } else {
+                    alert("file not found!");
+                  }
+                }}
+                disabled={isSubmitted}
+              >
+                {isSubmitted ? (
+                  <LoaderIcon className="h-5 w-5 animate-spin" />
+                ) : (
+                  <div className="flex items-center">
+                    <LoopIcon className="m-2" />
+                    <p>Retranscribe</p>
+                  </div>
+                )}
+              </Button>
+              <div className="flex justify-center">
+                {isAudioUrlDispo && isVideo && !youtubePlayerUrl && (
+                  <div className=" w-4/5  p-1  rounded-t-md bg-slate-50">
+                    <div className="flex justify-center m-3">
+                      <ReactPlayer
+                        width="100%"
+                        height="100%"
+                        playing={videoIsplaying}
+                        light={false}
+                        url={audioUrl.current}
+                        onDuration={(e) => console.log(`duration:${e}`)}
+                        onSeek={(e) => console.log("onSeek", e)}
+                        onProgress={(e) => console.log(`onprogress: ${e}`)}
+                      />
+                    </div>
+
+                    <div className="flex justify-center m-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setVideoPlaying(!videoIsplaying);
+                        }}
+                      >
+                        {videoIsplaying ? <PauseIcon /> : <PlayIcon />}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex justify-center">
+              {isAudioUrlDispo && isVideo && youtubePlayerUrl && (
+                <ReactPlayer controls={true} url={youtubeUrl} />
+              )}
+            </div>{" "}
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+          </div>
+
+          {isAudioUrlDispo && !isVideo && (
+            <div className="fixed bottom-0 w-4/5 bg-slate-200 p-10 rounded-t-md">
+              <Player src={audioUrl.current} height={40} />
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+  function mobileScreen() {
+    return (
+      <div className="lg:hidden p-2">
+        <div className="fixed top-2 end-2 m-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">
@@ -733,7 +1288,7 @@ stream.on("finish", function() {
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>GitHub</DropdownMenuItem>
+
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuItem disabled>API</DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -744,12 +1299,9 @@ stream.on("finish", function() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </div>
 
-      <div className="w-4/5 flex justify-center">
-        <Separator orientation="vertical" />
-        <div className="w-full mx-3 mt-5">
-          <p className="text-3xl font bold m-10 text-center fixed top-2">
+        <div className="w-full  mt-5">
+          <p className="text-xl font bold m-2 text-center fixed top-2">
             AudiScribe
           </p>
           <div className="grid gap-5">
@@ -778,75 +1330,259 @@ stream.on("finish", function() {
                   )}
                 </div>
               </div>
-            </div>{" "}
-            <div className="mb-4 mt-1 ml-4">
+              <p className="text-center text-gray-600">-----Or-----</p>
               <div className="flex justify-center">
-                {uploadIsLoaded ? (
-                  <Progress value={progresspercent} className="w-[60%]" />
-                ) : null}
+                <div className="grid gap-3">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      className="w-[70%] "
+                      placeholder="Paste youtube link Here..."
+                      value={youtubeUrl}
+                      onChange={(e) => {
+                        setYoutubeUrl(e.target.value);
+                      }}
+                    />
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setYoutubeUrl("");
+                      }}
+                    >
+                      <DeleteIcon />
+                    </Button>
+                  </div>
+                  <div className="flex justify-center">
+                    {checkingUrl ? (
+                      <>
+                        <LoaderIcon className="animate-spin size-5" />
+                      </>
+                    ) : null}
+                  </div>
+                </div>
               </div>
-              <br />
-              <br />
 
-              <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={open}
-                    className="w-[200px] justify-between"
-                  >
-                    {value
-                      ? frameworks.find(
-                          (framework) => framework.value === value
-                        )?.label
-                      : "Select task..."}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[200px] p-0">
-                  <Command>
-                    <CommandInput placeholder="Search task..." />
-                    <CommandList>
-                      <CommandEmpty>No task found.</CommandEmpty>
-                      <CommandGroup>
-                        {frameworks.map((framework) => (
-                          <CommandItem
-                            key={framework.value}
-                            value={framework.value}
-                            onSelect={(currentValue) => {
-                              setValue(
-                                currentValue === value ? "" : currentValue
-                              );
-                              selectedCurrentTask.current = currentValue;
-                              setOpen(false);
-                              console.log(selectedCurrentTask.current);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                value === framework.value
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              )}
-                            />
-                            {framework.label}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </div>
+              <div className="mb-4 mt-1 ml-4">
+                <div className="flex justify-center">
+                  {uploadIsLoaded ? (
+                    <Progress value={progresspercent} className="w-[60%]" />
+                  ) : null}
+                </div>
+                <br />
+                <br />
+                <div className="grid  gap-4 ">
+                  <Popover open={openMobile} onOpenChange={setOpenMobile}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={open}
+                        className="w-[200px] justify-between"
+                      >
+                        {value
+                          ? frameworks.find(
+                              (framework) => framework.value === value
+                            )?.label
+                          : "Select task..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[200px] p-0">
+                      <Command>
+                        <CommandInput placeholder="Search task..." />
+                        <CommandList>
+                          <CommandEmpty>No task found.</CommandEmpty>
+                          <CommandGroup>
+                            {frameworks.map((framework) => (
+                              <CommandItem
+                                key={framework.value}
+                                value={framework.value}
+                                onSelect={(currentValue) => {
+                                  setValue(
+                                    currentValue === value ? "" : currentValue
+                                  );
+                                  selectedCurrentTask.current = currentValue;
+                                  setOpen(false);
+                                  console.log(selectedCurrentTask.current);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    value === framework.value
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                                {framework.label}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>{" "}
+                  {!autoDetectLanguage && (
+                    <Popover
+                      open={openLanguageMobile}
+                      onOpenChange={setOpenLanguageMobile}
+                    >
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={open}
+                          className="w-[200px] justify-between"
+                        >
+                          {valueLanguage
+                            ? language.find(
+                                (framework) => framework.value === valueLanguage
+                              )?.label
+                            : "Select Language..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[200px] p-0">
+                        <Command>
+                          <CommandInput placeholder="Search Language..." />
+                          <CommandList>
+                            <CommandEmpty>Language not found.</CommandEmpty>
+                            <CommandGroup>
+                              {language.map((framework) => (
+                                <CommandItem
+                                  key={framework.value}
+                                  value={framework.value}
+                                  onSelect={(currentValue) => {
+                                    setLanguageValue(
+                                      currentValue === valueLanguage
+                                        ? ""
+                                        : currentValue
+                                    );
+                                    selectedCurrentLanguage.current =
+                                      currentValue;
+                                    setOpenLanguage(false);
+                                    //console.log(selectedCurrentTask.current);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      valueLanguage === framework.value
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {framework.label}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                </div>
+
+                <Accordion type="single" collapsible className="w-full ">
+                  <AccordionItem value="item-1">
+                    <AccordionTrigger>
+                      More...
+                      <PlusCircleIcon />
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="w-full">
+                        <div className="flex justify-center">
+                          <div className="grid gap-2 w-full  shadow-sm rounded-sm p-5 bg-gray-100">
+                            <p className=" font-bold text-xl ">Export:</p>
+                            <Separator />
+                            <Button
+                              variant="outline"
+                              className="hover:bg-green-100"
+                              onClick={() => {
+                                creatPDF(texte);
+                              }}
+                            >
+                              export to PDF.{" "}
+                              <FaRegFilePdf className="mx-2 text-red-600" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              className="hover:bg-green-100"
+                              onClick={() => downloadWordFile(texte)}
+                            >
+                              export to Docx.
+                              <TbFileTypeDocx className="mx-2 text-blue-600" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              className="hover:bg-green-100"
+                              onClick={() => handleDownloadTxt(texte)}
+                            >
+                              export to Txt.
+                              <GrDocumentTxt className="mx-2 text-gray-600" />
+                            </Button>
+                            <div>
+                              <Checkbox
+                                id="terms1"
+                                onCheckedChange={(e: boolean) => {
+                                  setShunkText(e);
+                                  //console.log(e);
+                                }}
+                                defaultChecked={false}
+                              />
+                              <br />
+                              <p className="text-gray-500">Shunk the text?</p>
+                            </div>
+                            <div>
+                              <Checkbox
+                                id="terms2"
+                                onCheckedChange={(e: boolean) => {
+                                  setAutoDetectLanguage(e);
+                                  if (!e) {
+                                    selectedCurrentLanguage.current = undefined;
+                                  } else {
+                                    selectedCurrentLanguage.current =
+                                      valueLanguage;
+                                  }
+                                  //console.log(e);
+                                }}
+                                defaultChecked={true}
+                              />
+                              <br />
+                              <p className="text-gray-500">
+                                Auto detect Language?
+                              </p>
+                            </div>
+                          </div>
+                        </div>{" "}
+                        <div className="flex justify-center mt-10">
+                          <div className="grid gap-2 w-full  shadow-sm rounded-sm p-5 bg-gray-100">
+                            <p className="text-center font-bold">Tools</p>
+                            <Separator />
+                            <Button
+                              onClick={() => router.push("/youtube-to-mp3")}
+                            >
+                              Youtube to mp3
+                            </Button>
+                            <Button>Tranlation</Button>
+                            <Button>Sound effect gen</Button>
+                          </div>
+                        </div>
+                        <br />
+                        <br />
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </div>
+            </div>{" "}
             <div className="m-4">
               {isshunktext && (
                 <div>
                   {items.map((value, index) => (
                     <div key={index + 1}>
                       <p className="my-1">
-                        Text-<span className="text-green-700">{index + 1}</span>
+                        Speaker
+                        <span className="mx-2">{value.shunkedTime}</span>
                       </p>
                       <Textarea
                         className="mt-2"
@@ -897,7 +1633,7 @@ stream.on("finish", function() {
               )}
             </Button>
             <div className="flex justify-center">
-              {isAudioUrlDispo && isVideo && (
+              {isAudioUrlDispo && isVideo && !youtubePlayerUrl && (
                 <div className=" w-4/5  p-1  rounded-t-md bg-slate-50">
                   <div className="flex justify-center m-3">
                     <ReactPlayer
@@ -926,7 +1662,11 @@ stream.on("finish", function() {
               )}
             </div>
           </div>
-
+          <div className="flex justify-center">
+            {isAudioUrlDispo && isVideo && youtubePlayerUrl && (
+              <ReactPlayer controls={true} url={youtubeUrl} />
+            )}
+          </div>{" "}
           <br />
           <br />
           <br />
@@ -935,30 +1675,11 @@ stream.on("finish", function() {
         </div>
 
         {isAudioUrlDispo && !isVideo && (
-          <div className="fixed bottom-0 w-4/5 bg-slate-200 p-10 rounded-t-md">
+          <div className="fixed bottom-0 w-full bg-slate-200 p-5 rounded-t-md">
             <Player src={audioUrl.current} height={40} />
           </div>
         )}
       </div>
-    </div>
-  );
+    );
+  }
 }
-/*
-<div>
-        <ReactPlayer
-          playing={videoIsplaying}
-          light={true}
-          playIcon={<PlayIcon />}
-          url="https://firebasestorage.googleapis.com/v0/b/audiscribe-942e8.appspot.com/o/users%2FqwhrQtz0c4bBGcYfxAMHlnokihb2%2Fdata%2FaudioToTranscribe%7D?alt=media&token=4b0c89b6-dede-4ea7-b081-a5346e737418"
-        />
-        <Button
-          variant="outline"
-          onClick={() => {
-            setVideoPlaying(!videoIsplaying);
-          }}
-        >
-          <PauseIcon />
-        </Button>
-      </div>
-
-*/
