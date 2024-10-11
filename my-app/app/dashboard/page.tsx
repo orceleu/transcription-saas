@@ -13,6 +13,7 @@ import { GrDocumentTxt } from "react-icons/gr";
 import { useDropzone } from "react-dropzone";
 import { signOut, onAuthStateChanged, User } from "firebase/auth";
 import { auth } from "@/app/firebase/config";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Accordion,
   AccordionContent,
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/accordion";
 import {
   ArrowBigLeft,
+  ArrowBigLeftIcon,
   AudioWaveformIcon,
   Check,
   CheckIcon,
@@ -28,6 +30,7 @@ import {
   ChevronsUpDown,
   CopyIcon,
   DeleteIcon,
+  DownloadIcon,
   Infinity,
   LoaderIcon,
   PauseIcon,
@@ -58,16 +61,24 @@ import {
 } from "firebase/storage";
 import { storage } from "@/app/firebase/config";
 import { jsPDF } from "jspdf";
-/*import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";*/
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import {
   Command,
   CommandEmpty,
@@ -106,7 +117,7 @@ import ReactPlayer from "react-player";
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";*/
-
+import { MdOutlineSubtitles } from "react-icons/md";
 import {
   Select,
   SelectContent,
@@ -198,7 +209,10 @@ export default function Dashboard() {
   const [openMobile, setOpenMobile] = useState(false);
   const [openLanguage, setOpenLanguage] = useState(false);
   const [openLanguageMobile, setOpenLanguageMobile] = useState(false);
-  const [openLang, setOpenLang] = useState(false);
+  const [openDesktopDialogYoutubemp3, setOpenDesktopDialogYoutubemp3] =
+    useState(false);
+  const [inputYoutubeMp3Download, setinputYoutubeMp3Download] = useState("");
+  const [isyoutubeMp3Submitted, setisyoutubeMp3Submitted] = useState(false);
   const [progresspercent, setProgresspercent] = useState(0);
   const [selectedTask, setSelectedTask] = useState("transcribe");
   const selectedCurrentTask = useRef("transcribe");
@@ -213,6 +227,8 @@ export default function Dashboard() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const audioUrl = useRef("");
+
+  const firstcheck = useRef(0);
   const isTranslante = useRef(false);
   const [isVideo, setIsVideo] = useState(false);
   const [isshunktext, setShunkText] = useState(false);
@@ -223,6 +239,26 @@ export default function Dashboard() {
   const setUsedTextLengh = useRef(0);
   const [checkingUrl, setCheckingYoutubeUrl] = useState(false);
   const [youtubePlayerUrl, setYoutubePlayerUrl] = useState(false);
+
+  // Ref pour l'input de texte
+  const inputRef = useRef(null);
+  // Ref pour le texte concaténé
+  const concatenatedTextRef = useRef<string>("");
+
+  // Fonction pour ajouter le texte saisi à la chaîne existante
+  const handleAddText = (text: string) => {
+    const inputText = text.trim();
+
+    if (inputText) {
+      // Ajoute le texte à la référence du texte concaténé
+      concatenatedTextRef.current = concatenatedTextRef.current
+        ? `${concatenatedTextRef.current}\n\n ${inputText}`
+        : inputText;
+
+      // Affiche le texte concaténé dans la console (ou mettez à jour l'affichage selon les besoins)
+      console.log(concatenatedTextRef.current);
+    }
+  };
   const frameworks = [
     {
       value: "transcribe",
@@ -335,6 +371,40 @@ export default function Dashboard() {
     { value: "yue", label: "Cantonese (粵語)" },
     { value: "zh", label: "Chinese (中文)" },
   ];
+
+  // Fonction pour convertir un nombre décimal en format SRT
+  const convertDecimalToSRTTime = (time: number) => {
+    const hours = Math.floor(time / 3600);
+    const minutes = Math.floor((time % 3600) / 60);
+    const seconds = Math.floor(time % 60);
+    const milliseconds = Math.round((time - Math.floor(time)) * 1000);
+
+    return `${hours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}:${seconds.toString().padStart(2, "0")},${milliseconds
+      .toString()
+      .padStart(3, "0")}`;
+  };
+
+  // Fonction pour convertir le texte au format (startTime, endTime) en SRT
+  const convertToSRT = (index: number, time: string, text: string) => {
+    const [start, end] = time.replace(/[()]/g, "").split(",").map(Number);
+    const startTime = convertDecimalToSRTTime(start);
+    const endTime = convertDecimalToSRTTime(end);
+    return `${index + 1}\n${startTime} --> ${endTime}\n${text}\n`;
+  };
+  // Fonction pour télécharger le fichier
+  const handleDownloadSrt = (content: string, filename: string) => {
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   const downloadWordFile = async (text: string) => {
     // Contenu du fichier Word
@@ -464,7 +534,7 @@ export default function Dashboard() {
     if (texte) {
       try {
         await navigator.clipboard.writeText(texte);
-        alert("Texte copié dans le presse-papier !");
+        alert("Copied to clipboard!");
       } catch (err) {
         console.error("Échec de la copie du texte : ", err);
       }
@@ -493,10 +563,19 @@ export default function Dashboard() {
     );
   };
   const handleActiveButton = () => {
-    if (youtubeUrl.length < 5) {
-      console.log("url too short ");
-    } else {
-      convertYoutubeMp3();
+    firstcheck.current += 1;
+    console.log(firstcheck.current);
+    if (firstcheck.current < 3) {
+      //console.log("not locked");
+
+      if (youtubeUrl.slice(0, 13) === "https://youtu") {
+        convertYoutubeMp3();
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Invalid link!.",
+        });
+      }
     }
   };
   useEffect(() => {
@@ -640,7 +719,50 @@ export default function Dashboard() {
       console.error(error);
     }
   };
+  const options2 = {
+    method: "GET",
+    url: "https://youtube-mp3-downloader2.p.rapidapi.com/ytmp3/ytmp3/",
+    params: {
+      url: inputYoutubeMp3Download,
+    },
+    headers: {
+      "x-rapidapi-key": "ea3eb66b12mshb3815582d59c0fcp1ef05fjsnc501524b1af5",
+      "x-rapidapi-host": "youtube-mp3-downloader2.p.rapidapi.com",
+    },
+  };
+  const downloadMp3FromYT = async () => {
+    if (inputYoutubeMp3Download.slice(0, 13) === "https://youtu") {
+      if (inputYoutubeMp3Download !== "") {
+        setisyoutubeMp3Submitted(true);
+        try {
+          const response = await axios.request(options2);
 
+          if (response) {
+            setisyoutubeMp3Submitted(false);
+            console.log(response.data.dlink);
+            router.push(response.data.dlink);
+          }
+        } catch (error) {
+          setisyoutubeMp3Submitted(false);
+          console.error(error);
+          toast({
+            variant: "destructive",
+            title: "Uh no ,something went wrong",
+          });
+        }
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Please add the link.",
+        });
+      }
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Invalid link!.",
+      });
+    }
+  };
   const submitSpeech = async () => {
     setSubmitted(true);
     try {
@@ -653,7 +775,7 @@ export default function Dashboard() {
           batch_size: 64,
           num_speakers: null,
           diarize: true,
-          language: selectedCurrentLanguage.current,
+          language: "es",
         },
         logs: false,
         /* onQueueUpdate: (update) => {
@@ -676,12 +798,18 @@ export default function Dashboard() {
           `first text: (${result.chunks[0].timestamp}) ${result.chunks[0].text}`
         );*/
         for (let i = 0; i < result.chunks.length; i++) {
-          console.log(
+          /*console.log(
             ` text-${i}: (${result.chunks[i].timestamp}) ${result.chunks[i].text}`
-          );
+          );*/
           const time = convertSecondsToMinutes(result.chunks[i].timestamp);
 
           addItem(`${result.chunks[i].text}`, `[${time}]`, i);
+          let resultInSrt = convertToSRT(
+            i,
+            `(${result.chunks[i].timestamp})`,
+            `${result.chunks[i].text}`
+          );
+          handleAddText(resultInSrt);
         }
 
         setSubmitted(false);
@@ -782,18 +910,7 @@ stream.on("finish", function() {
       }${remainingSeconds}`;
     }) as [string, string];
   };
-  const convertShunksTimeStampInMinute = (data: string): string => {
-    let first = Number(data.slice(0, 2));
-    let end = Number(data.slice(4, 5));
-    console.log(first);
-    console.log(end);
-    const minuteFirst = Math.floor(first / 60);
-    const remainingSecFirst = first % 60;
-    const minuteEnd = Math.floor(end / 60);
-    const remainingSecEnd = end % 60;
 
-    return `${minuteFirst}:${remainingSecFirst}, ${minuteEnd}:${remainingSecEnd}`;
-  };
   const onDrop = (acceptedFiles: any) => {
     // On prend le premier fichier s'il est accepté
     setUploadedFile(acceptedFiles[0]);
@@ -825,266 +942,269 @@ stream.on("finish", function() {
   function desktopScreen() {
     return (
       <div className="hidden lg:flex justify-center">
-        <div className="w-1/5">
-          <div className="bg-amber-100 p-2 shadow-sm">
-            <p className="font-bold text-center mt-5"> Setting</p>
-          </div>
-          <div className="flex justify-center mt-8">
-            <div className="grid gap-1 w-[200px] p-3">
-              <p className="text-center">3 transciptions left</p>
-              <Progress />
-              <Button>
-                <Infinity />
-                Go unlimited
-              </Button>
+        <ScrollArea className="h-[700px] w-1/5">
+          <div>
+            <div className="bg-amber-100 p-2 shadow-sm">
+              <p className="font-bold text-center mt-5"> Setting</p>
             </div>
-          </div>
-          <div className="flex justify-center">
-            <div className="grid gap-2 max-w-[200px]  shadow-sm rounded-sm p-5 bg-gray-100">
-              <p className=" font-bold text-xl ">Export:</p>
-              <Separator />
-              <Button
-                variant="outline"
-                className="hover:bg-green-100"
-                onClick={() => {
-                  creatPDF(texte);
-                }}
-              >
-                export to PDF. <FaRegFilePdf className="mx-2 text-red-600" />
-              </Button>
-              <Button
-                variant="outline"
-                className="hover:bg-green-100"
-                onClick={() => downloadWordFile(texte)}
-              >
-                export to Docx.
-                <TbFileTypeDocx className="mx-2 text-blue-600" />
-              </Button>
-              <Button
-                variant="outline"
-                className="hover:bg-green-100"
-                onClick={() => handleDownloadTxt(texte)}
-              >
-                export to Txt.
-                <GrDocumentTxt className="mx-2 text-gray-600" />
-              </Button>
-              <div>
-                <Checkbox
-                  id="terms1"
-                  onCheckedChange={(e: boolean) => {
-                    setShunkText(e);
-                    //console.log(e);
-                  }}
-                  defaultChecked={false}
-                />
-                <br />
-                <p className="text-gray-500">Shunk the text?</p>
-              </div>
-              <div>
-                <Checkbox
-                  id="terms2"
-                  onCheckedChange={(e: boolean) => {
-                    setAutoDetectLanguage(e);
-                    if (!e) {
-                      selectedCurrentLanguage.current = undefined;
-                    } else {
-                      selectedCurrentLanguage.current = valueLanguage;
-                    }
-                    //console.log(e);
-                  }}
-                  defaultChecked={true}
-                />
-                <br />
-                <p className="text-gray-500">Auto detect Language?</p>
-              </div>
-            </div>
-          </div>{" "}
-          <div className="flex justify-center mt-10">
-            <div className="grid gap-2 max-w-[200px]  shadow-sm rounded-sm p-5 bg-gray-100">
-              <p className="text-center font-bold">Tools</p>
-              <Separator />
-              <Button onClick={() => router.push("/youtube-to-mp3")}>
-                Youtube to mp3
-              </Button>
-              <Button>Tranlation</Button>
-              <Button>Sound effect gen</Button>
-            </div>
-          </div>
-          <br />
-          <br />
-          <div className="fixed top-2 end-2 m-10">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  {" "}
-                  {userName ? <p>{userName}</p> : <p>My...</p>}
+            <div className="flex justify-center mt-8">
+              <div className="grid gap-1 w-[200px] p-3">
+                <p className="text-center">3 transciptions left</p>
+                <Progress />
+                <Button>
+                  <Infinity />
+                  Go unlimited
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56">
-                <DropdownMenuLabel>{userEmail}</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem>
-                    Profile
-                    <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      router.push("/billing");
+              </div>
+            </div>
+            <div className="flex justify-center">
+              <div className="grid gap-2 max-w-[200px]  shadow-sm rounded-sm p-5 bg-gray-100">
+                <p className=" font-bold text-xl ">Export:</p>
+                <Separator />
+                <Button
+                  variant="outline"
+                  className="hover:bg-green-100"
+                  onClick={() => {
+                    creatPDF(texte);
+                  }}
+                >
+                  export to PDF. <FaRegFilePdf className="mx-2 text-red-600" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="hover:bg-green-100"
+                  onClick={() => {
+                    if (texte) {
+                      downloadWordFile(texte);
+                    } else {
+                      toast({
+                        variant: "destructive",
+                        title: "Text not found.",
+                      });
+                    }
+                  }}
+                >
+                  export to Docx.
+                  <TbFileTypeDocx className="mx-2 text-blue-600" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="hover:bg-green-100"
+                  onClick={() => handleDownloadTxt(texte)}
+                >
+                  export to Txt.
+                  <GrDocumentTxt className="mx-2 text-gray-600" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="hover:bg-green-100"
+                  onClick={() => {
+                    if (concatenatedTextRef.current) {
+                      handleDownloadSrt(
+                        concatenatedTextRef.current,
+                        "srtfile.srt"
+                      );
+                    } else {
+                      toast({
+                        variant: "destructive",
+                        title: "Text not found.",
+                      });
+                    }
+                  }}
+                >
+                  export to Srt.
+                  <MdOutlineSubtitles className="mx-2 text-gray-600" />
+                </Button>
+                <div>
+                  <Checkbox
+                    id="terms1"
+                    onCheckedChange={(e: boolean) => {
+                      setShunkText(e);
+                      //console.log(e);
                     }}
-                  >
-                    Billing
-                    <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      // cancelSubscription();
-                    }}
-                  >
-                    Cancel subscription
-                    <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-
-                <DropdownMenuItem>Support</DropdownMenuItem>
-                <DropdownMenuItem disabled>API</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logOut}>
-                  Log out
-                  <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-
-        <div className="w-4/5 flex justify-center">
-          <Separator orientation="vertical" />
-          <div className="w-full mx-3 mt-5">
-            <p className="text-3xl font bold m-10 text-center fixed top-2">
-              AudiScribe
-            </p>
-            <div className="grid gap-5">
-              <div className="grid gap-1">
-                <div className="flex justify-center">
-                  <div
-                    {...getRootProps({ style })}
-                    className="mt-[100px] mb-2 max-w-[400px]"
-                  >
-                    <input {...getInputProps()} />
-                    {uploadedFile ? (
-                      <div>
-                        <h4 className="text-center">Fichier uploadé:</h4>
-                        <p className="text-center">{uploadedFile.name}</p>
-                      </div>
-                    ) : (
-                      <div className="grid gap-2">
-                        <div className="flex justify-center">
-                          <UploadCloud />
-                        </div>
-                        <p className="text-center">
-                          Drag 'n' drop audio /video files here , or click to
-                          select files
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                    defaultChecked={false}
+                  />
+                  <br />
+                  <p className="text-gray-500">Shunk the text?</p>
                 </div>
-                <p className="text-center text-gray-600">-----Or-----</p>
-                <div className="flex justify-center">
-                  <div className="flex items-center gap-3">
+                <div>
+                  <Checkbox
+                    id="terms2"
+                    onCheckedChange={(e: boolean) => {
+                      setAutoDetectLanguage(e);
+                      if (!e) {
+                        selectedCurrentLanguage.current = undefined;
+                      } else {
+                        selectedCurrentLanguage.current = valueLanguage;
+                      }
+                      //console.log(e);
+                    }}
+                    defaultChecked={true}
+                  />
+                  <br />
+                  <p className="text-gray-500">Auto detect Language?</p>
+                </div>
+              </div>
+            </div>{" "}
+            <div className="flex justify-center mt-10">
+              <div className="grid gap-2 max-w-[200px]  shadow-sm rounded-sm p-5 bg-gray-100">
+                <p className="text-center font-bold">Tools</p>
+                <Separator />
+                <Dialog
+                  open={openDesktopDialogYoutubemp3}
+                  onOpenChange={setOpenDesktopDialogYoutubemp3}
+                >
+                  <DialogTrigger asChild>
+                    <Button variant="outline">Youtube to mp3</Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Youtube mp3 downloader</DialogTitle>
+                      <DialogDescription>
+                        Past youtube link below and get the audio file.
+                      </DialogDescription>
+                    </DialogHeader>
                     <Input
-                      className="max-w-[500px] min-w-[400px]"
-                      placeholder="Paste youtube link Here..."
-                      value={youtubeUrl}
-                      onChange={(e) => {
-                        setYoutubeUrl(e.target.value);
-                      }}
+                      placeholder="Youtube link..."
+                      onChange={(e) =>
+                        setinputYoutubeMp3Download(e.target.value)
+                      }
+                      value={inputYoutubeMp3Download}
                     />
-                    <Button
-                      variant="ghost"
+                    <Button onClick={downloadMp3FromYT}>
+                      {isyoutubeMp3Submitted ? (
+                        <ReloadIcon className="animate-spin size-5" />
+                      ) : (
+                        <DownloadIcon />
+                      )}
+                    </Button>
+                  </DialogContent>
+                </Dialog>
+                <Button>Tranlation</Button>
+              </div>
+            </div>
+            <br />
+            <br />
+            <div className="fixed top-2 end-2 m-10">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    {" "}
+                    {userName ? <p>{userName}</p> : <p>My...</p>}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuLabel>{userEmail}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem>
+                      Profile
+                      <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
                       onClick={() => {
-                        setYoutubeUrl("");
+                        router.push("/billing");
                       }}
                     >
-                      <DeleteIcon />
-                    </Button>
-                    <div>
-                      {checkingUrl ? (
-                        <>
-                          <LoaderIcon className="animate-spin size-5" />
-                        </>
-                      ) : null}
+                      Billing
+                      <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        // cancelSubscription();
+                      }}
+                    >
+                      Cancel subscription
+                      <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem>Support</DropdownMenuItem>
+                  <DropdownMenuItem disabled>API</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logOut}>
+                    Log out
+                    <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </ScrollArea>
+        <ScrollArea className="h-[700px] w-4/5">
+          <div className="flex justify-center">
+            <Separator orientation="vertical" />
+            <div className="w-full mx-3 mt-5">
+              <p className="text-3xl font bold m-10 text-center fixed top-2">
+                AudiScribe
+              </p>
+              <div className="grid gap-5">
+                <div className="grid gap-1">
+                  <div className="flex justify-center">
+                    <div
+                      {...getRootProps({ style })}
+                      className="mt-[100px] mb-2 max-w-[400px]"
+                    >
+                      <input {...getInputProps()} />
+                      {uploadedFile ? (
+                        <div>
+                          <h4 className="text-center">Fichier uploadé:</h4>
+                          <p className="text-center">{uploadedFile.name}</p>
+                        </div>
+                      ) : (
+                        <div className="grid gap-2">
+                          <div className="flex justify-center">
+                            <UploadCloud />
+                          </div>
+                          <p className="text-center">
+                            Drag 'n' drop audio /video files here , or click to
+                            select files
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
-
-                <div className="mb-4 mt-1 ml-4">
+                  <p className="text-center text-gray-600">-----Or-----</p>
                   <div className="flex justify-center">
-                    {uploadIsLoaded ? (
-                      <Progress value={progresspercent} className="w-[60%]" />
-                    ) : null}
-                  </div>
-                  <br />
-                  <br />
-                  <div className="flex items-center gap-5">
-                    <Popover open={open} onOpenChange={setOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          aria-expanded={open}
-                          className="w-[200px] justify-between"
-                        >
-                          {value
-                            ? frameworks.find(
-                                (framework) => framework.value === value
-                              )?.label
-                            : "Select task..."}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[200px] p-0">
-                        <Command>
-                          <CommandInput placeholder="Search task..." />
-                          <CommandList>
-                            <CommandEmpty>No task found.</CommandEmpty>
-                            <CommandGroup>
-                              {frameworks.map((framework) => (
-                                <CommandItem
-                                  key={framework.value}
-                                  value={framework.value}
-                                  onSelect={(currentValue) => {
-                                    setValue(
-                                      currentValue === value ? "" : currentValue
-                                    );
-                                    selectedCurrentTask.current = currentValue;
-                                    setOpen(false);
-                                    console.log(selectedCurrentTask.current);
-                                  }}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      value === framework.value
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                  />
-                                  {framework.label}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>{" "}
-                    {!autoDetectLanguage && (
-                      <Popover
-                        open={openLanguage}
-                        onOpenChange={setOpenLanguage}
+                    <div className="flex items-center gap-3">
+                      <Input
+                        className="max-w-[500px] min-w-[400px]"
+                        placeholder="Paste youtube link Here..."
+                        value={youtubeUrl}
+                        onChange={(e) => {
+                          setYoutubeUrl(e.target.value);
+                        }}
+                      />
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setYoutubeUrl("");
+                          firstcheck.current = 0;
+                        }}
                       >
+                        <DeleteIcon />
+                      </Button>
+                      <div>
+                        {checkingUrl ? (
+                          <>
+                            <LoaderIcon className="animate-spin size-5" />
+                          </>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mb-4 mt-1 ml-4">
+                    <div className="flex justify-center">
+                      {uploadIsLoaded ? (
+                        <Progress value={progresspercent} className="w-[60%]" />
+                      ) : null}
+                    </div>
+                    <br />
+                    <br />
+                    <div className="flex items-center gap-5">
+                      <Popover open={open} onOpenChange={setOpen}>
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
@@ -1092,41 +1212,40 @@ stream.on("finish", function() {
                             aria-expanded={open}
                             className="w-[200px] justify-between"
                           >
-                            {valueLanguage
-                              ? language.find(
-                                  (framework) =>
-                                    framework.value === valueLanguage
+                            {value
+                              ? frameworks.find(
+                                  (framework) => framework.value === value
                                 )?.label
-                              : "Select Language..."}
+                              : "Select task..."}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-[200px] p-0">
                           <Command>
-                            <CommandInput placeholder="Search Language..." />
+                            <CommandInput placeholder="Search task..." />
                             <CommandList>
-                              <CommandEmpty>Language not found.</CommandEmpty>
+                              <CommandEmpty>No task found.</CommandEmpty>
                               <CommandGroup>
-                                {language.map((framework) => (
+                                {frameworks.map((framework) => (
                                   <CommandItem
                                     key={framework.value}
                                     value={framework.value}
                                     onSelect={(currentValue) => {
-                                      setLanguageValue(
-                                        currentValue === valueLanguage
+                                      setValue(
+                                        currentValue === value
                                           ? ""
                                           : currentValue
                                       );
-                                      selectedCurrentLanguage.current =
+                                      selectedCurrentTask.current =
                                         currentValue;
-                                      setOpenLanguage(false);
-                                      //console.log(selectedCurrentTask.current);
+                                      setOpen(false);
+                                      console.log(selectedCurrentTask.current);
                                     }}
                                   >
                                     <Check
                                       className={cn(
                                         "mr-2 h-4 w-4",
-                                        valueLanguage === framework.value
+                                        value === framework.value
                                           ? "opacity-100"
                                           : "opacity-0"
                                       )}
@@ -1138,116 +1257,180 @@ stream.on("finish", function() {
                             </CommandList>
                           </Command>
                         </PopoverContent>
-                      </Popover>
-                    )}
+                      </Popover>{" "}
+                      {!autoDetectLanguage && (
+                        <Popover
+                          open={openLanguage}
+                          onOpenChange={setOpenLanguage}
+                        >
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={open}
+                              className="w-[200px] justify-between"
+                            >
+                              {valueLanguage
+                                ? language.find(
+                                    (framework) =>
+                                      framework.value === valueLanguage
+                                  )?.label
+                                : "Select Language..."}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[200px] p-0">
+                            <Command>
+                              <CommandInput placeholder="Search Language..." />
+                              <CommandList>
+                                <CommandEmpty>Language not found.</CommandEmpty>
+                                <CommandGroup>
+                                  {language.map((framework) => (
+                                    <CommandItem
+                                      key={framework.value}
+                                      value={framework.value}
+                                      onSelect={(currentValue) => {
+                                        setLanguageValue(
+                                          currentValue === valueLanguage
+                                            ? ""
+                                            : currentValue
+                                        );
+                                        selectedCurrentLanguage.current =
+                                          currentValue;
+                                        setOpenLanguage(false);
+                                        //console.log(selectedCurrentTask.current);
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          valueLanguage === framework.value
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                      {framework.label}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                    </div>
                   </div>
+                </div>{" "}
+                <div className="m-4">
+                  {isshunktext && (
+                    <div>
+                      {items.map((value, index) => (
+                        <div key={index + 1}>
+                          <p className="my-1">
+                            Speaker
+                            <span className="mx-2">{value.shunkedTime}</span>
+                          </p>
+                          <Textarea
+                            className="mt-2"
+                            placeholder="Shunked text "
+                            key={index}
+                            value={value.texte}
+                            onChange={(e) => modifyText(index, e.target.value)}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {!isshunktext && (
+                    <Textarea
+                      placeholder="result"
+                      className="h-[100px]"
+                      value={texte}
+                      onChange={(e) => {
+                        setText(e.target.value);
+                      }}
+                      disabled={false}
+                    />
+                  )}
+                  <Button
+                    variant="outline"
+                    className="mt-4"
+                    onClick={handleCopy}
+                  >
+                    <CopyIcon />
+                  </Button>
                 </div>
-              </div>{" "}
-              <div className="m-4">
-                {isshunktext && (
-                  <div>
-                    {items.map((value, index) => (
-                      <div key={index + 1}>
-                        <p className="my-1">
-                          Speaker
-                          <span className="mx-2">{value.shunkedTime}</span>
-                        </p>
-                        <Textarea
-                          className="mt-2"
-                          placeholder="Shunked text "
-                          key={index}
-                          value={value.texte}
-                          onChange={(e) => modifyText(index, e.target.value)}
+                <Button
+                  className="m-4"
+                  onClick={() => {
+                    if (uploadedFile) {
+                      //handleSubmit(uploadedFile);
+                      submitSpeech();
+                    } else {
+                      alert("file not found!");
+                    }
+                  }}
+                  disabled={isSubmitted}
+                >
+                  {isSubmitted ? (
+                    <LoaderIcon className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <div className="flex items-center">
+                      <LoopIcon className="m-2" />
+                      <p>Retranscribe</p>
+                    </div>
+                  )}
+                </Button>
+                <div className="flex justify-center">
+                  {isAudioUrlDispo && isVideo && !youtubePlayerUrl && (
+                    <div className=" w-4/5  p-1  rounded-t-md bg-slate-50">
+                      <div className="flex justify-center m-3">
+                        <ReactPlayer
+                          width="100%"
+                          height="100%"
+                          playing={videoIsplaying}
+                          light={false}
+                          url={audioUrl.current}
+                          onDuration={(e) => console.log(`duration:${e}`)}
+                          onSeek={(e) => console.log("onSeek", e)}
+                          onProgress={(e) => console.log(`onprogress: ${e}`)}
                         />
                       </div>
-                    ))}
-                  </div>
-                )}
 
-                {!isshunktext && (
-                  <Textarea
-                    placeholder="result"
-                    className="h-[100px]"
-                    value={texte}
-                    onChange={(e) => {
-                      setText(e.target.value);
-                    }}
-                    disabled={false}
-                  />
-                )}
-                <Button variant="outline" className="mt-4" onClick={handleCopy}>
-                  <CopyIcon />
-                </Button>
+                      <div className="flex justify-center m-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setVideoPlaying(!videoIsplaying);
+                          }}
+                        >
+                          {videoIsplaying ? <PauseIcon /> : <PlayIcon />}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-              <Button
-                className="m-4"
-                onClick={() => {
-                  if (uploadedFile) {
-                    //handleSubmit(uploadedFile);
-                    submitSpeech();
-                  } else {
-                    alert("file not found!");
-                  }
-                }}
-                disabled={isSubmitted}
-              >
-                {isSubmitted ? (
-                  <LoaderIcon className="h-5 w-5 animate-spin" />
-                ) : (
-                  <div className="flex items-center">
-                    <LoopIcon className="m-2" />
-                    <p>Retranscribe</p>
-                  </div>
-                )}
-              </Button>
               <div className="flex justify-center">
-                {isAudioUrlDispo && isVideo && !youtubePlayerUrl && (
-                  <div className=" w-4/5  p-1  rounded-t-md bg-slate-50">
-                    <div className="flex justify-center m-3">
-                      <ReactPlayer
-                        width="100%"
-                        height="100%"
-                        playing={videoIsplaying}
-                        light={false}
-                        url={audioUrl.current}
-                        onDuration={(e) => console.log(`duration:${e}`)}
-                        onSeek={(e) => console.log("onSeek", e)}
-                        onProgress={(e) => console.log(`onprogress: ${e}`)}
-                      />
-                    </div>
-
-                    <div className="flex justify-center m-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setVideoPlaying(!videoIsplaying);
-                        }}
-                      >
-                        {videoIsplaying ? <PauseIcon /> : <PlayIcon />}
-                      </Button>
-                    </div>
-                  </div>
+                {isAudioUrlDispo && isVideo && youtubePlayerUrl && (
+                  <ReactPlayer controls={true} url={youtubeUrl} />
                 )}
-              </div>
+              </div>{" "}
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
             </div>
-            <div className="flex justify-center">
-              {isAudioUrlDispo && isVideo && youtubePlayerUrl && (
-                <ReactPlayer controls={true} url={youtubeUrl} />
-              )}
-            </div>{" "}
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-          </div>
 
-          {isAudioUrlDispo && !isVideo && (
-            <div className="fixed bottom-0 w-4/5 bg-slate-200 p-10 rounded-t-md">
-              <Player src={audioUrl.current} height={40} />
-            </div>
-          )}
-        </div>
+            {isAudioUrlDispo && !isVideo && (
+              <div className="fixed bottom-0 w-4/5 bg-slate-200 p-10 rounded-t-md">
+                <Player src={audioUrl.current} height={40} />
+              </div>
+            )}
+          </div>
+        </ScrollArea>
       </div>
     );
   }
@@ -1346,6 +1529,7 @@ stream.on("finish", function() {
                       variant="ghost"
                       onClick={() => {
                         setYoutubeUrl("");
+                        firstcheck.current = 0;
                       }}
                     >
                       <DeleteIcon />
@@ -1507,7 +1691,16 @@ stream.on("finish", function() {
                             <Button
                               variant="outline"
                               className="hover:bg-green-100"
-                              onClick={() => downloadWordFile(texte)}
+                              onClick={() => {
+                                if (texte) {
+                                  downloadWordFile(texte);
+                                } else {
+                                  toast({
+                                    variant: "destructive",
+                                    title: "Text not found.",
+                                  });
+                                }
+                              }}
                             >
                               export to Docx.
                               <TbFileTypeDocx className="mx-2 text-blue-600" />
@@ -1519,6 +1712,26 @@ stream.on("finish", function() {
                             >
                               export to Txt.
                               <GrDocumentTxt className="mx-2 text-gray-600" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              className="hover:bg-green-100"
+                              onClick={() => {
+                                if (concatenatedTextRef.current) {
+                                  handleDownloadSrt(
+                                    concatenatedTextRef.current,
+                                    "srtfile.srt"
+                                  );
+                                } else {
+                                  toast({
+                                    variant: "destructive",
+                                    title: "Text not found.",
+                                  });
+                                }
+                              }}
+                            >
+                              export to Srt.
+                              <MdOutlineSubtitles className="mx-2 text-gray-600" />
                             </Button>
                             <div>
                               <Checkbox
@@ -1564,7 +1777,6 @@ stream.on("finish", function() {
                               Youtube to mp3
                             </Button>
                             <Button>Tranlation</Button>
-                            <Button>Sound effect gen</Button>
                           </div>
                         </div>
                         <br />
