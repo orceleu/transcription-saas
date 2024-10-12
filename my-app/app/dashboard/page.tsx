@@ -211,6 +211,8 @@ export default function Dashboard() {
   const [openLanguageMobile, setOpenLanguageMobile] = useState(false);
   const [openDesktopDialogYoutubemp3, setOpenDesktopDialogYoutubemp3] =
     useState(false);
+  const [openMobileDialogYoutubemp3, setOpenMobileDialogYoutubemp3] =
+    useState(false);
   const [inputYoutubeMp3Download, setinputYoutubeMp3Download] = useState("");
   const [isyoutubeMp3Submitted, setisyoutubeMp3Submitted] = useState(false);
   const [progresspercent, setProgresspercent] = useState(0);
@@ -266,7 +268,7 @@ export default function Dashboard() {
     },
     {
       value: "translate",
-      label: "Translation to (en)",
+      label: "Translation to -->",
     },
   ];
   const language = [
@@ -769,13 +771,13 @@ export default function Dashboard() {
       const result: any = await fal.subscribe("fal-ai/whisper", {
         input: {
           audio_url: audioUrl.current,
-          task: selectedCurrentTask.current,
+          task: "transcribe",
           chunk_level: "segment",
           version: "3",
           batch_size: 64,
           num_speakers: null,
           diarize: true,
-          language: "es",
+          language: selectedCurrentLanguage.current,
         },
         logs: false,
         /* onQueueUpdate: (update) => {
@@ -1085,61 +1087,64 @@ stream.on("finish", function() {
             </div>
             <br />
             <br />
-            <div className="fixed top-2 end-2 m-10">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline">
-                    {" "}
-                    {userName ? <p>{userName}</p> : <p>My...</p>}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
-                  <DropdownMenuLabel>{userEmail}</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem>
-                      Profile
-                      <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => {
-                        router.push("/billing");
-                      }}
-                    >
-                      Billing
-                      <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => {
-                        // cancelSubscription();
-                      }}
-                    >
-                      Cancel subscription
-                      <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                  <DropdownMenuSeparator />
-
-                  <DropdownMenuItem>Support</DropdownMenuItem>
-                  <DropdownMenuItem disabled>API</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={logOut}>
-                    Log out
-                    <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
           </div>
         </ScrollArea>
-        <ScrollArea className="h-[700px] w-4/5">
-          <div className="flex justify-center">
-            <Separator orientation="vertical" />
+
+        <div className="flex justify-center w-4/5">
+          <Separator orientation="vertical" />
+          <ScrollArea className="h-[700px] w-full">
             <div className="w-full mx-3 mt-5">
-              <p className="text-3xl font bold m-10 text-center fixed top-2">
-                AudiScribe
-              </p>
               <div className="grid gap-5">
+                <div className="flex justify-between p-12">
+                  <p className="text-3xl font-bold underline  text-center ">
+                    AudiScribe
+                  </p>
+                  <div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline">
+                          {" "}
+                          {userName ? <p>{userName}</p> : <p>My...</p>}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56">
+                        <DropdownMenuLabel>{userEmail}</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                          <DropdownMenuItem>
+                            Profile
+                            <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              router.push("/billing");
+                            }}
+                          >
+                            Billing
+                            <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              // cancelSubscription();
+                            }}
+                          >
+                            Cancel subscription
+                            <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+                          </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+
+                        <DropdownMenuItem>Support</DropdownMenuItem>
+                        <DropdownMenuItem disabled>API</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={logOut}>
+                          Log out
+                          <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
                 <div className="grid gap-1">
                   <div className="flex justify-center">
                     <div
@@ -1236,10 +1241,16 @@ stream.on("finish", function() {
                                           ? ""
                                           : currentValue
                                       );
-                                      selectedCurrentTask.current =
-                                        currentValue;
+
+                                      if (currentValue == "translate") {
+                                        setAutoDetectLanguage(false);
+                                      } else {
+                                        selectedCurrentLanguage.current =
+                                          undefined;
+                                        setAutoDetectLanguage(true);
+                                      }
                                       setOpen(false);
-                                      console.log(selectedCurrentTask.current);
+                                      //console.log(selectedCurrentTask.current);
                                     }}
                                   >
                                     <Check
@@ -1326,9 +1337,11 @@ stream.on("finish", function() {
                     <div>
                       {items.map((value, index) => (
                         <div key={index + 1}>
-                          <p className="my-1">
+                          <p key={index + 2} className="my-1">
                             Speaker
-                            <span className="mx-2">{value.shunkedTime}</span>
+                            <span key={index + 3} className="mx-2">
+                              {value.shunkedTime}
+                            </span>
                           </p>
                           <Textarea
                             className="mt-2"
@@ -1423,14 +1436,13 @@ stream.on("finish", function() {
               <br />
               <br />
             </div>
-
-            {isAudioUrlDispo && !isVideo && (
-              <div className="fixed bottom-0 w-4/5 bg-slate-200 p-10 rounded-t-md">
-                <Player src={audioUrl.current} height={40} />
-              </div>
-            )}
-          </div>
-        </ScrollArea>
+          </ScrollArea>
+          {isAudioUrlDispo && !isVideo && (
+            <div className="fixed bottom-0 w-4/5 bg-slate-200 p-10 rounded-t-md">
+              <Player src={audioUrl.current} height={40} />
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -1584,9 +1596,15 @@ stream.on("finish", function() {
                                   setValue(
                                     currentValue === value ? "" : currentValue
                                   );
-                                  selectedCurrentTask.current = currentValue;
+                                  // selectedCurrentTask.current = currentValue;
+                                  if (currentValue == "translate") {
+                                    setAutoDetectLanguage(false);
+                                  } else {
+                                    selectedCurrentLanguage.current = undefined;
+                                    setAutoDetectLanguage(true);
+                                  }
                                   setOpen(false);
-                                  console.log(selectedCurrentTask.current);
+                                  //console.log(selectedCurrentTask.current);
                                 }}
                               >
                                 <Check
@@ -1643,6 +1661,7 @@ stream.on("finish", function() {
                                     );
                                     selectedCurrentLanguage.current =
                                       currentValue;
+
                                     setOpenLanguage(false);
                                     //console.log(selectedCurrentTask.current);
                                   }}
@@ -1771,11 +1790,48 @@ stream.on("finish", function() {
                           <div className="grid gap-2 w-full  shadow-sm rounded-sm p-5 bg-gray-100">
                             <p className="text-center font-bold">Tools</p>
                             <Separator />
-                            <Button
-                              onClick={() => router.push("/youtube-to-mp3")}
+                            <Drawer
+                              open={openMobileDialogYoutubemp3}
+                              onOpenChange={setOpenMobileDialogYoutubemp3}
                             >
-                              Youtube to mp3
-                            </Button>
+                              <DrawerTrigger asChild>
+                                <Button variant="outline">
+                                  Youtube to mp3
+                                </Button>
+                              </DrawerTrigger>
+                              <DrawerContent>
+                                <DrawerHeader className="text-left">
+                                  <DrawerTitle>
+                                    Youtube to mp3 downloader.
+                                  </DrawerTitle>
+                                  <DrawerDescription>
+                                    Past youtube link below to download it.
+                                  </DrawerDescription>
+                                </DrawerHeader>
+                                <div className="grid gap-5 p-5 m-4">
+                                  <Input
+                                    placeholder="Youtube link..."
+                                    onChange={(e) =>
+                                      setinputYoutubeMp3Download(e.target.value)
+                                    }
+                                    value={inputYoutubeMp3Download}
+                                  />
+                                  <Button onClick={downloadMp3FromYT}>
+                                    {isyoutubeMp3Submitted ? (
+                                      <ReloadIcon className="animate-spin size-5" />
+                                    ) : (
+                                      <DownloadIcon />
+                                    )}
+                                  </Button>
+                                </div>
+
+                                <DrawerFooter className="pt-2">
+                                  <DrawerClose asChild>
+                                    <Button variant="outline">Cancel</Button>
+                                  </DrawerClose>
+                                </DrawerFooter>
+                              </DrawerContent>
+                            </Drawer>
                             <Button>Tranlation</Button>
                           </div>
                         </div>

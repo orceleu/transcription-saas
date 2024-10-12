@@ -381,7 +381,7 @@ export default function Home() {
               <div className="flex items-center gap-3">
                 <MdDoNotDisturb className=" text-red-400 size-6" />
                 <p className="text-white text-center text-2xl">
-                  export to PDF,DOCX,TXT
+                  export to PDF,DOCX,TXT,SRT
                 </p>
               </div>
               <div className="flex justify-center mt-10">
@@ -439,7 +439,7 @@ export default function Home() {
               <div className="flex items-center gap-3">
                 <Check className="text-blue-200" />
                 <p className="text-white text-center text-2xl">
-                  export to PDF,DOCX,TXT
+                  export to PDF,DOCX,TXT,SRT
                 </p>
               </div>
               <div className="flex justify-center mt-10">
