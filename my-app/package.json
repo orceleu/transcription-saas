@@ -41,6 +41,7 @@
     "react-icons": "^5.3.0",
     "react-player": "^2.16.0",
     "react-simple-player": "^1.1.0",
+    "stripe": "^17.2.0",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.0.0"

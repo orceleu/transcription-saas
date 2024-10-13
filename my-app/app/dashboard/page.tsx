@@ -12,7 +12,7 @@ import { TbFileTypeDocx } from "react-icons/tb";
 import { GrDocumentTxt } from "react-icons/gr";
 import { useDropzone } from "react-dropzone";
 import { signOut, onAuthStateChanged, User } from "firebase/auth";
-import { auth } from "@/app/firebase/config";
+import { auth, db } from "@/app/firebase/config";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Accordion,
@@ -31,11 +31,13 @@ import {
   CopyIcon,
   DeleteIcon,
   DownloadIcon,
+  Edit2Icon,
   Infinity,
   LoaderIcon,
   PauseIcon,
   PlayIcon,
   PlusCircleIcon,
+  SearchIcon,
   Settings,
   TrashIcon,
   UploadCloud,
@@ -141,6 +143,8 @@ import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { IoReturnDownBack } from "react-icons/io5";
 //import { auth, storage } from "../firebase/config";
 /*import {
   ref,
@@ -202,7 +206,7 @@ export default function Dashboard() {
   const [texte, setText] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [changed, setChange] = useState(false);
-  const selectedCurrentLanguage = useRef<LanguageType>("en");
+  const selectedCurrentLanguage = useRef<LanguageType>(undefined);
   const [isSubmitted, setSubmitted] = useState(false);
   const [uploadIsLoaded, setUploadLoaded] = useState(false);
   const [open, setOpen] = useState(false);
@@ -229,7 +233,8 @@ export default function Dashboard() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const audioUrl = useRef("");
-
+  const [usedCharCurrent, setUsedCharCurrent] = useState(0);
+  const [having_plan, setHavingPlan] = useState(true);
   const firstcheck = useRef(0);
   const isTranslante = useRef(false);
   const [isVideo, setIsVideo] = useState(false);
@@ -241,7 +246,21 @@ export default function Dashboard() {
   const setUsedTextLengh = useRef(0);
   const [checkingUrl, setCheckingYoutubeUrl] = useState(false);
   const [youtubePlayerUrl, setYoutubePlayerUrl] = useState(false);
+  const [isSearching, setisSearching] = useState(true);
+  const [paragraphs, setParagraphs] = useState<string[]>([]);
+  const MAX_LENGTH = 300;
+  const splitParagraphe = () => {
+    if (texte.length > 0) {
+      const splitParagraphs =
+        texte.length > MAX_LENGTH
+          ? texte.match(/.{1,500}(\s|$)/g) || []
+          : [texte];
 
+      setParagraphs(splitParagraphs);
+    } else {
+      setParagraphs([]);
+    }
+  };
   // Ref pour l'input de texte
   const inputRef = useRef(null);
   // Ref pour le texte concaténé
@@ -261,6 +280,28 @@ export default function Dashboard() {
       console.log(concatenatedTextRef.current);
     }
   };
+
+  const [searchTerm, setSearchTerm] = useState<string>("");
+
+  const highlightText = (text: string, highlight: string) => {
+    if (!highlight) {
+      return text;
+    }
+
+    const regex = new RegExp(`(${highlight})`, "gi");
+    const parts = text.split(regex);
+
+    return parts.map((part, index) =>
+      part.toLowerCase() === highlight.toLowerCase() ? (
+        <span key={index} className="bg-yellow-200">
+          {part}
+        </span>
+      ) : (
+        part
+      )
+    );
+  };
+
   const frameworks = [
     {
       value: "transcribe",
@@ -688,7 +729,32 @@ export default function Dashboard() {
       }, 500);
     }
   }, [progresspercent]);
-
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        const name = currentUser?.displayName;
+        const userEmail = currentUser?.email;
+        const uiid = currentUser?.uid;
+        setUserEmail(userEmail);
+        setUserid(uiid);
+        console.log(currentUser?.displayName);
+        if (name !== undefined && name !== null) {
+          setUserName(name);
+        } else {
+        }
+      }
+      if (currentUser == null) {
+        //router.push("/");
+      }
+    });
+    return () => unsubscribe();
+  }, [user]);
+  useEffect(() => {
+    if (texte) {
+      splitParagraphe();
+    }
+  }, [texte]);
   const options = {
     method: "GET",
     url: "https://youtube-mp3-downloader2.p.rapidapi.com/ytmp3/ytmp3/",
@@ -827,6 +893,80 @@ export default function Dashboard() {
     }
   };
 
+  const addPlan = async (
+    stripe_subscription_id: string,
+    stripe_customer_id: string,
+    userId: string
+  ) => {
+    try {
+      await setDoc(doc(db, "usersPlan", userId), {
+        is_pro: true,
+        subscription_id: stripe_subscription_id,
+        customer_id: stripe_customer_id,
+        time_used: 40000,
+      });
+      console.log("inserted to userPlan! .");
+    } catch (e) {
+      console.error("Error:", e);
+    }
+  };
+  const addUsedChar = async () => {
+    try {
+      await updateDoc(doc(db, "usersPlan", userId), {
+        used_char: usedCharCurrent - setUsedTextLengh.current,
+      });
+
+      console.log("great! .");
+    } catch (e) {
+      console.error("Error:", e);
+    }
+  };
+  /*
+is_pro,
+time_used,
+subscription_Id
+
+*/
+  const fetchPost = async () => {
+    const docRef = doc(db, "usersPlan", userId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      //setHavingPlan(true);
+      // cus_Id.current = docSnap.data().having_plan
+      getCustomerAlldata(userId);
+    } else {
+      // docSnap.data() will be undefined in this case
+      console.log("no plan found!");
+      //setHavingPlan(false);
+    }
+  };
+  const getCustomerAlldata = async (userId: string) => {
+    const docRef = doc(db, "usersPlan", userId); // replace with customerID
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      if (docSnap.data().is_pro == true) {
+        setHavingPlan(true);
+        setUsedCharCurrent(docSnap.data().time_used);
+        console.log(docSnap.data().is_pro);
+        console.log(docSnap.data().time_used);
+        //setplanType(` ${docSnap.data().plan}`);
+        /*subscriptionId.current = docSnap.data().subscription_id;
+        const subscription = await stripe.subscriptions.retrieve(
+          `${docSnap.data().subscription_id}`
+        );
+        console.log(`subscription data:${subscription.status}`);*/
+      } else {
+        setHavingPlan(false);
+      }
+    } else {
+      setHavingPlan(false);
+    }
+  };
+  useEffect(() => {
+    if (userId !== "") {
+      fetchPost();
+    }
+  }, [userId]);
   /*const addUsedChar = async () => {
     try {
       await updateDoc(doc(db, "usersPlan", userId), {
@@ -1329,9 +1469,38 @@ stream.on("finish", function() {
                           </PopoverContent>
                         </Popover>
                       )}
+                      <div className="flex items-center gap-5 ">
+                        <Button variant="outline" onClick={handleCopy}>
+                          <CopyIcon />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setisSearching(!isSearching);
+                            splitParagraphe();
+                          }}
+                        >
+                          {isSearching ? (
+                            <Edit2Icon className="text-amber-500" />
+                          ) : (
+                            <CheckIcon className="text-green-500" />
+                          )}
+                        </Button>
+                        <div>
+                          {isSearching ? (
+                            <Input
+                              placeholder="Search text or word..."
+                              value={searchTerm}
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                          ) : null}
+                        </div>
+                      </div>
                     </div>
+                    <Separator className="my-4" />
                   </div>
-                </div>{" "}
+                </div>
+
                 <div className="m-4">
                   {isshunktext && (
                     <div>
@@ -1356,23 +1525,36 @@ stream.on("finish", function() {
                   )}
 
                   {!isshunktext && (
-                    <Textarea
-                      placeholder="result"
-                      className="h-[100px]"
-                      value={texte}
-                      onChange={(e) => {
-                        setText(e.target.value);
-                      }}
-                      disabled={false}
-                    />
+                    <div>
+                      {isSearching ? (
+                        <div className="p-5 shadow-md rounded-md">
+                          {paragraphs.map((para, index) => (
+                            <p
+                              key={index}
+                              className="mb-2 border-b p-2"
+                              onClick={() => {
+                                setisSearching(!isSearching);
+                                splitParagraphe();
+                              }}
+                            >
+                              {highlightText(para, searchTerm)}
+                            </p>
+                          ))}
+                        </div>
+                      ) : (
+                        <Textarea
+                          placeholder="result"
+                          className="h-[100px]"
+                          value={texte}
+                          onChange={(e) => {
+                            setText(e.target.value);
+                            splitParagraphe();
+                          }}
+                          disabled={false}
+                        />
+                      )}
+                    </div>
                   )}
-                  <Button
-                    variant="outline"
-                    className="mt-4"
-                    onClick={handleCopy}
-                  >
-                    <CopyIcon />
-                  </Button>
                 </div>
                 <Button
                   className="m-4"
@@ -1603,7 +1785,7 @@ stream.on("finish", function() {
                                     selectedCurrentLanguage.current = undefined;
                                     setAutoDetectLanguage(true);
                                   }
-                                  setOpen(false);
+                                  setOpenMobile(false);
                                   //console.log(selectedCurrentTask.current);
                                 }}
                               >
@@ -1662,7 +1844,7 @@ stream.on("finish", function() {
                                     selectedCurrentLanguage.current =
                                       currentValue;
 
-                                    setOpenLanguage(false);
+                                    setOpenLanguageMobile(false);
                                     //console.log(selectedCurrentTask.current);
                                   }}
                                 >
@@ -1683,6 +1865,33 @@ stream.on("finish", function() {
                       </PopoverContent>
                     </Popover>
                   )}
+                  <div className="flex items-center gap-5 ">
+                    <Button variant="outline" onClick={handleCopy}>
+                      <CopyIcon />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setisSearching(!isSearching);
+                        splitParagraphe();
+                      }}
+                    >
+                      {isSearching ? (
+                        <Edit2Icon className="text-amber-500" />
+                      ) : (
+                        <CheckIcon className="text-green-500" />
+                      )}
+                    </Button>
+                    <div>
+                      {isSearching ? (
+                        <Input
+                          placeholder="Search text or word..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                      ) : null}
+                    </div>
+                  </div>
                 </div>
 
                 <Accordion type="single" collapsible className="w-full ">
@@ -1865,19 +2074,29 @@ stream.on("finish", function() {
               )}
 
               {!isshunktext && (
-                <Textarea
-                  placeholder="result"
-                  className="h-[100px]"
-                  value={texte}
-                  onChange={(e) => {
-                    setText(e.target.value);
-                  }}
-                  disabled={false}
-                />
+                <div>
+                  {isSearching ? (
+                    <div className="p-5 shadow-md rounded-md">
+                      {paragraphs.map((para, index) => (
+                        <p key={index} className="mb-2 border-b p-2">
+                          {highlightText(para, searchTerm)}
+                        </p>
+                      ))}
+                    </div>
+                  ) : (
+                    <Textarea
+                      placeholder="result"
+                      className="h-[100px]"
+                      value={texte}
+                      onChange={(e) => {
+                        setText(e.target.value);
+                        splitParagraphe();
+                      }}
+                      disabled={false}
+                    />
+                  )}
+                </div>
               )}
-              <Button variant="outline" className="mt-4" onClick={handleCopy}>
-                <CopyIcon />
-              </Button>
             </div>
             <Button
               className="m-4"

@@ -74,6 +74,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
 export default function Home() {
   const router = useRouter();
 
@@ -210,6 +211,8 @@ export default function Home() {
             <Button variant="outline">
               <FcSoundRecordingCopyright className="mx-3" /> Record audio
             </Button>
+            <p className="text-center text-gray-400">-----or-----</p>
+            <Input placeholder="Youtube link..." />
           </div>
         </div>
         <Button size="lg" className="w-full my-5" onClick={handleLoginGoogle}>
@@ -375,7 +378,7 @@ export default function Home() {
               <div className="flex items-center gap-3">
                 <Check className="text-blue-100" />
                 <p className="text-white text-center text-2xl">
-                  translation(to english only)
+                  translation(100+ languages)
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -433,7 +436,7 @@ export default function Home() {
               <div className="flex items-center gap-3">
                 <Check className="text-blue-200" />
                 <p className="text-white text-center text-2xl">
-                  translation(to english only)
+                  translation(100+ languages)
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -450,11 +453,15 @@ export default function Home() {
             </div>
           </div>
         </div>
+        <p className="text-center my-10 text-5xl font-bold">Customer review</p>
 
-        <p className="text-center my-10 text-5xl font-bold">FAQ</p>
+        <p className="text-center ">
+          Rated Excellent 4.8/5 based on 850+ reviews
+        </p>
         <Separator className="my-10" />
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-10 ">
+        <div className="grid md:grid-cols-2  gap-5 md:gap-10 ">
           <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
+            <p className="my-3  text-xl font-semibold">love this.</p>
             <p>
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
               aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
@@ -463,6 +470,41 @@ export default function Home() {
             </p>
           </div>
           <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
+            <p className="my-3  text-xl font-semibold">Great.</p>
+            <p>This transcription service is great!</p>
+          </div>{" "}
+          <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
+            <p className="my-3  text-xl font-semibold">Great.</p>
+            <p>GREAT. FAST ACCURATE REASONABLE PRICE</p>
+          </div>{" "}
+          <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
+            <p className="my-3  text-xl font-semibold">love this.</p>
+            <p>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
+              aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
+              perferendis modi repellat! Nobis odio enim adipisci voluptate
+              obcaecati incidunt ipsam illo!
+            </p>
+          </div>{" "}
+        </div>
+        <p className="text-center my-10 text-5xl font-bold">FAQ</p>
+        <Separator className="my-10" />
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-10 ">
+          <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
+            <p className="my-3 text-center text-xl font-semibold">
+              Who can use AudiScribe?
+            </p>
+            <p>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
+              aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
+              perferendis modi repellat! Nobis odio enim adipisci voluptate
+              obcaecati incidunt ipsam illo!
+            </p>
+          </div>
+          <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
+            <p className="my-3 text-center text-xl font-semibold">
+              How many languages its support?
+            </p>
             <p>
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
               aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
@@ -471,6 +513,9 @@ export default function Home() {
             </p>
           </div>{" "}
           <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
+            <p className="my-3 text-center text-xl font-semibold">
+              Is there a free version?
+            </p>
             <p>
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
               aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
@@ -479,6 +524,9 @@ export default function Home() {
             </p>
           </div>{" "}
           <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
+            <p className="my-3 text-center text-xl font-semibold">
+              How many format does Audiscribe support?
+            </p>
             <p>
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
               aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
@@ -487,6 +535,9 @@ export default function Home() {
             </p>
           </div>{" "}
           <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
+            <p className="my-3 text-center text-xl font-semibold">
+              How many format can i export files?
+            </p>
             <p>
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
               aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
@@ -495,6 +546,9 @@ export default function Home() {
             </p>
           </div>{" "}
           <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
+            <p className="my-3 text-center text-xl font-semibold">
+              Is there additionnal tools?
+            </p>
             <p>
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
               aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
@@ -503,6 +557,7 @@ export default function Home() {
             </p>
           </div>
         </div>
+
         <Separator className="my-10" />
       </div>{" "}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full p-10 bg-slate-800">
