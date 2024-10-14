@@ -1401,7 +1401,7 @@ stream.on("finish", function() {
                             <UploadCloud />
                           </div>
                           <p className="text-center">
-                            Drag 'n' drop audio /video files here , or click to
+                            Drag and drop audio /video files here , or click to
                             select files
                           </p>
                         </div>
@@ -1819,7 +1819,7 @@ stream.on("finish", function() {
                         <UploadCloud />
                       </div>
                       <p className="text-center">
-                        Drag 'n' drop audio /video files here , or click to
+                        Drag and drop audio /video files here , or click to
                         select files
                       </p>
                     </div>
@@ -2055,7 +2055,7 @@ stream.on("finish", function() {
                           <DialogTitle>Edit profile</DialogTitle>
                           <DialogDescription>
                             Make changes to your profile here. Click save when
-                            you're done.
+                            you are done.
                           </DialogDescription>
                         </DialogHeader>
                         <div className="flex justify-center mt-10">
@@ -2123,7 +2123,7 @@ stream.on("finish", function() {
                           <DrawerTitle>Edit profile</DrawerTitle>
                           <DrawerDescription>
                             Make changes to your profile here. Click save when
-                            you're done.
+                            you are done.
                           </DrawerDescription>
                         </DrawerHeader>
                         <div className="w-full">
