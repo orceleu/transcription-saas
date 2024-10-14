@@ -1984,6 +1984,39 @@ stream.on("finish", function() {
                       </PopoverContent>
                     </Popover>
                   )}
+                  <div className="flex items-center gap-2">
+                    <div>
+                      <Checkbox
+                        id="terms1"
+                        onCheckedChange={(e: boolean) => {
+                          setShunkText(e);
+                          //console.log(e);
+                        }}
+                        defaultChecked={false}
+                      />
+                      <br />
+                      <p className="text-gray-500 text-sm">Shunk the text?</p>
+                    </div>
+                    <div>
+                      <Checkbox
+                        id="terms2"
+                        onCheckedChange={(e: boolean) => {
+                          setAutoDetectLanguage(e);
+                          if (!e) {
+                            selectedCurrentLanguage.current = undefined;
+                          } else {
+                            selectedCurrentLanguage.current = valueLanguage;
+                          }
+                          //console.log(e);
+                        }}
+                        defaultChecked={true}
+                      />
+                      <br />
+                      <p className="text-gray-500 text-sm">
+                        Auto detect Language?
+                      </p>
+                    </div>
+                  </div>
                   <div className="flex items-center gap-2 ">
                     <Button variant="outline" onClick={handleCopy}>
                       <CopyIcon className="text-amber-500" />
@@ -2153,39 +2186,6 @@ stream.on("finish", function() {
                                 export to Srt.
                                 <MdOutlineSubtitles className="mx-2 text-gray-600" />
                               </Button>
-                              <div>
-                                <Checkbox
-                                  id="terms1"
-                                  onCheckedChange={(e: boolean) => {
-                                    setShunkText(e);
-                                    //console.log(e);
-                                  }}
-                                  defaultChecked={false}
-                                />
-                                <br />
-                                <p className="text-gray-500">Shunk the text?</p>
-                              </div>
-                              <div>
-                                <Checkbox
-                                  id="terms2"
-                                  onCheckedChange={(e: boolean) => {
-                                    setAutoDetectLanguage(e);
-                                    if (!e) {
-                                      selectedCurrentLanguage.current =
-                                        undefined;
-                                    } else {
-                                      selectedCurrentLanguage.current =
-                                        valueLanguage;
-                                    }
-                                    //console.log(e);
-                                  }}
-                                  defaultChecked={true}
-                                />
-                                <br />
-                                <p className="text-gray-500">
-                                  Auto detect Language?
-                                </p>
-                              </div>
                             </div>
                           </div>{" "}
                         </div>
@@ -2196,7 +2196,8 @@ stream.on("finish", function() {
                         </DrawerFooter>
                       </DrawerContent>
                     </Drawer>
-                  </div>
+                  </div>{" "}
+                  <Separator />
                 </div>
               </div>
             </div>{" "}
