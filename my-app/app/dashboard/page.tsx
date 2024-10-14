@@ -986,7 +986,7 @@ export default function Dashboard() {
             `${result.chunks[i].text}`,
             `[${time}]`,
             i,
-            result.shunks[i].speaker
+            `${result.chunks[i].speaker}`
           );
           let resultInSrt = convertToSRT(
             i,
@@ -1774,7 +1774,7 @@ stream.on("finish", function() {
   }
   function mobileScreen() {
     return (
-      <div className="lg:hidden p-2">
+      <div className="lg:hidden p-3">
         <div className="flex justify-between  top-2 end-2 m-2">
           <p className="text-xl font bold  text-center">AudiScribe</p>
           <DropdownMenu>
@@ -1896,7 +1896,7 @@ stream.on("finish", function() {
                 </div>
               </div>
 
-              <div className="mb-4 mt-1">
+              <div className="mb-4 mt-1 ">
                 <div className="flex justify-center">
                   {uploadIsLoaded ? (
                     <Progress value={progresspercent} className="w-[60%]" />
