@@ -7,7 +7,7 @@ import React, {
   useMemo,
 } from "react";
 import axios from "axios";
-import { FaRegFilePdf } from "react-icons/fa6";
+import { FaFileExport, FaRegFilePdf, FaToolbox } from "react-icons/fa6";
 import { TbFileTypeDocx } from "react-icons/tb";
 import { GrDocumentTxt } from "react-icons/gr";
 import { useDropzone } from "react-dropzone";
@@ -20,6 +20,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+
 import {
   ArrowBigLeft,
   ArrowBigLeftIcon,
@@ -34,6 +35,7 @@ import {
   Edit2Icon,
   Infinity,
   LoaderIcon,
+  MoreHorizontal,
   PauseIcon,
   PlayIcon,
   PlusCircleIcon,
@@ -211,6 +213,7 @@ export default function Dashboard() {
   const [uploadIsLoaded, setUploadLoaded] = useState(false);
   const [open, setOpen] = useState(false);
   const [openMobile, setOpenMobile] = useState(false);
+  const [openForMobileExport, setOpenForMobileExport] = useState(false);
   const [openLanguage, setOpenLanguage] = useState(false);
   const [openLanguageMobile, setOpenLanguageMobile] = useState(false);
   const [openDesktopDialogYoutubemp3, setOpenDesktopDialogYoutubemp3] =
@@ -249,6 +252,7 @@ export default function Dashboard() {
   const [isSearching, setisSearching] = useState(true);
   const [paragraphs, setParagraphs] = useState<string[]>([]);
   const MAX_LENGTH = 300;
+  const priceId = "price_1Pp8vvHMq3uIqhfsUZwVE60I";
   const splitParagraphe = () => {
     if (texte.length > 0) {
       const splitParagraphs =
@@ -261,6 +265,30 @@ export default function Dashboard() {
       setParagraphs([]);
     }
   };
+
+  const cancelSubscription = async () => {
+    await axios
+      .post("/api/cancelsub", {
+        subscriptionId: priceId,
+      })
+      .then((res) => {
+        const { data } = res.data;
+        console.log(data);
+        toast({
+          variant: "default",
+          title: "update",
+          description: `${data}`,
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+        toast({
+          variant: "destructive",
+          title: "Uh oh! Something went wrong.",
+          description: `${error}`,
+        });
+      });
+  };
   // Ref pour l'input de texte
   const inputRef = useRef(null);
   // Ref pour le texte concaténé
@@ -272,9 +300,11 @@ export default function Dashboard() {
 
     if (inputText) {
       // Ajoute le texte à la référence du texte concaténé
-      concatenatedTextRef.current = concatenatedTextRef.current
-        ? `${concatenatedTextRef.current}\n\n ${inputText}`
-        : inputText;
+      concatenatedTextRef.current = alignText(
+        concatenatedTextRef.current
+          ? `${concatenatedTextRef.current}\n\n ${inputText}`
+          : inputText
+      );
 
       // Affiche le texte concaténé dans la console (ou mettez à jour l'affichage selon les besoins)
       console.log(concatenatedTextRef.current);
@@ -621,6 +651,31 @@ export default function Dashboard() {
       }
     }
   };
+
+  async function selectPlan(
+    price_id: string,
+
+    stripeCustomerEmail: string,
+    userId: string
+  ) {
+    console.log(price_id);
+
+    await axios
+      .post("/api/checkout", {
+        price_Id: price_id,
+        user_Id: userId,
+        customer_Email: stripeCustomerEmail,
+      })
+      .then((res) => {
+        console.log(res.data);
+
+        router.push(`${res.data.session}`);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
   useEffect(() => {
     handleActiveButton();
   }, [youtubeUrl]);
@@ -831,6 +886,43 @@ export default function Dashboard() {
       });
     }
   };
+
+  function alignText(input: string): string {
+    // Séparer les lignes par sauts de ligne
+    const lines = input.split("\n");
+
+    // Initialiser un tableau pour stocker les paragraphes
+    const paragraphs: string[] = [];
+    let currentParagraph: string[] = [];
+
+    // Parcourir les lignes
+    lines.forEach((line) => {
+      const trimmedLine = line.trim();
+
+      // Si la ligne est vide, on ignore
+      if (trimmedLine.length === 0) return;
+
+      // Si la ligne est un numéro d'index, cela signifie que nous commençons un nouveau paragraphe
+      if (/^\d+$/.test(trimmedLine)) {
+        // Ajouter le paragraphe précédent s'il y en a un
+        if (currentParagraph.length > 0) {
+          paragraphs.push(currentParagraph.join("\n"));
+          currentParagraph = [];
+        }
+      }
+
+      // Ajouter la ligne au paragraphe en cours
+      currentParagraph.push(trimmedLine);
+    });
+
+    // Ajouter le dernier paragraphe s'il reste du contenu
+    if (currentParagraph.length > 0) {
+      paragraphs.push(currentParagraph.join("\n"));
+    }
+
+    // Joindre les paragraphes avec deux sauts de ligne pour les séparer
+    return paragraphs.join("\n\n");
+  }
   const submitSpeech = async () => {
     setSubmitted(true);
     try {
@@ -1093,9 +1185,15 @@ stream.on("finish", function() {
               <div className="grid gap-1 w-[200px] p-3">
                 <p className="text-center">3 transciptions left</p>
                 <Progress />
-                <Button>
+                <Button
+                  onClick={() => {
+                    if (userEmail !== null && userEmail !== "") {
+                      selectPlan(priceId, userEmail, userId);
+                    }
+                  }}
+                >
                   <Infinity />
-                  Go unlimited
+                  Go Pro
                 </Button>
               </div>
             </div>
@@ -1265,7 +1363,7 @@ stream.on("finish", function() {
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => {
-                              // cancelSubscription();
+                              cancelSubscription();
                             }}
                           >
                             Cancel subscription
@@ -1471,7 +1569,7 @@ stream.on("finish", function() {
                       )}
                       <div className="flex items-center gap-5 ">
                         <Button variant="outline" onClick={handleCopy}>
-                          <CopyIcon />
+                          <CopyIcon className="text-amber-500" />
                         </Button>
                         <Button
                           variant="outline"
@@ -1614,6 +1712,27 @@ stream.on("finish", function() {
               </div>{" "}
               <br />
               <br />
+              <div className="grid gap-3 my-10">
+                <p className="text-center">2024 AudiScribe </p>
+                <div className="flex justify-center">
+                  <div className="flex items-center gap-3">
+                    <p>Home</p>
+                    <p>Blog</p>
+                    <p>Pricing</p>
+                    <p>FAQs</p>
+                    <p>Support</p>
+                  </div>
+                </div>
+                <div className="flex justify-center">
+                  <div className="flex items-center gap-3">
+                    <p>Youtube downloader</p>
+                    <p>WhatsApp</p>
+                    <p>Terms</p>
+                  </div>
+                </div>
+
+                <p className="text-center">Privacy</p>
+              </div>
               <br />
               <br />
               <br />
@@ -1657,7 +1776,7 @@ stream.on("finish", function() {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    // cancelSubscription();
+                    cancelSubscription();
                   }}
                 >
                   Cancel subscription
@@ -1865,9 +1984,9 @@ stream.on("finish", function() {
                       </PopoverContent>
                     </Popover>
                   )}
-                  <div className="flex items-center gap-5 ">
+                  <div className="flex items-center gap-2 ">
                     <Button variant="outline" onClick={handleCopy}>
-                      <CopyIcon />
+                      <CopyIcon className="text-amber-500" />
                     </Button>
                     <Button
                       variant="outline"
@@ -1891,110 +2010,21 @@ stream.on("finish", function() {
                         />
                       ) : null}
                     </div>
-                  </div>
-                </div>
 
-                <Accordion type="single" collapsible className="w-full ">
-                  <AccordionItem value="item-1">
-                    <AccordionTrigger>
-                      More...
-                      <PlusCircleIcon />
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="w-full">
-                        <div className="flex justify-center">
-                          <div className="grid gap-2 w-full  shadow-sm rounded-sm p-5 bg-gray-100">
-                            <p className=" font-bold text-xl ">Export:</p>
-                            <Separator />
-                            <Button
-                              variant="outline"
-                              className="hover:bg-green-100"
-                              onClick={() => {
-                                creatPDF(texte);
-                              }}
-                            >
-                              export to PDF.{" "}
-                              <FaRegFilePdf className="mx-2 text-red-600" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              className="hover:bg-green-100"
-                              onClick={() => {
-                                if (texte) {
-                                  downloadWordFile(texte);
-                                } else {
-                                  toast({
-                                    variant: "destructive",
-                                    title: "Text not found.",
-                                  });
-                                }
-                              }}
-                            >
-                              export to Docx.
-                              <TbFileTypeDocx className="mx-2 text-blue-600" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              className="hover:bg-green-100"
-                              onClick={() => handleDownloadTxt(texte)}
-                            >
-                              export to Txt.
-                              <GrDocumentTxt className="mx-2 text-gray-600" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              className="hover:bg-green-100"
-                              onClick={() => {
-                                if (concatenatedTextRef.current) {
-                                  handleDownloadSrt(
-                                    concatenatedTextRef.current,
-                                    "srtfile.srt"
-                                  );
-                                } else {
-                                  toast({
-                                    variant: "destructive",
-                                    title: "Text not found.",
-                                  });
-                                }
-                              }}
-                            >
-                              export to Srt.
-                              <MdOutlineSubtitles className="mx-2 text-gray-600" />
-                            </Button>
-                            <div>
-                              <Checkbox
-                                id="terms1"
-                                onCheckedChange={(e: boolean) => {
-                                  setShunkText(e);
-                                  //console.log(e);
-                                }}
-                                defaultChecked={false}
-                              />
-                              <br />
-                              <p className="text-gray-500">Shunk the text?</p>
-                            </div>
-                            <div>
-                              <Checkbox
-                                id="terms2"
-                                onCheckedChange={(e: boolean) => {
-                                  setAutoDetectLanguage(e);
-                                  if (!e) {
-                                    selectedCurrentLanguage.current = undefined;
-                                  } else {
-                                    selectedCurrentLanguage.current =
-                                      valueLanguage;
-                                  }
-                                  //console.log(e);
-                                }}
-                                defaultChecked={true}
-                              />
-                              <br />
-                              <p className="text-gray-500">
-                                Auto detect Language?
-                              </p>
-                            </div>
-                          </div>
-                        </div>{" "}
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="ghost">
+                          <FaToolbox />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>Edit profile</DialogTitle>
+                          <DialogDescription>
+                            Make changes to your profile here. Click save when
+                            you're done.
+                          </DialogDescription>
+                        </DialogHeader>
                         <div className="flex justify-center mt-10">
                           <div className="grid gap-2 w-full  shadow-sm rounded-sm p-5 bg-gray-100">
                             <p className="text-center font-bold">Tools</p>
@@ -2044,12 +2074,130 @@ stream.on("finish", function() {
                             <Button>Tranlation</Button>
                           </div>
                         </div>
-                        <br />
-                        <br />
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
+                      </DialogContent>
+                    </Dialog>
+                    <Drawer
+                      open={openForMobileExport}
+                      onOpenChange={setOpenForMobileExport}
+                    >
+                      <DrawerTrigger asChild>
+                        <Button variant="ghost">
+                          <FaFileExport />
+                        </Button>
+                      </DrawerTrigger>
+                      <DrawerContent>
+                        <DrawerHeader className="text-left">
+                          <DrawerTitle>Edit profile</DrawerTitle>
+                          <DrawerDescription>
+                            Make changes to your profile here. Click save when
+                            you're done.
+                          </DrawerDescription>
+                        </DrawerHeader>
+                        <div className="w-full">
+                          <div className="flex justify-center">
+                            <div className="grid gap-2 w-full  shadow-sm rounded-sm p-5 bg-gray-100">
+                              <p className=" font-bold text-xl ">Export:</p>
+                              <Separator />
+                              <Button
+                                variant="outline"
+                                className="hover:bg-green-100"
+                                onClick={() => {
+                                  creatPDF(texte);
+                                }}
+                              >
+                                export to PDF.{" "}
+                                <FaRegFilePdf className="mx-2 text-red-600" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                className="hover:bg-green-100"
+                                onClick={() => {
+                                  if (texte) {
+                                    downloadWordFile(texte);
+                                  } else {
+                                    toast({
+                                      variant: "destructive",
+                                      title: "Text not found.",
+                                    });
+                                  }
+                                }}
+                              >
+                                export to Docx.
+                                <TbFileTypeDocx className="mx-2 text-blue-600" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                className="hover:bg-green-100"
+                                onClick={() => handleDownloadTxt(texte)}
+                              >
+                                export to Txt.
+                                <GrDocumentTxt className="mx-2 text-gray-600" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                className="hover:bg-green-100"
+                                onClick={() => {
+                                  if (concatenatedTextRef.current) {
+                                    handleDownloadSrt(
+                                      concatenatedTextRef.current,
+                                      "srtfile.srt"
+                                    );
+                                  } else {
+                                    toast({
+                                      variant: "destructive",
+                                      title: "Text not found.",
+                                    });
+                                  }
+                                }}
+                              >
+                                export to Srt.
+                                <MdOutlineSubtitles className="mx-2 text-gray-600" />
+                              </Button>
+                              <div>
+                                <Checkbox
+                                  id="terms1"
+                                  onCheckedChange={(e: boolean) => {
+                                    setShunkText(e);
+                                    //console.log(e);
+                                  }}
+                                  defaultChecked={false}
+                                />
+                                <br />
+                                <p className="text-gray-500">Shunk the text?</p>
+                              </div>
+                              <div>
+                                <Checkbox
+                                  id="terms2"
+                                  onCheckedChange={(e: boolean) => {
+                                    setAutoDetectLanguage(e);
+                                    if (!e) {
+                                      selectedCurrentLanguage.current =
+                                        undefined;
+                                    } else {
+                                      selectedCurrentLanguage.current =
+                                        valueLanguage;
+                                    }
+                                    //console.log(e);
+                                  }}
+                                  defaultChecked={true}
+                                />
+                                <br />
+                                <p className="text-gray-500">
+                                  Auto detect Language?
+                                </p>
+                              </div>
+                            </div>
+                          </div>{" "}
+                        </div>
+                        <DrawerFooter className="pt-2">
+                          <DrawerClose asChild>
+                            <Button variant="outline">Cancel</Button>
+                          </DrawerClose>
+                        </DrawerFooter>
+                      </DrawerContent>
+                    </Drawer>
+                  </div>
+                </div>
               </div>
             </div>{" "}
             <div className="m-4">
@@ -2156,6 +2304,29 @@ stream.on("finish", function() {
           </div>{" "}
           <br />
           <br />
+          <div className="grid gap-3 my-10">
+            <p className="text-center text-sm text-gray-600 ">
+              2024 AudiScribe{" "}
+            </p>
+            <div className="flex justify-center">
+              <div className="flex items-center gap-3">
+                <p className="text-sm text-gray-600">Home</p>
+                <p className="text-sm text-gray-600">Blog</p>
+                <p className="text-sm text-gray-600">Pricing</p>
+                <p className="text-sm text-gray-600">FAQs</p>
+                <p className="text-sm text-gray-600">Support</p>
+              </div>
+            </div>
+            <div className="flex justify-center">
+              <div className="flex items-center gap-3">
+                <p className="text-sm text-gray-600">Youtube downloader</p>
+                <p className="text-sm text-gray-600">WhatsApp</p>
+                <p className="text-sm text-gray-600">Terms</p>
+              </div>
+            </div>
+
+            <p className="text-center text-sm text-gray-600">Privacy</p>
+          </div>
           <br />
           <br />
           <br />

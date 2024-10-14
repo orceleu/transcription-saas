@@ -582,25 +582,24 @@ export default function Home() {
         </div>
         <div className="grid gap-3">
           <p className="text-center text-white text-2xl font-bold underline">
-            Tools
+            Company
           </p>
           <Separator className="my-5" />
-          <p className="text-center text-white text-xl">outils</p>
+          <p className="text-center text-white text-xl">about</p>
           <p className="text-center text-white text-xl">Blog</p>
           <p className="text-center text-white text-xl">review</p>
-          <p className="text-center text-white text-xl">support</p>
+          <p className="text-center text-white text-xl">contact</p>
           <p className="text-center text-white text-xl">terms</p>
         </div>
         <div className="grid gap-3">
           <p className="text-center text-white text-2xl font-bold underline">
-            Tools
+            Product
           </p>
           <Separator className="my-5" />
-          <p className="text-center text-white text-xl">outils</p>
-          <p className="text-center text-white text-xl">Blog</p>
-          <p className="text-center text-white text-xl">review</p>
-          <p className="text-center text-white text-xl">support</p>
-          <p className="text-center text-white text-xl">terms</p>
+          <p className="text-center text-white text-xl">Feature</p>
+          <p className="text-center text-white text-xl">pricing</p>
+          <p className="text-center text-white text-xl">accuracy</p>
+          <p className="text-center text-white text-xl">Language</p>
         </div>
       </div>
     </main>
