@@ -173,7 +173,7 @@ export default function Home() {
                 accurate
               </span>
               . For any language or dialect, no matter the clarity of the audio.
-              Just choose your file, press Transcribe, and it&lsquo;'s complete.
+              Just choose your file, press Transcribe, and its complete.
             </p>
           </div>
         </div>
