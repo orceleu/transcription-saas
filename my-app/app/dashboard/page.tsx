@@ -7,7 +7,12 @@ import React, {
   useMemo,
 } from "react";
 import axios from "axios";
-import { FaFileExport, FaRegFilePdf, FaToolbox } from "react-icons/fa6";
+import {
+  FaChessKing,
+  FaFileExport,
+  FaRegFilePdf,
+  FaToolbox,
+} from "react-icons/fa6";
 import { TbFileTypeDocx } from "react-icons/tb";
 import { GrDocumentTxt } from "react-icons/gr";
 import { useDropzone } from "react-dropzone";
@@ -200,6 +205,7 @@ interface ShunkItems {
   id: number;
   texte: string;
   shunkedTime: string;
+  speaker: string;
 }
 export default function Dashboard() {
   const [uploadedFile, setUploadedFile] = useState<any>(null);
@@ -251,7 +257,15 @@ export default function Dashboard() {
   const [youtubePlayerUrl, setYoutubePlayerUrl] = useState(false);
   const [isSearching, setisSearching] = useState(true);
   const [paragraphs, setParagraphs] = useState<string[]>([]);
+  const finalText = useRef("");
   const MAX_LENGTH = 300;
+  const chooseTextType = (chunked: boolean) => {
+    if (chunked) {
+      finalText.current = items.toString();
+    } else {
+      finalText.current = texte;
+    }
+  };
   const priceId = "price_1Pp8vvHMq3uIqhfsUZwVE60I";
   const splitParagraphe = () => {
     if (texte.length > 0) {
@@ -323,7 +337,7 @@ export default function Dashboard() {
 
     return parts.map((part, index) =>
       part.toLowerCase() === highlight.toLowerCase() ? (
-        <span key={index} className="bg-yellow-200">
+        <span key={index} className="bg-amber-200">
           {part}
         </span>
       ) : (
@@ -619,7 +633,12 @@ export default function Dashboard() {
     }
   };
 
-  const addItem = (text: string, shunkTime: string, id: number) => {
+  const addItem = (
+    text: string,
+    shunkTime: string,
+    id: number,
+    speaker: string
+  ) => {
     // const newId = items.length;
     setItems((prevItems) => [
       ...prevItems,
@@ -627,6 +646,7 @@ export default function Dashboard() {
         texte: text,
         shunkedTime: shunkTime,
         id: id,
+        speaker: speaker,
       },
     ]);
   };
@@ -654,7 +674,6 @@ export default function Dashboard() {
 
   async function selectPlan(
     price_id: string,
-
     stripeCustomerEmail: string,
     userId: string
   ) {
@@ -963,7 +982,12 @@ export default function Dashboard() {
           );*/
           const time = convertSecondsToMinutes(result.chunks[i].timestamp);
 
-          addItem(`${result.chunks[i].text}`, `[${time}]`, i);
+          addItem(
+            `${result.chunks[i].text}`,
+            `[${time}]`,
+            i,
+            result.shunks[i].speaker
+          );
           let resultInSrt = convertToSRT(
             i,
             `(${result.chunks[i].timestamp})`,
@@ -1205,7 +1229,7 @@ stream.on("finish", function() {
                   variant="outline"
                   className="hover:bg-green-100"
                   onClick={() => {
-                    creatPDF(texte);
+                    creatPDF(finalText.current);
                   }}
                 >
                   export to PDF. <FaRegFilePdf className="mx-2 text-red-600" />
@@ -1215,7 +1239,7 @@ stream.on("finish", function() {
                   className="hover:bg-green-100"
                   onClick={() => {
                     if (texte) {
-                      downloadWordFile(texte);
+                      downloadWordFile(finalText.current);
                     } else {
                       toast({
                         variant: "destructive",
@@ -1230,7 +1254,7 @@ stream.on("finish", function() {
                 <Button
                   variant="outline"
                   className="hover:bg-green-100"
-                  onClick={() => handleDownloadTxt(texte)}
+                  onClick={() => handleDownloadTxt(finalText.current)}
                 >
                   export to Txt.
                   <GrDocumentTxt className="mx-2 text-gray-600" />
@@ -1260,7 +1284,8 @@ stream.on("finish", function() {
                     id="terms1"
                     onCheckedChange={(e: boolean) => {
                       setShunkText(e);
-                      //console.log(e);
+                      chooseTextType(e);
+                      console.log(finalText.current);
                     }}
                     defaultChecked={false}
                   />
@@ -1438,7 +1463,7 @@ stream.on("finish", function() {
                     </div>
                   </div>
 
-                  <div className="mb-4 mt-1 ml-4">
+                  <div className="mb-4 mt-1">
                     <div className="flex justify-center">
                       {uploadIsLoaded ? (
                         <Progress value={progresspercent} className="w-[60%]" />
@@ -1605,7 +1630,7 @@ stream.on("finish", function() {
                       {items.map((value, index) => (
                         <div key={index + 1}>
                           <p key={index + 2} className="my-1">
-                            Speaker
+                            {value.speaker}
                             <span key={index + 3} className="mx-2">
                               {value.shunkedTime}
                             </span>
@@ -1750,7 +1775,8 @@ stream.on("finish", function() {
   function mobileScreen() {
     return (
       <div className="lg:hidden p-2">
-        <div className="fixed top-2 end-2 m-2">
+        <div className="flex justify-between  top-2 end-2 m-2">
+          <p className="text-xl font bold  text-center">AudiScribe</p>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">
@@ -1795,11 +1821,23 @@ stream.on("finish", function() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+        <div className="flex justify-center my-5 bg-slate-100 rounded-md p-4">
+          <div className="grid gap-3">
+            <p className="text-amber-500 text-center">3 transcriptions left</p>
+            <Progress />
+            <Button
+              onClick={() => {
+                if (userEmail) {
+                  selectPlan(priceId, userEmail, userId);
+                }
+              }}
+            >
+              <FaChessKing className="mx-2" /> Go pro
+            </Button>
+          </div>
+        </div>
 
         <div className="w-full  mt-5">
-          <p className="text-xl font bold m-2 text-center fixed top-2">
-            AudiScribe
-          </p>
           <div className="grid gap-5">
             <div className="grid gap-1">
               <div className="flex justify-center">
@@ -1858,7 +1896,7 @@ stream.on("finish", function() {
                 </div>
               </div>
 
-              <div className="mb-4 mt-1 ml-4">
+              <div className="mb-4 mt-1">
                 <div className="flex justify-center">
                   {uploadIsLoaded ? (
                     <Progress value={progresspercent} className="w-[60%]" />
@@ -1990,7 +2028,8 @@ stream.on("finish", function() {
                         id="terms1"
                         onCheckedChange={(e: boolean) => {
                           setShunkText(e);
-                          //console.log(e);
+                          chooseTextType(e);
+                          console.log(finalText.current);
                         }}
                         defaultChecked={false}
                       />
@@ -2046,8 +2085,8 @@ stream.on("finish", function() {
 
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button variant="ghost">
-                          <FaToolbox />
+                        <Button variant="outline">
+                          <FaToolbox className="text-amber-500" />
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="sm:max-w-[425px]">
@@ -2114,8 +2153,8 @@ stream.on("finish", function() {
                       onOpenChange={setOpenForMobileExport}
                     >
                       <DrawerTrigger asChild>
-                        <Button variant="ghost">
-                          <FaFileExport />
+                        <Button variant="outline">
+                          <FaFileExport className="text-amber-500" />
                         </Button>
                       </DrawerTrigger>
                       <DrawerContent>
@@ -2135,7 +2174,7 @@ stream.on("finish", function() {
                                 variant="outline"
                                 className="hover:bg-green-100"
                                 onClick={() => {
-                                  creatPDF(texte);
+                                  creatPDF(finalText.current);
                                 }}
                               >
                                 export to PDF.{" "}
@@ -2145,8 +2184,8 @@ stream.on("finish", function() {
                                 variant="outline"
                                 className="hover:bg-green-100"
                                 onClick={() => {
-                                  if (texte) {
-                                    downloadWordFile(texte);
+                                  if (finalText.current) {
+                                    downloadWordFile(finalText.current);
                                   } else {
                                     toast({
                                       variant: "destructive",
@@ -2161,7 +2200,9 @@ stream.on("finish", function() {
                               <Button
                                 variant="outline"
                                 className="hover:bg-green-100"
-                                onClick={() => handleDownloadTxt(texte)}
+                                onClick={() =>
+                                  handleDownloadTxt(finalText.current)
+                                }
                               >
                                 export to Txt.
                                 <GrDocumentTxt className="mx-2 text-gray-600" />
@@ -2207,7 +2248,7 @@ stream.on("finish", function() {
                   {items.map((value, index) => (
                     <div key={index + 1}>
                       <p className="my-1">
-                        Speaker
+                        {value.speaker}
                         <span className="mx-2">{value.shunkedTime}</span>
                       </p>
                       <Textarea
