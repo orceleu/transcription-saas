@@ -33,7 +33,7 @@
     "firebase": "^10.13.2",
     "jspdf": "^2.5.2",
     "lucide-react": "^0.446.0",
-    "next": "^14.2.13",
+    "next": "^14.2.3",
     "pdfkit": "^0.15.0",
     "react": "^18",
     "react-dom": "^18",
