@@ -258,10 +258,20 @@ export default function Dashboard() {
   const [isSearching, setisSearching] = useState(true);
   const [paragraphs, setParagraphs] = useState<string[]>([]);
   const finalText = useRef("");
+  const timeStampTab = useRef<string[]>([]);
   const MAX_LENGTH = 300;
+
+  // Fonction pour transformer le tableau en une chaîne de caractères
+  const getItemsAsString = (): string => {
+    return items
+      .map((item) => {
+        return ` ${item.speaker}\n${item.shunkedTime}\n${item.texte}`;
+      })
+      .join("\n"); // Utilise "\n" pour séparer chaque élément avec une nouvelle ligne
+  };
   const chooseTextType = (chunked: boolean) => {
     if (chunked) {
-      finalText.current = items.toString();
+      finalText.current = getItemsAsString();
     } else {
       finalText.current = texte;
     }
@@ -324,6 +334,14 @@ export default function Dashboard() {
       console.log(concatenatedTextRef.current);
     }
   };
+
+  useEffect(() => {
+    concatenatedTextRef.current = "";
+    for (let i = 0; i < items.length; i++) {
+      let result = convertToSRT(i, timeStampTab.current[i], items[i].texte);
+      handleAddText(result);
+    }
+  }, [items]);
 
   const [searchTerm, setSearchTerm] = useState<string>("");
 
@@ -981,7 +999,7 @@ export default function Dashboard() {
             ` text-${i}: (${result.chunks[i].timestamp}) ${result.chunks[i].text}`
           );*/
           const time = convertSecondsToMinutes(result.chunks[i].timestamp);
-
+          timeStampTab.current.push(`(${result.chunks[i].timestamp})`);
           addItem(
             `${result.chunks[i].text}`,
             `[${time}]`,
@@ -1290,7 +1308,9 @@ stream.on("finish", function() {
                     defaultChecked={false}
                   />
                   <br />
-                  <p className="text-gray-500">Shunk the text?</p>
+                  <p className="text-gray-500 text-sm text-center">
+                    Shunk the text?(select to modify srt file)
+                  </p>
                 </div>
                 <div>
                   <Checkbox
@@ -1629,9 +1649,12 @@ stream.on("finish", function() {
                     <div>
                       {items.map((value, index) => (
                         <div key={index + 1}>
-                          <p key={index + 2} className="my-1">
+                          <p key={index + 2} className="my-1 text-gray-700">
                             {value.speaker}
-                            <span key={index + 3} className="mx-2">
+                            <span
+                              key={index + 3}
+                              className="mx-2 text-amber-500"
+                            >
                               {value.shunkedTime}
                             </span>
                           </p>
@@ -2034,7 +2057,9 @@ stream.on("finish", function() {
                         defaultChecked={false}
                       />
                       <br />
-                      <p className="text-gray-500 text-sm">Shunk the text?</p>
+                      <p className="text-gray-500 text-[10px] text-center">
+                        Shunk the text?(select to modify srt file)
+                      </p>
                     </div>
                     <div>
                       <Checkbox
@@ -2051,7 +2076,7 @@ stream.on("finish", function() {
                         defaultChecked={true}
                       />
                       <br />
-                      <p className="text-gray-500 text-sm">
+                      <p className="text-gray-500 text-[10px]">
                         Auto detect Language?
                       </p>
                     </div>
@@ -2227,6 +2252,20 @@ stream.on("finish", function() {
                                 export to Srt.
                                 <MdOutlineSubtitles className="mx-2 text-gray-600" />
                               </Button>
+                              <div className="flex items-center gap-3">
+                                <Checkbox
+                                  id="terms1"
+                                  onCheckedChange={(e: boolean) => {
+                                    chooseTextType(e);
+                                    console.log(finalText.current);
+                                  }}
+                                  defaultChecked={false}
+                                />
+
+                                <p className="text-gray-500 text-sm">
+                                  Export with timestamp?
+                                </p>
+                              </div>
                             </div>
                           </div>{" "}
                         </div>
@@ -2247,9 +2286,11 @@ stream.on("finish", function() {
                 <div>
                   {items.map((value, index) => (
                     <div key={index + 1}>
-                      <p className="my-1">
+                      <p className="my-1 text-gray-700">
                         {value.speaker}
-                        <span className="mx-2">{value.shunkedTime}</span>
+                        <span className="mx-2 text-amber-500">
+                          {value.shunkedTime}
+                        </span>
                       </p>
                       <Textarea
                         className="mt-2"
