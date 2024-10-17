@@ -75,6 +75,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
+import { StarFilledIcon } from "@radix-ui/react-icons";
 export default function Home() {
   const router = useRouter();
 
@@ -104,11 +105,17 @@ export default function Home() {
       <div className="fixed top-0  w-full flex justify-between  p-5 bg-zinc-50  rounded-md">
         <p className="text-xl font-semibold">AudiScribe</p>
         <div className="hidden lg:flex items-center gap-5">
-          <p>Home</p>
-          <p>Pricing</p>
-          <p>Blog</p>
-          <Button>Login</Button>
-          <Button variant="outline">Sign up</Button>
+          <Button variant="link">Home</Button>
+          <a href="#pricing" className="hover:underline">
+            Pricing
+          </a>
+          <a href="#blog" className="hover:underline">
+            Blog
+          </a>
+          <Button onClick={handleLoginGoogle}>Login</Button>
+          <Button variant="outline" onClick={handleLoginGoogle}>
+            Sign up
+          </Button>
         </div>
         <div className="lg:hidden flex items-center gap-5">
           <Button onClick={handleLoginGoogle}>Login</Button>{" "}
@@ -250,7 +257,7 @@ export default function Home() {
             </div>
             <p className="text-2xl text-center">Export.</p>
             <p className="text-gray-600 text-center">
-              Export your transcriptions in many format (PDF,DOCX,TXT and more).
+              Export your transcriptions in many format (PDF,DOCX,TXT,SRT).
             </p>
           </div>
           <div className="grid gap-2">
@@ -317,7 +324,7 @@ export default function Home() {
             </div>
             <div className="p-2 bg-red-100 rounded-md w-full md:w-[500px]">
               <p className="text-center  text-xl font-serif">
-                <SiConvertio className="text-emerald-500 mx-3" my-auto />
+                <SiConvertio className="text-emerald-500 mx-3 my-auto " />
                 Convert
               </p>
             </div>
@@ -339,7 +346,7 @@ export default function Home() {
           />
         </div>
 
-        <p className="text-center text-3xl font-bold mt-[200px]">
+        <p className="text-center text-3xl font-bold mt-[200px]" id="pricing">
           Simple and affordable pricing
         </p>
         <p className="text-gray-600 text-center my-2">
@@ -382,7 +389,7 @@ export default function Home() {
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <MdDoNotDisturb className=" text-red-400 size-6" />
+                <Check className="text-blue-100" />
                 <p className="text-white text-center text-2xl">
                   export to PDF,DOCX,TXT,SRT
                 </p>
@@ -401,7 +408,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="w-full p-10 max-w-[700px] my-10 bg-amber-900 rounded-md">
+        <div className="w-full border-amber-300 border-[2px] p-10 max-w-[700px] my-10 bg-amber-900 rounded-md">
           <p className="text-center text-3xl text-white my-2">Audiscribe Pro</p>
           <p className="text-center text-blue-100 font-semibold ">(9$/Month)</p>
           <Separator className="my-2" />
@@ -456,12 +463,23 @@ export default function Home() {
         <p className="text-center my-10 text-5xl font-bold">Customer review</p>
 
         <p className="text-center ">
-          Rated Excellent 4.8/5 based on 850+ reviews
+          Rated Excellent 4.8/5 based on 450+ reviews
         </p>
         <Separator className="my-10" />
         <div className="grid md:grid-cols-2  gap-5 md:gap-10 ">
           <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
-            <p className="my-3  text-xl font-semibold">love this.</p>
+            <div className="flex justify-between my-3 ">
+              <p className=" text-xl font-semibold">love this.</p>
+              <div className="flex items-center gap-2">
+                {" "}
+                <StarFilledIcon className="text-yellow-600" />
+                <StarFilledIcon className="text-yellow-600" />
+                <StarFilledIcon className="text-yellow-600" />
+                <StarFilledIcon className="text-yellow-600" />
+                <StarFilledIcon className="text-yellow-600" />
+              </div>
+            </div>
+
             <p>
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
               aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
@@ -470,15 +488,46 @@ export default function Home() {
             </p>
           </div>
           <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
-            <p className="my-3  text-xl font-semibold">Great.</p>
+            <div className="flex justify-between my-3 ">
+              <p className=" text-xl font-semibold">Great.</p>
+              <div className="flex items-center gap-2">
+                {" "}
+                <StarFilledIcon className="text-yellow-600" />
+                <StarFilledIcon className="text-yellow-600" />
+                <StarFilledIcon className="text-yellow-600" />
+                <StarFilledIcon className="text-yellow-600" />
+                <StarFilledIcon className="text-yellow-600" />
+              </div>
+            </div>
             <p>This transcription service is great!</p>
           </div>{" "}
           <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
-            <p className="my-3  text-xl font-semibold">Great.</p>
+            <div className="flex justify-between my-3 ">
+              <p className=" text-xl font-semibold">Great.</p>
+              <div className="flex items-center gap-2">
+                {" "}
+                <StarFilledIcon className="text-yellow-600" />
+                <StarFilledIcon className="text-yellow-600" />
+                <StarFilledIcon className="text-yellow-600" />
+                <StarFilledIcon className="text-yellow-600" />
+                <StarFilledIcon className="text-yellow-600" />
+              </div>
+            </div>
+
             <p>GREAT. FAST ACCURATE REASONABLE PRICE</p>
           </div>{" "}
           <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
-            <p className="my-3  text-xl font-semibold">love this.</p>
+            <div className="flex justify-between my-3 ">
+              <p className=" text-xl font-semibold">Best app.</p>
+              <div className="flex items-center gap-2">
+                {" "}
+                <StarFilledIcon className="text-yellow-600" />
+                <StarFilledIcon className="text-yellow-600" />
+                <StarFilledIcon className="text-yellow-600" />
+                <StarFilledIcon className="text-yellow-600" />
+                <StarFilledIcon className="text-yellow-600" />
+              </div>
+            </div>
             <p>
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
               aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
@@ -557,49 +606,92 @@ export default function Home() {
             </p>
           </div>
         </div>
-
+        <p className="text-3xl font-bold my-10" id="blog">
+          Blog
+        </p>
+        <div className="grid gap-3 sm:p-5">
+          <Button
+            variant="link"
+            className="text-blue-500"
+            onClick={() => {
+              router.push(
+                "/blog/deux-outils-indispensable-pour-les-etudiants-en-2024"
+              );
+            }}
+          >
+            Deux outils indispensable pour les etudiants en 2024.
+          </Button>
+          <Button variant="link" className="text-blue-500">
+            comment mieux reviser et optimiser ses etudes?
+          </Button>
+          <Button variant="link" className="text-blue-500">
+            Pourquoi les etudiants
+          </Button>
+          <Button variant="link" className="text-blue-500">
+            Pourquoi les etudiants
+          </Button>
+        </div>
         <Separator className="my-10" />
       </div>{" "}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full p-10 bg-slate-800">
         <div className="grid gap-3">
-          <p className="text-center text-white text-2xl font-bold underline">
-            Tools
-          </p>
+          <p className="text-center text-white text-2xl font-bold">Tools</p>
           <Separator className="my-5" />
-          <p className="text-center text-white text-xl">
+          <Button variant="link" className="text-white">
+            {" "}
             Audio to text converter
-          </p>
-          <p className="text-center text-white text-xl">
+          </Button>
+          <Button variant="link" className="text-white">
+            {" "}
             Video to text converter
-          </p>
-          <p className="text-center text-white text-xl">
+          </Button>
+          <Button variant="link" className="text-white">
+            {" "}
             Speech to text converter
-          </p>
-          <p className="text-center text-white text-xl">Ai translation</p>
-          <p className="text-center text-white text-xl">
+          </Button>
+          <Button variant="link" className="text-white">
+            Ai translation
+          </Button>
+          <Button variant="link" className="text-white">
+            {" "}
             Audio to PDF converter
-          </p>
+          </Button>
         </div>
         <div className="grid gap-3">
-          <p className="text-center text-white text-2xl font-bold underline">
-            Company
-          </p>
+          <p className="text-center text-white text-2xl font-bold ">Company</p>
           <Separator className="my-5" />
-          <p className="text-center text-white text-xl">about</p>
-          <p className="text-center text-white text-xl">Blog</p>
-          <p className="text-center text-white text-xl">review</p>
-          <p className="text-center text-white text-xl">contact</p>
-          <p className="text-center text-white text-xl">terms</p>
+
+          <Button variant="link" className="text-white">
+            about
+          </Button>
+          <Button variant="link" className="text-white">
+            Blog
+          </Button>
+          <Button variant="link" className="text-white">
+            review
+          </Button>
+          <Button variant="link" className="text-white">
+            contact
+          </Button>
+          <Button variant="link" className="text-white">
+            terms
+          </Button>
         </div>
         <div className="grid gap-3">
-          <p className="text-center text-white text-2xl font-bold underline">
-            Product
-          </p>
+          <p className="text-center text-white text-2xl font-bold ">Product</p>
           <Separator className="my-5" />
-          <p className="text-center text-white text-xl">Feature</p>
-          <p className="text-center text-white text-xl">pricing</p>
-          <p className="text-center text-white text-xl">accuracy</p>
-          <p className="text-center text-white text-xl">Language</p>
+          <Button variant="link" className="text-white">
+            Feature
+          </Button>
+          <Button variant="link" className="text-white">
+            pricing
+          </Button>
+          <Button variant="link" className="text-white">
+            accuracy
+          </Button>
+          <Button variant="link" className="text-white">
+            Language
+          </Button>
         </div>
       </div>
     </main>

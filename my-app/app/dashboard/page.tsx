@@ -113,20 +113,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import ReactPlayer from "react-player";
-/*import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";*/
-
-/*import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";*/
-import { MdOutlineSubtitles } from "react-icons/md";
+import { MdAccountCircle, MdOutlineSubtitles } from "react-icons/md";
 import {
   Select,
   SelectContent,
@@ -136,7 +123,6 @@ import {
 } from "@/components/ui/select";
 
 import { Input } from "@/components/ui/input";
-//import { Label } from "@/components/ui/label";
 import {
   FileTextIcon,
   LoopIcon,
@@ -151,24 +137,59 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { IoReturnDownBack } from "react-icons/io5";
-//import { auth, storage } from "../firebase/config";
-/*import {
-  ref,
-  getDownloadURL,
-  uploadBytesResumable,
-  listAll,
-  deleteObject,
-} from "firebase/storage";*/
-//import { Progress } from "@/components/ui/progress";
-
+import { AudioPlayer } from "../player/player";
 interface Item {
   name: string;
   path: string;
   url: string;
 }
+interface Subtitle {
+  start: number;
+  end: number;
+  text: string;
+}
 
-//type LanguageType = undefined | string;
+interface AudioPlayerProps {
+  audioUrl: string;
+  srtString: string;
+}
+
+const parseSRT = (srt: string): Subtitle[] => {
+  const regex =
+    /(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n([\s\S]*?)(?=\n{2}|\n*$)/g;
+  const subtitles: Subtitle[] = [];
+  let match;
+  while ((match = regex.exec(srt)) !== null) {
+    const start = parseSrtTime(match[2]);
+    const end = parseSrtTime(match[3]);
+    subtitles.push({
+      start,
+      end,
+      text: match[4],
+    });
+  }
+  return subtitles;
+};
+
+const parseSrtTime = (srtTime: string): number => {
+  const [hours, minutes, seconds] = srtTime.split(":");
+  const [sec, millisec] = seconds.split(",");
+  return (
+    parseInt(hours, 10) * 3600 +
+    parseInt(minutes, 10) * 60 +
+    parseInt(sec, 10) +
+    parseInt(millisec, 10) / 1000
+  );
+};
+const formatTime = (time: number): string => {
+  const hours = Math.floor(time / 3600);
+  const minutes = Math.floor((time % 3600) / 60);
+  const seconds = Math.floor(time % 60);
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+    2,
+    "0"
+  )}:${String(seconds).padStart(2, "0")}`;
+};
 fal.config({
   credentials:
     "3acaf80b-c509-4c6d-a9a3-53201a9b9822:2779e88cfa33dbafceb17400f21c6b6d",
@@ -209,7 +230,7 @@ interface ShunkItems {
 }
 export default function Dashboard() {
   const [uploadedFile, setUploadedFile] = useState<any>(null);
-  const [isAudioUrlDispo, setAudioUrlDispo] = useState(false);
+  const [isAudioUrlDispo, setAudioUrlDispo] = useState(true);
   const router = useRouter();
   const [texte, setText] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
@@ -257,10 +278,71 @@ export default function Dashboard() {
   const [youtubePlayerUrl, setYoutubePlayerUrl] = useState(false);
   const [isSearching, setisSearching] = useState(true);
   const [paragraphs, setParagraphs] = useState<string[]>([]);
+  const [textLanguageDetected, setTextLanguageDetected] = useState("");
+  const [subtitles, setSubtitles] = useState<Subtitle[]>([]);
+  const [currentSubtitle, setCurrentSubtitle] = useState<Subtitle | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [volume, setVolume] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showTime, setShowTime] = useState(true);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editedText, setEditedText] = useState<string>("");
+
   const finalText = useRef("");
   const timeStampTab = useRef<string[]>([]);
   const MAX_LENGTH = 300;
+  const priceId = "price_1Pp8vvHMq3uIqhfsUZwVE60I";
 
+  const audioUrl1 =
+    "https://firebasestorage.googleapis.com/v0/b/audiscribe-942e8.appspot.com/o/users%2FqwhrQtz0c4bBGcYfxAMHlnokihb2%2Fdata%2FaudioToTranscribe%7D?alt=media&token=23c0eb42-fe7c-4434-b69d-7f4765a887b9"; // Remplacez par l'URL de votre audio.
+  // Remplacez par l'URL de votre audio.
+  const srtString = `
+1
+00:00:00,000 --> 00:00:04,620
+Considéré comme voix-off professionnel, il faut être capable de comprendre rapidement,
+
+2
+00:00:05,080 --> 00:00:08,700
+de lire ou d'interpréter un texte ou un script que l'on n'a pas écrit,
+
+3
+00:00:09,140 --> 00:00:13,720
+sans changer un mot, sans répétition préalable, en un maximum de trois prises,
+
+4
+00:00:14,040 --> 00:00:17,460
+pour rassurer tout simplement le client ou le producteur qui vous a choisi.
+
+5
+00:00:17,460 --> 00:00:20,280
+D'ailleurs, dès la première prise, il faut qu'il soit rassuré.
+
+6
+00:00:20,460 --> 00:00:26,000
+Pour être pro de la voix-off, vous devez aussi être réactif et proposer toujours une solution.
+
+7
+00:00:26,160 --> 00:00:30,800
+Parce que n'oubliez pas, le but ultime d'une voix off, c'est de satisfaire un client ou
+`;
+
+  const handleEditClick = (index: number) => {
+    setEditingIndex(index);
+    setEditedText(subtitles[index].text);
+  };
+
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditedText(e.target.value);
+  };
+
+  const handleEditSave = (index: number) => {
+    const updatedSubtitles = [...subtitles];
+    updatedSubtitles[index].text = editedText;
+    setSubtitles(updatedSubtitles);
+    setEditingIndex(null);
+    setEditedText("");
+  };
   // Fonction pour transformer le tableau en une chaîne de caractères
   const getItemsAsString = (): string => {
     return items
@@ -276,7 +358,7 @@ export default function Dashboard() {
       finalText.current = texte;
     }
   };
-  const priceId = "price_1Pp8vvHMq3uIqhfsUZwVE60I";
+
   const splitParagraphe = () => {
     if (texte.length > 0) {
       const splitParagraphs =
@@ -321,7 +403,6 @@ export default function Dashboard() {
   // Fonction pour ajouter le texte saisi à la chaîne existante
   const handleAddText = (text: string) => {
     const inputText = text.trim();
-
     if (inputText) {
       // Ajoute le texte à la référence du texte concaténé
       concatenatedTextRef.current = alignText(
@@ -329,39 +410,33 @@ export default function Dashboard() {
           ? `${concatenatedTextRef.current}\n\n ${inputText}`
           : inputText
       );
-
       // Affiche le texte concaténé dans la console (ou mettez à jour l'affichage selon les besoins)
       console.log(concatenatedTextRef.current);
     }
   };
 
-  useEffect(() => {
-    concatenatedTextRef.current = "";
-    for (let i = 0; i < items.length; i++) {
-      let result = convertToSRT(i, timeStampTab.current[i], items[i].texte);
-      handleAddText(result);
-    }
-  }, [items]);
+  const convertSubtitlesToSRT = (subtitles: Subtitle[]): string => {
+    return subtitles
+      .map((sub, index) => {
+        const startTime = formatToSrtTime(sub.start);
+        const endTime = formatToSrtTime(sub.end);
+        return `${index + 1}\n${startTime} --> ${endTime}\n${sub.text}\n`;
+      })
+      .join("\n");
+  };
 
-  const [searchTerm, setSearchTerm] = useState<string>("");
-
-  const highlightText = (text: string, highlight: string) => {
-    if (!highlight) {
-      return text;
-    }
-
-    const regex = new RegExp(`(${highlight})`, "gi");
-    const parts = text.split(regex);
-
-    return parts.map((part, index) =>
-      part.toLowerCase() === highlight.toLowerCase() ? (
-        <span key={index} className="bg-amber-200">
-          {part}
-        </span>
-      ) : (
-        part
-      )
-    );
+  const formatToSrtTime = (time: number): string => {
+    const hours = Math.floor(time / 3600);
+    const minutes = Math.floor((time % 3600) / 60);
+    const seconds = Math.floor(time % 60);
+    const milliseconds = Math.floor((time % 1) * 1000);
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+      2,
+      "0"
+    )}:${String(seconds).padStart(2, "0")},${String(milliseconds).padStart(
+      3,
+      "0"
+    )}`;
   };
 
   const frameworks = [
@@ -477,27 +552,6 @@ export default function Dashboard() {
     { value: "zh", label: "Chinese (中文)" },
   ];
 
-  // Fonction pour convertir un nombre décimal en format SRT
-  const convertDecimalToSRTTime = (time: number) => {
-    const hours = Math.floor(time / 3600);
-    const minutes = Math.floor((time % 3600) / 60);
-    const seconds = Math.floor(time % 60);
-    const milliseconds = Math.round((time - Math.floor(time)) * 1000);
-
-    return `${hours.toString().padStart(2, "0")}:${minutes
-      .toString()
-      .padStart(2, "0")}:${seconds.toString().padStart(2, "0")},${milliseconds
-      .toString()
-      .padStart(3, "0")}`;
-  };
-
-  // Fonction pour convertir le texte au format (startTime, endTime) en SRT
-  const convertToSRT = (index: number, time: string, text: string) => {
-    const [start, end] = time.replace(/[()]/g, "").split(",").map(Number);
-    const startTime = convertDecimalToSRTTime(start);
-    const endTime = convertDecimalToSRTTime(end);
-    return `${index + 1}\n${startTime} --> ${endTime}\n${text}\n`;
-  };
   // Fonction pour télécharger le fichier
   const handleDownloadSrt = (content: string, filename: string) => {
     const blob = new Blob([content], { type: "text/plain" });
@@ -512,29 +566,6 @@ export default function Dashboard() {
   };
 
   const downloadWordFile = async (text: string) => {
-    // Contenu du fichier Word
-
-    // Créer un Blob avec le contenu en type MIME spécifique à Word (.docx)
-    /* const blob = new Blob(["\ufeff", text], { type: "application/msword" });
-
-    // Créer une URL temporaire pour le Blob
-    const url = window.URL.createObjectURL(blob);
-
-    // Créer un lien de téléchargement
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "exemple1.docx"; // Nom du fichier Word
-
-    // Ajouter le lien au DOM, simuler un clic, puis le supprimer
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    // Libérer l'URL Blob
-    window.URL.revokeObjectURL(url);
-
-    */
-
     // Exemple de texte long
     const longText = `
      Ceci est un long texte qui va générer plusieurs paragraphes et potentiellement
@@ -650,7 +681,6 @@ export default function Dashboard() {
       });
     }
   };
-
   const addItem = (
     text: string,
     shunkTime: string,
@@ -668,11 +698,7 @@ export default function Dashboard() {
       },
     ]);
   };
-  const modifyText = (id: number, text: string) => {
-    setItems((prev) =>
-      prev.map((input) => (input.id === id ? { ...input, texte: text } : input))
-    );
-  };
+
   const handleActiveButton = () => {
     firstcheck.current += 1;
     console.log(firstcheck.current);
@@ -689,14 +715,12 @@ export default function Dashboard() {
       }
     }
   };
-
   async function selectPlan(
     price_id: string,
     stripeCustomerEmail: string,
     userId: string
   ) {
     console.log(price_id);
-
     await axios
       .post("/api/checkout", {
         price_Id: price_id,
@@ -960,6 +984,70 @@ export default function Dashboard() {
     // Joindre les paragraphes avec deux sauts de ligne pour les séparer
     return paragraphs.join("\n\n");
   }
+
+  useEffect(() => {
+    const parsedSubtitles = parseSRT(srtString);
+    setSubtitles(parsedSubtitles);
+  }, [srtString]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleTimeUpdate = () => {
+      const currentTime = audio.currentTime;
+      setProgress((currentTime / audio.duration) * 100);
+
+      const currentSub = subtitles.find(
+        (sub) => currentTime >= sub.start && currentTime <= sub.end
+      );
+      setCurrentSubtitle(currentSub || null);
+    };
+
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+
+    return () => {
+      audio.removeEventListener("timeupdate", handleTimeUpdate);
+    };
+  }, [subtitles]);
+
+  const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTime =
+      (parseFloat(e.target.value) / 100) * (audioRef.current?.duration || 0);
+    if (audioRef.current) {
+      audioRef.current.currentTime = newTime;
+    }
+  };
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVolume = parseFloat(e.target.value);
+    if (audioRef.current) {
+      audioRef.current.volume = newVolume;
+    }
+    setVolume(newVolume);
+  };
+
+  const handleSubtitleClick = (startTime: number) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = startTime;
+    }
+  };
+
+  const highlightText = (text: string, term: string) => {
+    if (!term) return text;
+    const regex = new RegExp(`(${term})`, "gi");
+    const parts = text.split(regex);
+    return parts.map((part, index) =>
+      part.toLowerCase() === term.toLowerCase() ? (
+        <span key={index} className="bg-green-300">
+          {part}
+        </span>
+      ) : (
+        part
+      )
+    );
+  };
+
   const submitSpeech = async () => {
     setSubmitted(true);
     try {
@@ -991,6 +1079,7 @@ export default function Dashboard() {
         console.log(`used text: ${setUsedTextLengh.current}`);
         console.log(`array length : ${result.chunks.length}`);
         console.log(`language : ${result.inferred_languages}`);
+        setTextLanguageDetected(`${result.inferred_languages}`);
         /* console.log(
           `first text: (${result.chunks[0].timestamp}) ${result.chunks[0].text}`
         );*/
@@ -1006,12 +1095,6 @@ export default function Dashboard() {
             i,
             `${result.chunks[i].speaker}`
           );
-          let resultInSrt = convertToSRT(
-            i,
-            `(${result.chunks[i].timestamp})`,
-            `${result.chunks[i].text}`
-          );
-          handleAddText(resultInSrt);
         }
 
         setSubmitted(false);
@@ -1281,17 +1364,8 @@ stream.on("finish", function() {
                   variant="outline"
                   className="hover:bg-green-100"
                   onClick={() => {
-                    if (concatenatedTextRef.current) {
-                      handleDownloadSrt(
-                        concatenatedTextRef.current,
-                        "srtfile.srt"
-                      );
-                    } else {
-                      toast({
-                        variant: "destructive",
-                        title: "Text not found.",
-                      });
-                    }
+                    const converter = convertSubtitlesToSRT(subtitles);
+                    handleDownloadSrt(converter, "srtfile.srt");
                   }}
                 >
                   export to Srt.
@@ -1645,62 +1719,70 @@ stream.on("finish", function() {
                 </div>
 
                 <div className="m-4">
-                  {isshunktext && (
-                    <div>
-                      {items.map((value, index) => (
-                        <div key={index + 1}>
-                          <p key={index + 2} className="my-1 text-gray-700">
-                            {value.speaker}
-                            <span
-                              key={index + 3}
-                              className="mx-2 text-amber-500"
+                  <p className=" mb-5 text-gray-600">
+                    Language:(
+                    <span className="text-amber-500">
+                      {textLanguageDetected}
+                    </span>
+                    )
+                  </p>
+
+                  <div className="p-4">
+                    <div className="mb-4">
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={showTime}
+                          onChange={(e) => setShowTime(e.target.checked)}
+                        />{" "}
+                        Show time before each subtitle
+                      </label>
+                    </div>
+                    <div className="mt-4">
+                      {subtitles.map((sub, index) => (
+                        <div key={index} className="my-2">
+                          {editingIndex === index ? (
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={editedText}
+                                onChange={handleEditChange}
+                                className="p-2 border rounded flex-grow"
+                              />
+                              <button
+                                onClick={() => handleEditSave(index)}
+                                className="p-2 bg-blue-500 text-white rounded"
+                              >
+                                Save
+                              </button>
+                            </div>
+                          ) : (
+                            <p
+                              className={`cursor-pointer ${
+                                currentSubtitle === sub
+                                  ? "bg-yellow-300 rounded-xl p-1"
+                                  : ""
+                              }`}
+                              onClick={() => handleSubtitleClick(sub.start)}
                             >
-                              {value.shunkedTime}
-                            </span>
-                          </p>
-                          <Textarea
-                            className="mt-2"
-                            placeholder="Shunked text "
-                            key={index}
-                            value={value.texte}
-                            onChange={(e) => modifyText(index, e.target.value)}
-                          />
+                              {showTime && (
+                                <span className="mr-2 text-gray-500">
+                                  ({formatTime(sub.start)})
+                                </span>
+                              )}
+                              {highlightText(sub.text, searchTerm)}
+                              <button
+                                onClick={() => handleEditClick(index)}
+                                className="ml-2 p-1 text-blue-500 underline"
+                              >
+                                Edit
+                              </button>
+                            </p>
+                          )}
                         </div>
                       ))}
                     </div>
-                  )}
-
-                  {!isshunktext && (
-                    <div>
-                      {isSearching ? (
-                        <div className="p-5 shadow-md rounded-md">
-                          {paragraphs.map((para, index) => (
-                            <p
-                              key={index}
-                              className="mb-2 border-b p-2"
-                              onClick={() => {
-                                setisSearching(!isSearching);
-                                splitParagraphe();
-                              }}
-                            >
-                              {highlightText(para, searchTerm)}
-                            </p>
-                          ))}
-                        </div>
-                      ) : (
-                        <Textarea
-                          placeholder="result"
-                          className="h-[100px]"
-                          value={texte}
-                          onChange={(e) => {
-                            setText(e.target.value);
-                            splitParagraphe();
-                          }}
-                          disabled={false}
-                        />
-                      )}
-                    </div>
-                  )}
+                  </div>
                 </div>
                 <Button
                   className="m-4"
@@ -1788,7 +1870,12 @@ stream.on("finish", function() {
           </ScrollArea>
           {isAudioUrlDispo && !isVideo && (
             <div className="fixed bottom-0 w-4/5 bg-slate-200 p-10 rounded-t-md">
-              <Player src={audioUrl.current} height={40} />
+              <audio
+                ref={audioRef}
+                src="https://firebasestorage.googleapis.com/v0/b/audiscribe-942e8.appspot.com/o/users%2FqwhrQtz0c4bBGcYfxAMHlnokihb2%2Fdata%2FaudioToTranscribe%7D?alt=media&token=23c0eb42-fe7c-4434-b69d-7f4765a887b9"
+                controls
+                className="w-full mb-4 "
+              />
             </div>
           )}
         </div>
@@ -1928,6 +2015,7 @@ stream.on("finish", function() {
                 <br />
                 <br />
                 <div className="grid  gap-4 ">
+                  <Separator />
                   <Popover open={openMobile} onOpenChange={setOpenMobile}>
                     <PopoverTrigger asChild>
                       <Button
@@ -2116,10 +2204,9 @@ stream.on("finish", function() {
                       </DialogTrigger>
                       <DialogContent className="sm:max-w-[425px]">
                         <DialogHeader>
-                          <DialogTitle>Edit profile</DialogTitle>
+                          <DialogTitle>Some Tools</DialogTitle>
                           <DialogDescription>
-                            Make changes to your profile here. Click save when
-                            you are done.
+                            additionnal tools to simplify your life.
                           </DialogDescription>
                         </DialogHeader>
                         <div className="flex justify-center mt-10">
@@ -2184,10 +2271,9 @@ stream.on("finish", function() {
                       </DrawerTrigger>
                       <DrawerContent>
                         <DrawerHeader className="text-left">
-                          <DrawerTitle>Edit profile</DrawerTitle>
+                          <DrawerTitle>Download your file</DrawerTitle>
                           <DrawerDescription>
-                            Make changes to your profile here. Click save when
-                            you are done.
+                            Choose your format.
                           </DrawerDescription>
                         </DrawerHeader>
                         <div className="w-full">
@@ -2282,28 +2368,10 @@ stream.on("finish", function() {
               </div>
             </div>{" "}
             <div className="m-4">
-              {isshunktext && (
-                <div>
-                  {items.map((value, index) => (
-                    <div key={index + 1}>
-                      <p className="my-1 text-gray-700">
-                        {value.speaker}
-                        <span className="mx-2 text-amber-500">
-                          {value.shunkedTime}
-                        </span>
-                      </p>
-                      <Textarea
-                        className="mt-2"
-                        placeholder="Shunked text "
-                        key={index}
-                        value={value.texte}
-                        onChange={(e) => modifyText(index, e.target.value)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-
+              <p className="text-[10px] mb-3 text-gray-600">
+                Language:(
+                <span className="text-amber-500">{textLanguageDetected}</span>)
+              </p>
               {!isshunktext && (
                 <div>
                   {isSearching ? (
@@ -2424,3 +2492,31 @@ stream.on("finish", function() {
     );
   }
 }
+
+/*
+
+{subtitles.map((sub, index) => (
+                          <div key={index + 1}>
+                            <p>
+                              <MdAccountCircle />
+                              <span className="text-gray-500">speaker</span>
+                            </p>
+
+                            <p
+                              key={index}
+                              className={`my-2 cursor-pointer ${
+                                currentSubtitle === sub ? "bg-yellow-300" : ""
+                              }`}
+                              onClick={() => handleSubtitleClick(sub.start)}
+                            >
+                              {" "}
+                              {showTime && (
+                                <span className="mr-2 text-gray-500">
+                                  ({formatTime(sub.start)})
+                                </span>
+                              )}
+                              {highlightText(sub.text, searchTerm)}
+                            </p>
+                          </div>
+                        ))}
+*/
