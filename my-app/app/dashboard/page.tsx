@@ -44,6 +44,7 @@ import {
   PauseIcon,
   PlayIcon,
   PlusCircleIcon,
+  SaveIcon,
   SearchIcon,
   Settings,
   TrashIcon,
@@ -276,19 +277,25 @@ export default function Dashboard() {
   const setUsedTextLengh = useRef(0);
   const [checkingUrl, setCheckingYoutubeUrl] = useState(false);
   const [youtubePlayerUrl, setYoutubePlayerUrl] = useState(false);
-  const [isSearching, setisSearching] = useState(true);
   const [paragraphs, setParagraphs] = useState<string[]>([]);
   const [textLanguageDetected, setTextLanguageDetected] = useState("");
   const [subtitles, setSubtitles] = useState<Subtitle[]>([]);
   const [currentSubtitle, setCurrentSubtitle] = useState<Subtitle | null>(null);
+  const [currentSubtitleDesktop, setCurrentSubtitleDesktop] =
+    useState<Subtitle | null>(null);
+
   const [progress, setProgress] = useState(0);
   const [volume, setVolume] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [showTime, setShowTime] = useState(true);
+  const [exportWithShowTime, setExportWithShowTime] = useState(false);
+  const [exportWithSpeakerName, setExportWithSpeakerName] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const audioRef1 = useRef<HTMLAudioElement>(null);
+
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editedText, setEditedText] = useState<string>("");
-
+  const transcriptionResultInSrt = useRef<string>("");
   const finalText = useRef("");
   const timeStampTab = useRef<string[]>([]);
   const MAX_LENGTH = 300;
@@ -358,7 +365,25 @@ Parce que n'oubliez pas, le but ultime d'une voix off, c'est de satisfaire un cl
       finalText.current = texte;
     }
   };
+  // Fonction pour convertir un nombre décimal en format SRT
+  const convertDecimalToSRTTime = (time: number) => {
+    const hours = Math.floor(time / 3600);
+    const minutes = Math.floor((time % 3600) / 60);
+    const seconds = Math.floor(time % 60);
+    const milliseconds = Math.round((time - Math.floor(time)) * 1000);
 
+    return `${hours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}:${seconds.toString().padStart(2, "0")},${milliseconds
+      .toString()
+      .padStart(3, "0")}`;
+  };
+  const convertToSRT = (index: number, time: string, text: string) => {
+    const [start, end] = time.replace(/[()]/g, "").split(",").map(Number);
+    const startTime = convertDecimalToSRTTime(start);
+    const endTime = convertDecimalToSRTTime(end);
+    return `${index + 1}\n${startTime} --> ${endTime}\n${text}\n`;
+  };
   const splitParagraphe = () => {
     if (texte.length > 0) {
       const splitParagraphs =
@@ -395,23 +420,32 @@ Parce que n'oubliez pas, le but ultime d'une voix off, c'est de satisfaire un cl
         });
       });
   };
-  // Ref pour l'input de texte
-  const inputRef = useRef(null);
-  // Ref pour le texte concaténé
-  const concatenatedTextRef = useRef<string>("");
+  const convertSubtitlesToString = (
+    subtitles: Subtitle[],
+    includeTimestamps: boolean = true,
+    speaker: string = ""
+  ): string => {
+    return subtitles
+      .map((sub) => {
+        const timeString = includeTimestamps
+          ? `(${formatTime(sub.start)}) `
+          : "";
+        const speakerString = speaker ? `${speaker}: ` : "";
 
+        return `${speakerString}\n${timeString}\n${sub.text}`;
+      })
+      .join("\n");
+  };
   // Fonction pour ajouter le texte saisi à la chaîne existante
-  const handleAddText = (text: string) => {
+  const handleAddConvertedSrtInText = (text: string) => {
     const inputText = text.trim();
     if (inputText) {
       // Ajoute le texte à la référence du texte concaténé
-      concatenatedTextRef.current = alignText(
-        concatenatedTextRef.current
-          ? `${concatenatedTextRef.current}\n\n ${inputText}`
+      transcriptionResultInSrt.current = alignText(
+        transcriptionResultInSrt.current
+          ? `${transcriptionResultInSrt.current}\n\n ${inputText}`
           : inputText
       );
-      // Affiche le texte concaténé dans la console (ou mettez à jour l'affichage selon les besoins)
-      console.log(concatenatedTextRef.current);
     }
   };
 
@@ -554,57 +588,56 @@ Parce que n'oubliez pas, le but ultime d'une voix off, c'est de satisfaire un cl
 
   // Fonction pour télécharger le fichier
   const handleDownloadSrt = (content: string, filename: string) => {
-    const blob = new Blob([content], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    if (content) {
+      const blob = new Blob([content], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Srt file not found.",
+      });
+    }
   };
 
   const downloadWordFile = async (text: string) => {
-    // Exemple de texte long
-    const longText = `
-     Ceci est un long texte qui va générer plusieurs paragraphes et potentiellement
-     plusieurs pages dans un document Word. Lorem ipsum dolor sit amet, consectetur 
-     adipiscing elit. Pellentesque habitant morbi tristique senectus et netus et malesuada fames
-     ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, 
-     ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. 
-     Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. 
-     Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, 
-     elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. 
-     Donec non enim in turpis pulvinar facilisis. Ut felis. Praesent dapibus, neque id cursus faucibus, 
-     tortor neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat volutpat. Nam dui mi, 
-     tincidunt quis, accumsan porttitor, facilisis luctus, metus.
-   `;
+    if (text) {
+      // Diviser le texte en paragraphes (chaque nouvelle ligne dans un nouveau paragraphe)
+      const paragraphs = text.split("\n").map((line) => new Paragraph(line));
 
-    // Diviser le texte en paragraphes (chaque nouvelle ligne dans un nouveau paragraphe)
-    const paragraphs = longText.split("\n").map((line) => new Paragraph(line));
+      // Si nécessaire, on peut aussi ajouter manuellement des sauts de page entre les paragraphes
+      const documentParagraphs: any = paragraphs.flatMap((paragraph, index) => [
+        paragraph,
+        ...(index % 10 === 0 && index !== 0 ? [new PageBreak()] : []), // Ajouter une nouvelle page tous les 10 paragraphes
+      ]);
 
-    // Si nécessaire, on peut aussi ajouter manuellement des sauts de page entre les paragraphes
-    const documentParagraphs: any = paragraphs.flatMap((paragraph, index) => [
-      paragraph,
-      ...(index % 10 === 0 && index !== 0 ? [new PageBreak()] : []), // Ajouter une nouvelle page tous les 10 paragraphes
-    ]);
+      // Créer un document avec les paragraphes
+      const doc = new Document({
+        sections: [
+          {
+            properties: {},
+            children: documentParagraphs,
+          },
+        ],
+      });
 
-    // Créer un document avec les paragraphes
-    const doc = new Document({
-      sections: [
-        {
-          properties: {},
-          children: documentParagraphs,
-        },
-      ],
-    });
+      // Générer le fichier .docx
+      const blob = await Packer.toBlob(doc);
 
-    // Générer le fichier .docx
-    const blob = await Packer.toBlob(doc);
-
-    // Télécharger le fichier .docx
-    saveAs(blob, "exemple.docx");
+      // Télécharger le fichier .docx
+      saveAs(blob, "exemple.docx");
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Text not found.",
+      });
+    }
   };
   const handleDownloadTxt = (text: string) => {
     if (text) {
@@ -667,7 +700,8 @@ Parce que n'oubliez pas, le but ultime d'une voix off, c'est de satisfaire un cl
     }
   };
   const handleCopy = async () => {
-    if (texte) {
+    const result = convertSubtitlesToString(subtitles, false);
+    if (result) {
       try {
         await navigator.clipboard.writeText(texte);
         alert("Copied to clipboard!");
@@ -986,9 +1020,9 @@ Parce que n'oubliez pas, le but ultime d'une voix off, c'est de satisfaire un cl
   }
 
   useEffect(() => {
-    const parsedSubtitles = parseSRT(srtString);
+    const parsedSubtitles = parseSRT(transcriptionResultInSrt.current);
     setSubtitles(parsedSubtitles);
-  }, [srtString]);
+  }, [transcriptionResultInSrt.current]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -1002,6 +1036,26 @@ Parce que n'oubliez pas, le but ultime d'une voix off, c'est de satisfaire un cl
         (sub) => currentTime >= sub.start && currentTime <= sub.end
       );
       setCurrentSubtitle(currentSub || null);
+    };
+
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+
+    return () => {
+      audio.removeEventListener("timeupdate", handleTimeUpdate);
+    };
+  }, [subtitles]);
+  useEffect(() => {
+    const audio = audioRef1.current;
+    if (!audio) return;
+
+    const handleTimeUpdate = () => {
+      const currentTime = audio.currentTime;
+      setProgress((currentTime / audio.duration) * 100);
+
+      const currentSub = subtitles.find(
+        (sub) => currentTime >= sub.start && currentTime <= sub.end
+      );
+      setCurrentSubtitleDesktop(currentSub || null);
     };
 
     audio.addEventListener("timeupdate", handleTimeUpdate);
@@ -1030,6 +1084,11 @@ Parce que n'oubliez pas, le but ultime d'une voix off, c'est de satisfaire un cl
   const handleSubtitleClick = (startTime: number) => {
     if (audioRef.current) {
       audioRef.current.currentTime = startTime;
+    }
+  };
+  const handleSubtitleClickdesktop = (startTime: number) => {
+    if (audioRef1.current) {
+      audioRef1.current.currentTime = startTime;
     }
   };
 
@@ -1095,6 +1154,13 @@ Parce que n'oubliez pas, le but ultime d'une voix off, c'est de satisfaire un cl
             i,
             `${result.chunks[i].speaker}`
           );
+
+          let resultInSrt = convertToSRT(
+            i,
+            `(${result.chunks[i].timestamp})`,
+            `${result.chunks[i].text}`
+          );
+          handleAddConvertedSrtInText(resultInSrt);
         }
 
         setSubmitted(false);
@@ -1330,7 +1396,12 @@ stream.on("finish", function() {
                   variant="outline"
                   className="hover:bg-green-100"
                   onClick={() => {
-                    creatPDF(finalText.current);
+                    const result = convertSubtitlesToString(
+                      subtitles,
+                      exportWithShowTime,
+                      "Ashlyn"
+                    );
+                    creatPDF(result);
                   }}
                 >
                   export to PDF. <FaRegFilePdf className="mx-2 text-red-600" />
@@ -1339,14 +1410,12 @@ stream.on("finish", function() {
                   variant="outline"
                   className="hover:bg-green-100"
                   onClick={() => {
-                    if (texte) {
-                      downloadWordFile(finalText.current);
-                    } else {
-                      toast({
-                        variant: "destructive",
-                        title: "Text not found.",
-                      });
-                    }
+                    const result = convertSubtitlesToString(
+                      subtitles,
+                      exportWithShowTime,
+                      "Ashlyn"
+                    );
+                    downloadWordFile(result);
                   }}
                 >
                   export to Docx.
@@ -1355,7 +1424,15 @@ stream.on("finish", function() {
                 <Button
                   variant="outline"
                   className="hover:bg-green-100"
-                  onClick={() => handleDownloadTxt(finalText.current)}
+                  onClick={() => {
+                    const result = convertSubtitlesToString(
+                      subtitles,
+                      exportWithShowTime,
+                      "Ashlyn"
+                    );
+
+                    handleDownloadTxt(result);
+                  }}
                 >
                   export to Txt.
                   <GrDocumentTxt className="mx-2 text-gray-600" />
@@ -1364,8 +1441,8 @@ stream.on("finish", function() {
                   variant="outline"
                   className="hover:bg-green-100"
                   onClick={() => {
-                    const converter = convertSubtitlesToSRT(subtitles);
-                    handleDownloadSrt(converter, "srtfile.srt");
+                    const result = convertSubtitlesToSRT(subtitles);
+                    handleDownloadSrt(result, "srtfile.srt");
                   }}
                 >
                   export to Srt.
@@ -1375,15 +1452,26 @@ stream.on("finish", function() {
                   <Checkbox
                     id="terms1"
                     onCheckedChange={(e: boolean) => {
-                      setShunkText(e);
-                      chooseTextType(e);
-                      console.log(finalText.current);
+                      setExportWithShowTime(e);
                     }}
-                    defaultChecked={false}
+                    checked={exportWithShowTime}
                   />
                   <br />
                   <p className="text-gray-500 text-sm text-center">
-                    Shunk the text?(select to modify srt file)
+                    export with TimeStamp?
+                  </p>
+                </div>
+                <div>
+                  <Checkbox
+                    id="terms1"
+                    onCheckedChange={(e: boolean) => {
+                      setExportWithSpeakerName(e);
+                    }}
+                    checked={exportWithSpeakerName}
+                  />
+                  <br />
+                  <p className="text-gray-500 text-sm text-center">
+                    export with Speaker name?
                   </p>
                 </div>
                 <div>
@@ -1690,28 +1778,12 @@ stream.on("finish", function() {
                         <Button variant="outline" onClick={handleCopy}>
                           <CopyIcon className="text-amber-500" />
                         </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            setisSearching(!isSearching);
-                            splitParagraphe();
-                          }}
-                        >
-                          {isSearching ? (
-                            <Edit2Icon className="text-amber-500" />
-                          ) : (
-                            <CheckIcon className="text-green-500" />
-                          )}
-                        </Button>
-                        <div>
-                          {isSearching ? (
-                            <Input
-                              placeholder="Search text or word..."
-                              value={searchTerm}
-                              onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                          ) : null}
-                        </div>
+
+                        <Input
+                          placeholder="Search text or word..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                       </div>
                     </div>
                     <Separator className="my-4" />
@@ -1729,41 +1801,42 @@ stream.on("finish", function() {
 
                   <div className="p-4">
                     <div className="mb-4">
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={showTime}
-                          onChange={(e) => setShowTime(e.target.checked)}
-                        />{" "}
-                        Show time before each subtitle
-                      </label>
+                      <Checkbox
+                        id="terms1"
+                        onCheckedChange={(e: boolean) => {
+                          setShowTime(e);
+                        }}
+                        defaultChecked={true}
+                        checked={showTime}
+                      />
+                      <p>Show timeStamp?</p>
                     </div>
-                    <div className="mt-4">
+                    <div className="mt-4 shadow-md rounded-xl p-3">
                       {subtitles.map((sub, index) => (
                         <div key={index} className="my-2">
                           {editingIndex === index ? (
                             <div className="flex gap-2">
-                              <input
-                                type="text"
+                              <Input
                                 value={editedText}
                                 onChange={handleEditChange}
-                                className="p-2 border rounded flex-grow"
                               />
-                              <button
+                              <Button
+                                variant="outline"
                                 onClick={() => handleEditSave(index)}
-                                className="p-2 bg-blue-500 text-white rounded"
                               >
-                                Save
-                              </button>
+                                <CheckIcon className="text-green-600" />
+                              </Button>
                             </div>
                           ) : (
                             <p
                               className={`cursor-pointer ${
-                                currentSubtitle === sub
-                                  ? "bg-yellow-300 rounded-xl p-1"
+                                currentSubtitleDesktop === sub
+                                  ? "bg-amber-100 rounded-xl "
                                   : ""
                               }`}
-                              onClick={() => handleSubtitleClick(sub.start)}
+                              onClick={() =>
+                                handleSubtitleClickdesktop(sub.start)
+                              }
                             >
                               {showTime && (
                                 <span className="mr-2 text-gray-500">
@@ -1771,12 +1844,13 @@ stream.on("finish", function() {
                                 </span>
                               )}
                               {highlightText(sub.text, searchTerm)}
-                              <button
+                              <Button
                                 onClick={() => handleEditClick(index)}
-                                className="ml-2 p-1 text-blue-500 underline"
+                                variant="ghost"
+                                size="sm"
                               >
-                                Edit
-                              </button>
+                                <Edit2Icon className="size-[12px] text-gray-500" />
+                              </Button>
                             </p>
                           )}
                         </div>
@@ -1871,8 +1945,8 @@ stream.on("finish", function() {
           {isAudioUrlDispo && !isVideo && (
             <div className="fixed bottom-0 w-4/5 bg-slate-200 p-10 rounded-t-md">
               <audio
-                ref={audioRef}
-                src="https://firebasestorage.googleapis.com/v0/b/audiscribe-942e8.appspot.com/o/users%2FqwhrQtz0c4bBGcYfxAMHlnokihb2%2Fdata%2FaudioToTranscribe%7D?alt=media&token=23c0eb42-fe7c-4434-b69d-7f4765a887b9"
+                ref={audioRef1}
+                src={audioUrl.current}
                 controls
                 className="w-full mb-4 "
               />
@@ -2136,21 +2210,6 @@ stream.on("finish", function() {
                   <div className="flex items-center gap-2">
                     <div>
                       <Checkbox
-                        id="terms1"
-                        onCheckedChange={(e: boolean) => {
-                          setShunkText(e);
-                          chooseTextType(e);
-                          console.log(finalText.current);
-                        }}
-                        defaultChecked={false}
-                      />
-                      <br />
-                      <p className="text-gray-500 text-[10px] text-center">
-                        Shunk the text?(select to modify srt file)
-                      </p>
-                    </div>
-                    <div>
-                      <Checkbox
                         id="terms2"
                         onCheckedChange={(e: boolean) => {
                           setAutoDetectLanguage(e);
@@ -2173,28 +2232,11 @@ stream.on("finish", function() {
                     <Button variant="outline" onClick={handleCopy}>
                       <CopyIcon className="text-amber-500" />
                     </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setisSearching(!isSearching);
-                        splitParagraphe();
-                      }}
-                    >
-                      {isSearching ? (
-                        <Edit2Icon className="text-amber-500" />
-                      ) : (
-                        <CheckIcon className="text-green-500" />
-                      )}
-                    </Button>
-                    <div>
-                      {isSearching ? (
-                        <Input
-                          placeholder="Search text or word..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                      ) : null}
-                    </div>
+                    <Input
+                      placeholder="Search text or word..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
 
                     <Dialog>
                       <DialogTrigger asChild>
@@ -2285,7 +2327,12 @@ stream.on("finish", function() {
                                 variant="outline"
                                 className="hover:bg-green-100"
                                 onClick={() => {
-                                  creatPDF(finalText.current);
+                                  const result = convertSubtitlesToString(
+                                    subtitles,
+                                    exportWithShowTime,
+                                    "Ashlyn"
+                                  );
+                                  creatPDF(result);
                                 }}
                               >
                                 export to PDF.{" "}
@@ -2295,14 +2342,12 @@ stream.on("finish", function() {
                                 variant="outline"
                                 className="hover:bg-green-100"
                                 onClick={() => {
-                                  if (finalText.current) {
-                                    downloadWordFile(finalText.current);
-                                  } else {
-                                    toast({
-                                      variant: "destructive",
-                                      title: "Text not found.",
-                                    });
-                                  }
+                                  const result = convertSubtitlesToString(
+                                    subtitles,
+                                    exportWithShowTime,
+                                    "Ashlyn"
+                                  );
+                                  downloadWordFile(result);
                                 }}
                               >
                                 export to Docx.
@@ -2311,9 +2356,14 @@ stream.on("finish", function() {
                               <Button
                                 variant="outline"
                                 className="hover:bg-green-100"
-                                onClick={() =>
-                                  handleDownloadTxt(finalText.current)
-                                }
+                                onClick={() => {
+                                  const result = convertSubtitlesToString(
+                                    subtitles,
+                                    exportWithShowTime,
+                                    "Ashlyn"
+                                  );
+                                  handleDownloadTxt(result);
+                                }}
                               >
                                 export to Txt.
                                 <GrDocumentTxt className="mx-2 text-gray-600" />
@@ -2322,35 +2372,41 @@ stream.on("finish", function() {
                                 variant="outline"
                                 className="hover:bg-green-100"
                                 onClick={() => {
-                                  if (concatenatedTextRef.current) {
-                                    handleDownloadSrt(
-                                      concatenatedTextRef.current,
-                                      "srtfile.srt"
-                                    );
-                                  } else {
-                                    toast({
-                                      variant: "destructive",
-                                      title: "Text not found.",
-                                    });
-                                  }
+                                  const result =
+                                    convertSubtitlesToSRT(subtitles);
+                                  handleDownloadSrt(result, "srtfile.srt");
                                 }}
                               >
                                 export to Srt.
                                 <MdOutlineSubtitles className="mx-2 text-gray-600" />
                               </Button>
                               <div className="flex items-center gap-3">
-                                <Checkbox
-                                  id="terms1"
-                                  onCheckedChange={(e: boolean) => {
-                                    chooseTextType(e);
-                                    console.log(finalText.current);
-                                  }}
-                                  defaultChecked={false}
-                                />
-
-                                <p className="text-gray-500 text-sm">
-                                  Export with timestamp?
-                                </p>
+                                <div>
+                                  <Checkbox
+                                    id="terms1"
+                                    onCheckedChange={(e: boolean) => {
+                                      setExportWithShowTime(e);
+                                    }}
+                                    checked={exportWithShowTime}
+                                  />
+                                  <br />
+                                  <p className="text-gray-500 text-sm text-center">
+                                    export with TimeStamp?
+                                  </p>
+                                </div>
+                                <div>
+                                  <Checkbox
+                                    id="terms1"
+                                    onCheckedChange={(e: boolean) => {
+                                      setExportWithSpeakerName(e);
+                                    }}
+                                    checked={exportWithSpeakerName}
+                                  />
+                                  <br />
+                                  <p className="text-gray-500 text-sm text-center">
+                                    export with Speaker name?
+                                  </p>
+                                </div>
                               </div>
                             </div>
                           </div>{" "}
@@ -2372,30 +2428,63 @@ stream.on("finish", function() {
                 Language:(
                 <span className="text-amber-500">{textLanguageDetected}</span>)
               </p>
-              {!isshunktext && (
-                <div>
-                  {isSearching ? (
-                    <div className="p-5 shadow-md rounded-md">
-                      {paragraphs.map((para, index) => (
-                        <p key={index} className="mb-2 border-b p-2">
-                          {highlightText(para, searchTerm)}
-                        </p>
-                      ))}
-                    </div>
-                  ) : (
-                    <Textarea
-                      placeholder="result"
-                      className="h-[100px]"
-                      value={texte}
-                      onChange={(e) => {
-                        setText(e.target.value);
-                        splitParagraphe();
-                      }}
-                      disabled={false}
-                    />
-                  )}
+              <div className="p-4">
+                <div className="mb-4">
+                  <Checkbox
+                    id="terms1"
+                    onCheckedChange={(e: boolean) => {
+                      setShowTime(e);
+                    }}
+                    defaultChecked={true}
+                    checked={showTime}
+                  />
+                  <p>Show timeStamp?</p>
                 </div>
-              )}
+                <div className="mt-4 shadow-md rounded-xl p-3">
+                  {subtitles.map((sub, index) => (
+                    <div key={index} className="my-2">
+                      {editingIndex === index ? (
+                        <div className="flex gap-2">
+                          <Input
+                            value={editedText}
+                            onChange={handleEditChange}
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditSave(index)}
+                          >
+                            <CheckIcon className="text-green-600" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <p
+                          className={`cursor-pointer ${
+                            currentSubtitle === sub
+                              ? "bg-amber-100 rounded-xl "
+                              : ""
+                          }`}
+                          onClick={() => handleSubtitleClick(sub.start)}
+                        >
+                          {showTime && (
+                            <span className="mr-2 text-gray-500">
+                              ({formatTime(sub.start)})
+                            </span>
+                          )}
+                          {highlightText(sub.text, searchTerm)}
+                          <Button
+                            onClick={() => handleEditClick(index)}
+                            variant="ghost"
+                            size="sm"
+                          >
+                            <Edit2Icon className="size-[12px] text-gray-500" />
+                          </Button>
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
             <Button
               className="m-4"
@@ -2484,8 +2573,13 @@ stream.on("finish", function() {
         </div>
 
         {isAudioUrlDispo && !isVideo && (
-          <div className="fixed bottom-0 w-full bg-slate-200 p-5 rounded-t-md">
-            <Player src={audioUrl.current} height={40} />
+          <div className="fixed bottom-0 flex  w-full bg-slate-200 p-5 rounded-t-md">
+            <audio
+              ref={audioRef}
+              src={audioUrl.current}
+              controls
+              className="w-full "
+            />
           </div>
         )}
       </div>
