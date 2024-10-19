@@ -138,7 +138,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { AudioPlayer } from "../player/player";
+import YouTubePlayer from "react-player/youtube";
 interface Item {
   name: string;
   path: string;
@@ -231,7 +231,7 @@ interface ShunkItems {
 }
 export default function Dashboard() {
   const [uploadedFile, setUploadedFile] = useState<any>(null);
-  const [isAudioUrlDispo, setAudioUrlDispo] = useState(true);
+  const [isAudioUrlDispo, setAudioUrlDispo] = useState(false);
   const router = useRouter();
   const [texte, setText] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
@@ -269,15 +269,13 @@ export default function Dashboard() {
   const firstcheck = useRef(0);
   const isTranslante = useRef(false);
   const [isVideo, setIsVideo] = useState(false);
-  const [isshunktext, setShunkText] = useState(false);
   const [autoDetectLanguage, setAutoDetectLanguage] = useState(true);
   const [items, setItems] = useState<ShunkItems[]>([]);
   const [value, setValue] = useState("transcribe");
   const [valueLanguage, setLanguageValue] = useState("en");
   const setUsedTextLengh = useRef(0);
   const [checkingUrl, setCheckingYoutubeUrl] = useState(false);
-  const [youtubePlayerUrl, setYoutubePlayerUrl] = useState(false);
-  const [paragraphs, setParagraphs] = useState<string[]>([]);
+  const [youtubePlayerUrl, setYoutubePlayerUrl] = useState(true);
   const [textLanguageDetected, setTextLanguageDetected] = useState("");
   const [subtitles, setSubtitles] = useState<Subtitle[]>([]);
   const [currentSubtitle, setCurrentSubtitle] = useState<Subtitle | null>(null);
@@ -292,48 +290,18 @@ export default function Dashboard() {
   const [exportWithSpeakerName, setExportWithSpeakerName] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const audioRef1 = useRef<HTMLAudioElement>(null);
-
+  const playerRef = useRef<YouTubePlayer>(null);
+  const playerRef1 = useRef<YouTubePlayer>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editedText, setEditedText] = useState<string>("");
   const transcriptionResultInSrt = useRef<string>("");
-  const finalText = useRef("");
-  const timeStampTab = useRef<string[]>([]);
+  const speakerArray = useRef<string[]>([]);
+  const [speakerArrayShow, setSpeakerArrayShow] = useState<string[]>([]);
   const MAX_LENGTH = 300;
   const priceId = "price_1Pp8vvHMq3uIqhfsUZwVE60I";
-
-  const audioUrl1 =
-    "https://firebasestorage.googleapis.com/v0/b/audiscribe-942e8.appspot.com/o/users%2FqwhrQtz0c4bBGcYfxAMHlnokihb2%2Fdata%2FaudioToTranscribe%7D?alt=media&token=23c0eb42-fe7c-4434-b69d-7f4765a887b9"; // Remplacez par l'URL de votre audio.
-  // Remplacez par l'URL de votre audio.
-  const srtString = `
-1
-00:00:00,000 --> 00:00:04,620
-Considéré comme voix-off professionnel, il faut être capable de comprendre rapidement,
-
-2
-00:00:05,080 --> 00:00:08,700
-de lire ou d'interpréter un texte ou un script que l'on n'a pas écrit,
-
-3
-00:00:09,140 --> 00:00:13,720
-sans changer un mot, sans répétition préalable, en un maximum de trois prises,
-
-4
-00:00:14,040 --> 00:00:17,460
-pour rassurer tout simplement le client ou le producteur qui vous a choisi.
-
-5
-00:00:17,460 --> 00:00:20,280
-D'ailleurs, dès la première prise, il faut qu'il soit rassuré.
-
-6
-00:00:20,460 --> 00:00:26,000
-Pour être pro de la voix-off, vous devez aussi être réactif et proposer toujours une solution.
-
-7
-00:00:26,160 --> 00:00:30,800
-Parce que n'oubliez pas, le but ultime d'une voix off, c'est de satisfaire un client ou
-`;
-
+  const addSpeaker = (newItem: string) => {
+    setSpeakerArrayShow((prevItems) => [...prevItems, newItem]);
+  };
   const handleEditClick = (index: number) => {
     setEditingIndex(index);
     setEditedText(subtitles[index].text);
@@ -350,21 +318,7 @@ Parce que n'oubliez pas, le but ultime d'une voix off, c'est de satisfaire un cl
     setEditingIndex(null);
     setEditedText("");
   };
-  // Fonction pour transformer le tableau en une chaîne de caractères
-  const getItemsAsString = (): string => {
-    return items
-      .map((item) => {
-        return ` ${item.speaker}\n${item.shunkedTime}\n${item.texte}`;
-      })
-      .join("\n"); // Utilise "\n" pour séparer chaque élément avec une nouvelle ligne
-  };
-  const chooseTextType = (chunked: boolean) => {
-    if (chunked) {
-      finalText.current = getItemsAsString();
-    } else {
-      finalText.current = texte;
-    }
-  };
+
   // Fonction pour convertir un nombre décimal en format SRT
   const convertDecimalToSRTTime = (time: number) => {
     const hours = Math.floor(time / 3600);
@@ -383,18 +337,6 @@ Parce que n'oubliez pas, le but ultime d'une voix off, c'est de satisfaire un cl
     const startTime = convertDecimalToSRTTime(start);
     const endTime = convertDecimalToSRTTime(end);
     return `${index + 1}\n${startTime} --> ${endTime}\n${text}\n`;
-  };
-  const splitParagraphe = () => {
-    if (texte.length > 0) {
-      const splitParagraphs =
-        texte.length > MAX_LENGTH
-          ? texte.match(/.{1,500}(\s|$)/g) || []
-          : [texte];
-
-      setParagraphs(splitParagraphs);
-    } else {
-      setParagraphs([]);
-    }
   };
 
   const cancelSubscription = async () => {
@@ -422,19 +364,19 @@ Parce que n'oubliez pas, le but ultime d'une voix off, c'est de satisfaire un cl
   };
   const convertSubtitlesToString = (
     subtitles: Subtitle[],
-    includeTimestamps: boolean = true,
-    speaker: string = ""
+    includeTimestamps: boolean,
+    speaker: boolean
   ): string => {
     return subtitles
-      .map((sub) => {
+      .map((sub, index) => {
         const timeString = includeTimestamps
           ? `(${formatTime(sub.start)}) `
           : "";
-        const speakerString = speaker ? `${speaker}: ` : "";
+        const speakerString = speaker ? `${speakerArray.current[index]}: ` : "";
 
-        return `${speakerString}\n${timeString}\n${sub.text}`;
+        return `${speakerString}${timeString}\n${sub.text}`;
       })
-      .join("\n");
+      .join("\n\n");
   };
   // Fonction pour ajouter le texte saisi à la chaîne existante
   const handleAddConvertedSrtInText = (text: string) => {
@@ -700,7 +642,7 @@ Parce que n'oubliez pas, le but ultime d'une voix off, c'est de satisfaire un cl
     }
   };
   const handleCopy = async () => {
-    const result = convertSubtitlesToString(subtitles, false);
+    const result = convertSubtitlesToString(subtitles, false, false);
     if (result) {
       try {
         await navigator.clipboard.writeText(texte);
@@ -715,28 +657,32 @@ Parce que n'oubliez pas, le but ultime d'une voix off, c'est de satisfaire un cl
       });
     }
   };
-  const addItem = (
-    text: string,
-    shunkTime: string,
-    id: number,
-    speaker: string
-  ) => {
-    // const newId = items.length;
-    setItems((prevItems) => [
-      ...prevItems,
-      {
-        texte: text,
-        shunkedTime: shunkTime,
-        id: id,
-        speaker: speaker,
-      },
-    ]);
+  const handleProgress = (state: { played: number; playedSeconds: number }) => {
+    const currentTime = state.playedSeconds;
+    setProgress(state.played * 100);
+
+    const currentSub = subtitles.find(
+      (sub) => currentTime >= sub.start && currentTime <= sub.end
+    );
+    setCurrentSubtitle(currentSub || null);
+  };
+  const handleProgressDesktop = (state: {
+    played: number;
+    playedSeconds: number;
+  }) => {
+    const currentTime = state.playedSeconds;
+    setProgress(state.played * 100);
+
+    const currentSub = subtitles.find(
+      (sub) => currentTime >= sub.start && currentTime <= sub.end
+    );
+    setCurrentSubtitleDesktop(currentSub || null);
   };
 
   const handleActiveButton = () => {
     firstcheck.current += 1;
     console.log(firstcheck.current);
-    if (firstcheck.current < 3) {
+    if (firstcheck.current < 4) {
       //console.log("not locked");
 
       if (youtubeUrl.slice(0, 13) === "https://youtu") {
@@ -900,11 +846,7 @@ Parce que n'oubliez pas, le but ultime d'une voix off, c'est de satisfaire un cl
     });
     return () => unsubscribe();
   }, [user]);
-  useEffect(() => {
-    if (texte) {
-      splitParagraphe();
-    }
-  }, [texte]);
+
   const options = {
     method: "GET",
     url: "https://youtube-mp3-downloader2.p.rapidapi.com/ytmp3/ytmp3/",
@@ -1085,10 +1027,16 @@ Parce que n'oubliez pas, le but ultime d'une voix off, c'est de satisfaire un cl
     if (audioRef.current) {
       audioRef.current.currentTime = startTime;
     }
+    if (playerRef.current) {
+      playerRef.current.seekTo(startTime, "seconds");
+    }
   };
   const handleSubtitleClickdesktop = (startTime: number) => {
     if (audioRef1.current) {
       audioRef1.current.currentTime = startTime;
+    }
+    if (playerRef1.current) {
+      playerRef1.current.seekTo(startTime, "seconds");
     }
   };
 
@@ -1146,15 +1094,8 @@ Parce que n'oubliez pas, le but ultime d'une voix off, c'est de satisfaire un cl
           /*console.log(
             ` text-${i}: (${result.chunks[i].timestamp}) ${result.chunks[i].text}`
           );*/
-          const time = convertSecondsToMinutes(result.chunks[i].timestamp);
-          timeStampTab.current.push(`(${result.chunks[i].timestamp})`);
-          addItem(
-            `${result.chunks[i].text}`,
-            `[${time}]`,
-            i,
-            `${result.chunks[i].speaker}`
-          );
-
+          speakerArray.current.push(`(${result.chunks[i].speaker})`);
+          addSpeaker(`(${result.chunks[i].speaker})`);
           let resultInSrt = convertToSRT(
             i,
             `(${result.chunks[i].timestamp})`,
@@ -1399,7 +1340,7 @@ stream.on("finish", function() {
                     const result = convertSubtitlesToString(
                       subtitles,
                       exportWithShowTime,
-                      "Ashlyn"
+                      exportWithSpeakerName
                     );
                     creatPDF(result);
                   }}
@@ -1413,7 +1354,7 @@ stream.on("finish", function() {
                     const result = convertSubtitlesToString(
                       subtitles,
                       exportWithShowTime,
-                      "Ashlyn"
+                      exportWithSpeakerName
                     );
                     downloadWordFile(result);
                   }}
@@ -1428,7 +1369,7 @@ stream.on("finish", function() {
                     const result = convertSubtitlesToString(
                       subtitles,
                       exportWithShowTime,
-                      "Ashlyn"
+                      exportWithSpeakerName
                     );
 
                     handleDownloadTxt(result);
@@ -1809,7 +1750,7 @@ stream.on("finish", function() {
                         defaultChecked={true}
                         checked={showTime}
                       />
-                      <p>Show timeStamp?</p>
+                      <p>Show timeStamp & speaker?</p>
                     </div>
                     <div className="mt-4 shadow-md rounded-xl p-3">
                       {subtitles.map((sub, index) => (
@@ -1828,30 +1769,41 @@ stream.on("finish", function() {
                               </Button>
                             </div>
                           ) : (
-                            <p
-                              className={`cursor-pointer ${
-                                currentSubtitleDesktop === sub
-                                  ? "bg-amber-100 rounded-xl "
-                                  : ""
-                              }`}
-                              onClick={() =>
-                                handleSubtitleClickdesktop(sub.start)
-                              }
-                            >
+                            <div className="my-2">
                               {showTime && (
-                                <span className="mr-2 text-gray-500">
-                                  ({formatTime(sub.start)})
-                                </span>
+                                <div>
+                                  <MdAccountCircle className="text-emerald-400" />
+                                  <p className="text-gray-500">
+                                    {speakerArrayShow[index]}
+                                  </p>
+                                </div>
                               )}
-                              {highlightText(sub.text, searchTerm)}
-                              <Button
-                                onClick={() => handleEditClick(index)}
-                                variant="ghost"
-                                size="sm"
+
+                              <p
+                                className={`cursor-pointer ${
+                                  currentSubtitleDesktop === sub
+                                    ? "bg-amber-100 rounded-xl"
+                                    : ""
+                                }`}
+                                onClick={() =>
+                                  handleSubtitleClickdesktop(sub.start)
+                                }
                               >
-                                <Edit2Icon className="size-[12px] text-gray-500" />
-                              </Button>
-                            </p>
+                                {showTime && (
+                                  <span className="mr-2 text-gray-500">
+                                    ({formatTime(sub.start)})
+                                  </span>
+                                )}
+                                {highlightText(sub.text, searchTerm)}
+                                <Button
+                                  onClick={() => handleEditClick(index)}
+                                  variant="ghost"
+                                  size="sm"
+                                >
+                                  <Edit2Icon className="size-[12px] text-gray-500" />
+                                </Button>
+                              </p>
+                            </div>
                           )}
                         </div>
                       ))}
@@ -1911,7 +1863,14 @@ stream.on("finish", function() {
               </div>
               <div className="flex justify-center">
                 {isAudioUrlDispo && isVideo && youtubePlayerUrl && (
-                  <ReactPlayer controls={true} url={youtubeUrl} />
+                  <div className="bg-gray-100 p-2 rounded-md">
+                    <YouTubePlayer
+                      ref={playerRef1}
+                      url={youtubeUrl}
+                      controls={true}
+                      onProgress={handleProgressDesktop}
+                    />
+                  </div>
                 )}
               </div>{" "}
               <br />
@@ -2330,7 +2289,7 @@ stream.on("finish", function() {
                                   const result = convertSubtitlesToString(
                                     subtitles,
                                     exportWithShowTime,
-                                    "Ashlyn"
+                                    exportWithSpeakerName
                                   );
                                   creatPDF(result);
                                 }}
@@ -2345,7 +2304,7 @@ stream.on("finish", function() {
                                   const result = convertSubtitlesToString(
                                     subtitles,
                                     exportWithShowTime,
-                                    "Ashlyn"
+                                    exportWithSpeakerName
                                   );
                                   downloadWordFile(result);
                                 }}
@@ -2360,7 +2319,7 @@ stream.on("finish", function() {
                                   const result = convertSubtitlesToString(
                                     subtitles,
                                     exportWithShowTime,
-                                    "Ashlyn"
+                                    exportWithSpeakerName
                                   );
                                   handleDownloadTxt(result);
                                 }}
@@ -2423,12 +2382,12 @@ stream.on("finish", function() {
                 </div>
               </div>
             </div>{" "}
-            <div className="m-4">
+            <div className="m-1">
               <p className="text-[10px] mb-3 text-gray-600">
                 Language:(
                 <span className="text-amber-500">{textLanguageDetected}</span>)
               </p>
-              <div className="p-4">
+              <div>
                 <div className="mb-4">
                   <Checkbox
                     id="terms1"
@@ -2458,28 +2417,38 @@ stream.on("finish", function() {
                           </Button>
                         </div>
                       ) : (
-                        <p
-                          className={`cursor-pointer ${
-                            currentSubtitle === sub
-                              ? "bg-amber-100 rounded-xl "
-                              : ""
-                          }`}
-                          onClick={() => handleSubtitleClick(sub.start)}
-                        >
+                        <div className="my-1">
                           {showTime && (
-                            <span className="mr-2 text-gray-500">
-                              ({formatTime(sub.start)})
-                            </span>
+                            <div>
+                              <MdAccountCircle className="text-emerald-400" />
+                              <p className="text-gray-500">
+                                {speakerArrayShow[index]}
+                              </p>
+                            </div>
                           )}
-                          {highlightText(sub.text, searchTerm)}
-                          <Button
-                            onClick={() => handleEditClick(index)}
-                            variant="ghost"
-                            size="sm"
+                          <p
+                            className={`cursor-pointer ${
+                              currentSubtitle === sub
+                                ? "bg-amber-100 rounded-xl "
+                                : ""
+                            }`}
+                            onClick={() => handleSubtitleClick(sub.start)}
                           >
-                            <Edit2Icon className="size-[12px] text-gray-500" />
-                          </Button>
-                        </p>
+                            {showTime && (
+                              <span className="mr-2 text-gray-500">
+                                ({formatTime(sub.start)})
+                              </span>
+                            )}
+                            {highlightText(sub.text, searchTerm)}
+                            <Button
+                              onClick={() => handleEditClick(index)}
+                              variant="ghost"
+                              size="sm"
+                            >
+                              <Edit2Icon className="size-[12px] text-gray-500" />
+                            </Button>
+                          </p>
+                        </div>
                       )}
                     </div>
                   ))}
@@ -2487,7 +2456,6 @@ stream.on("finish", function() {
               </div>
             </div>
             <Button
-              className="m-4"
               onClick={() => {
                 if (uploadedFile) {
                   //handleSubmit(uploadedFile);
@@ -2539,7 +2507,14 @@ stream.on("finish", function() {
           </div>
           <div className="flex justify-center">
             {isAudioUrlDispo && isVideo && youtubePlayerUrl && (
-              <ReactPlayer controls={true} url={youtubeUrl} />
+              <div className="bg-gray-100 p-2 rounded-md">
+                <YouTubePlayer
+                  ref={playerRef}
+                  url={youtubeUrl}
+                  controls={true}
+                  onProgress={handleProgress}
+                />
+              </div>
             )}
           </div>{" "}
           <br />
