@@ -139,6 +139,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import YouTubePlayer from "react-player/youtube";
+import { returnIconSpeaker } from "./returnFunction";
 interface Item {
   name: string;
   path: string;
@@ -275,7 +276,7 @@ export default function Dashboard() {
   const [valueLanguage, setLanguageValue] = useState("en");
   const setUsedTextLengh = useRef(0);
   const [checkingUrl, setCheckingYoutubeUrl] = useState(false);
-  const [youtubePlayerUrl, setYoutubePlayerUrl] = useState(true);
+  const [youtubePlayerUrl, setYoutubePlayerUrl] = useState(false);
   const [textLanguageDetected, setTextLanguageDetected] = useState("");
   const [subtitles, setSubtitles] = useState<Subtitle[]>([]);
   const [currentSubtitle, setCurrentSubtitle] = useState<Subtitle | null>(null);
@@ -292,6 +293,8 @@ export default function Dashboard() {
   const audioRef1 = useRef<HTMLAudioElement>(null);
   const playerRef = useRef<YouTubePlayer>(null);
   const playerRef1 = useRef<YouTubePlayer>(null);
+  const videoPlayerRef = useRef<ReactPlayer>(null);
+  const videoPlayerRef1 = useRef<ReactPlayer>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editedText, setEditedText] = useState<string>("");
   const transcriptionResultInSrt = useRef<string>("");
@@ -755,7 +758,7 @@ export default function Dashboard() {
           setUploadLoaded(true);
           const storageRef = ref(
             storage,
-            `users/${user?.uid}/data/audioToTranscribe}`
+            `users/${user?.uid}/data/audioToTranscribe`
           );
           const uploadTask = uploadBytesResumable(storageRef, file);
 
@@ -867,6 +870,7 @@ export default function Dashboard() {
       const response = await axios.request(options);
       console.log(response.data.dlink);
       if (response) {
+        setSubtitles([]);
         setCheckingYoutubeUrl(false);
         audioUrl.current = response.data.dlink;
         submitSpeech();
@@ -1030,6 +1034,9 @@ export default function Dashboard() {
     if (playerRef.current) {
       playerRef.current.seekTo(startTime, "seconds");
     }
+    if (videoPlayerRef1.current) {
+      videoPlayerRef1.current.seekTo(startTime, "seconds");
+    }
   };
   const handleSubtitleClickdesktop = (startTime: number) => {
     if (audioRef1.current) {
@@ -1037,6 +1044,9 @@ export default function Dashboard() {
     }
     if (playerRef1.current) {
       playerRef1.current.seekTo(startTime, "seconds");
+    }
+    if (videoPlayerRef.current) {
+      videoPlayerRef.current.seekTo(startTime, "seconds");
     }
   };
 
@@ -1281,6 +1291,7 @@ stream.on("finish", function() {
     // On prend le premier fichier s'il est accepté
     setUploadedFile(acceptedFiles[0]);
     handleSubmit(acceptedFiles[0]);
+    setSubtitles([]);
   };
   const { getRootProps, getInputProps, isFocused, isDragAccept, isDragReject } =
     useDropzone({ accept: { "audio/*": [], "video/*": [] }, onDrop });
@@ -1330,7 +1341,142 @@ stream.on("finish", function() {
               </div>
             </div>
             <div className="flex justify-center">
-              <div className="grid gap-2 max-w-[200px]  shadow-sm rounded-sm p-5 bg-gray-100">
+              <div className="grid gap-2 max-w-[300px]  shadow-sm rounded-sm p-5 bg-gray-100">
+                <div className="grid gap-2">
+                  <p className=" font-bold text-xl ">Task:</p>
+                  <Separator />
+                  <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={open}
+                        className="w-[200px] justify-between"
+                      >
+                        {value
+                          ? frameworks.find(
+                              (framework) => framework.value === value
+                            )?.label
+                          : "Select task..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[200px] p-0">
+                      <Command>
+                        <CommandInput placeholder="Search task..." />
+                        <CommandList>
+                          <CommandEmpty>No task found.</CommandEmpty>
+                          <CommandGroup>
+                            {frameworks.map((framework) => (
+                              <CommandItem
+                                key={framework.value}
+                                value={framework.value}
+                                onSelect={(currentValue) => {
+                                  setValue(
+                                    currentValue === value ? "" : currentValue
+                                  );
+
+                                  if (currentValue == "translate") {
+                                    setAutoDetectLanguage(false);
+                                  } else {
+                                    selectedCurrentLanguage.current = undefined;
+                                    setAutoDetectLanguage(true);
+                                  }
+                                  setOpen(false);
+                                  //console.log(selectedCurrentTask.current);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    value === framework.value
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                                {framework.label}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>{" "}
+                  {!autoDetectLanguage && (
+                    <Popover open={openLanguage} onOpenChange={setOpenLanguage}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={open}
+                          className="w-[200px] justify-between"
+                        >
+                          {valueLanguage
+                            ? language.find(
+                                (framework) => framework.value === valueLanguage
+                              )?.label
+                            : "Select Language..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[200px] p-0">
+                        <Command>
+                          <CommandInput placeholder="Search Language..." />
+                          <CommandList>
+                            <CommandEmpty>Language not found.</CommandEmpty>
+                            <CommandGroup>
+                              {language.map((framework) => (
+                                <CommandItem
+                                  key={framework.value}
+                                  value={framework.value}
+                                  onSelect={(currentValue) => {
+                                    setLanguageValue(
+                                      currentValue === valueLanguage
+                                        ? ""
+                                        : currentValue
+                                    );
+                                    selectedCurrentLanguage.current =
+                                      currentValue;
+                                    setOpenLanguage(false);
+                                    //console.log(selectedCurrentTask.current);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      valueLanguage === framework.value
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {framework.label}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                  <div>
+                    <Checkbox
+                      id="terms2"
+                      onCheckedChange={(e: boolean) => {
+                        setAutoDetectLanguage(e);
+                        if (!e) {
+                          selectedCurrentLanguage.current = undefined;
+                        } else {
+                          selectedCurrentLanguage.current = valueLanguage;
+                        }
+                        //console.log(e);
+                      }}
+                      defaultChecked={true}
+                    />
+                    <br />
+                    <p className="text-gray-500">Auto detect Language?</p>
+                  </div>
+                </div>
+
                 <p className=" font-bold text-xl ">Export:</p>
                 <Separator />
                 <Button
@@ -1414,23 +1560,6 @@ stream.on("finish", function() {
                   <p className="text-gray-500 text-sm text-center">
                     export with Speaker name?
                   </p>
-                </div>
-                <div>
-                  <Checkbox
-                    id="terms2"
-                    onCheckedChange={(e: boolean) => {
-                      setAutoDetectLanguage(e);
-                      if (!e) {
-                        selectedCurrentLanguage.current = undefined;
-                      } else {
-                        selectedCurrentLanguage.current = valueLanguage;
-                      }
-                      //console.log(e);
-                    }}
-                    defaultChecked={true}
-                  />
-                  <br />
-                  <p className="text-gray-500">Auto detect Language?</p>
                 </div>
               </div>
             </div>{" "}
@@ -1532,189 +1661,90 @@ stream.on("finish", function() {
                   </div>
                 </div>
                 <div className="grid gap-1">
-                  <div className="flex justify-center">
-                    <div
-                      {...getRootProps({ style })}
-                      className="mt-[100px] mb-2 max-w-[400px]"
-                    >
-                      <input {...getInputProps()} />
-                      {uploadedFile ? (
-                        <div>
-                          <h4 className="text-center">Fichier uploadé:</h4>
-                          <p className="text-center">{uploadedFile.name}</p>
-                        </div>
-                      ) : (
-                        <div className="grid gap-2">
-                          <div className="flex justify-center">
-                            <UploadCloud />
-                          </div>
-                          <p className="text-center">
-                            Drag and drop audio /video files here , or click to
-                            select files
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <p className="text-center text-gray-600">-----Or-----</p>
-                  <div className="flex justify-center">
-                    <div className="flex items-center gap-3">
-                      <Input
-                        className="max-w-[500px] min-w-[400px]"
-                        placeholder="Paste youtube link Here..."
-                        value={youtubeUrl}
-                        onChange={(e) => {
-                          setYoutubeUrl(e.target.value);
-                        }}
-                      />
-                      <Button
-                        variant="ghost"
-                        onClick={() => {
-                          setYoutubeUrl("");
-                          firstcheck.current = 0;
-                        }}
-                      >
-                        <DeleteIcon />
-                      </Button>
-                      <div>
-                        {checkingUrl ? (
-                          <>
-                            <LoaderIcon className="animate-spin size-5" />
-                          </>
-                        ) : null}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mb-4 mt-1">
-                    <div className="flex justify-center">
+                  <div>
+                    <div className="flex justify-center my-2">
                       {uploadIsLoaded ? (
                         <Progress value={progresspercent} className="w-[60%]" />
                       ) : null}
                     </div>
-                    <br />
-                    <br />
-                    <div className="flex items-center gap-5">
-                      <Popover open={open} onOpenChange={setOpen}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            aria-expanded={open}
-                            className="w-[200px] justify-between"
-                          >
-                            {value
-                              ? frameworks.find(
-                                  (framework) => framework.value === value
-                                )?.label
-                              : "Select task..."}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[200px] p-0">
-                          <Command>
-                            <CommandInput placeholder="Search task..." />
-                            <CommandList>
-                              <CommandEmpty>No task found.</CommandEmpty>
-                              <CommandGroup>
-                                {frameworks.map((framework) => (
-                                  <CommandItem
-                                    key={framework.value}
-                                    value={framework.value}
-                                    onSelect={(currentValue) => {
-                                      setValue(
-                                        currentValue === value
-                                          ? ""
-                                          : currentValue
-                                      );
-
-                                      if (currentValue == "translate") {
-                                        setAutoDetectLanguage(false);
-                                      } else {
-                                        selectedCurrentLanguage.current =
-                                          undefined;
-                                        setAutoDetectLanguage(true);
-                                      }
-                                      setOpen(false);
-                                      //console.log(selectedCurrentTask.current);
-                                    }}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        value === framework.value
-                                          ? "opacity-100"
-                                          : "opacity-0"
-                                      )}
-                                    />
-                                    {framework.label}
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>{" "}
-                      {!autoDetectLanguage && (
-                        <Popover
-                          open={openLanguage}
-                          onOpenChange={setOpenLanguage}
+                    <div className="flex justify-center">
+                      <div
+                        {...getRootProps({ style })}
+                        className=" max-w-[500px]"
+                      >
+                        <input {...getInputProps()} />
+                        {uploadedFile ? (
+                          <div>
+                            <h4 className="text-center">Uploaded file:</h4>
+                            <p className="text-center">{uploadedFile.name}</p>
+                          </div>
+                        ) : (
+                          <div className="grid gap-2">
+                            <div className="flex justify-center">
+                              <UploadCloud />
+                            </div>
+                            <p className="text-center">
+                              Drag and drop audio /video files here , or click
+                              to select files
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-center text-gray-600">-----Or-----</p>
+                    <div className="flex justify-center">
+                      <div className="flex items-center gap-3">
+                        <Input
+                          className="max-w-[500px] min-w-[400px]"
+                          placeholder="Paste youtube link Here..."
+                          value={youtubeUrl}
+                          onChange={(e) => {
+                            setYoutubeUrl(e.target.value);
+                          }}
+                        />
+                        <Button
+                          variant="ghost"
+                          onClick={() => {
+                            setYoutubeUrl("");
+                            firstcheck.current = 0;
+                          }}
                         >
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              role="combobox"
-                              aria-expanded={open}
-                              className="w-[200px] justify-between"
-                            >
-                              {valueLanguage
-                                ? language.find(
-                                    (framework) =>
-                                      framework.value === valueLanguage
-                                  )?.label
-                                : "Select Language..."}
-                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-[200px] p-0">
-                            <Command>
-                              <CommandInput placeholder="Search Language..." />
-                              <CommandList>
-                                <CommandEmpty>Language not found.</CommandEmpty>
-                                <CommandGroup>
-                                  {language.map((framework) => (
-                                    <CommandItem
-                                      key={framework.value}
-                                      value={framework.value}
-                                      onSelect={(currentValue) => {
-                                        setLanguageValue(
-                                          currentValue === valueLanguage
-                                            ? ""
-                                            : currentValue
-                                        );
-                                        selectedCurrentLanguage.current =
-                                          currentValue;
-                                        setOpenLanguage(false);
-                                        //console.log(selectedCurrentTask.current);
-                                      }}
-                                    >
-                                      <Check
-                                        className={cn(
-                                          "mr-2 h-4 w-4",
-                                          valueLanguage === framework.value
-                                            ? "opacity-100"
-                                            : "opacity-0"
-                                        )}
-                                      />
-                                      {framework.label}
-                                    </CommandItem>
-                                  ))}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
-                      )}
+                          <DeleteIcon />
+                        </Button>
+                        <div>
+                          {checkingUrl ? (
+                            <>
+                              <LoaderIcon className="animate-spin size-5" />
+                            </>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {textLanguageDetected ? (
+                  <div className="m-4">
+                    <p className=" ml-4  text-gray-600">
+                      Language:(
+                      <span className="text-amber-500">
+                        {textLanguageDetected}
+                      </span>
+                      )
+                    </p>
+
+                    <div className="p-4">
+                      <div className="mb-4">
+                        <Checkbox
+                          id="terms1"
+                          onCheckedChange={(e: boolean) => {
+                            setShowTime(e);
+                          }}
+                          defaultChecked={true}
+                          checked={showTime}
+                        />
+                        <p>Show timeStamp & speaker?</p>
+                      </div>
                       <div className="flex items-center gap-5 ">
                         <Button variant="outline" onClick={handleCopy}>
                           <CopyIcon className="text-amber-500" />
@@ -1726,127 +1756,124 @@ stream.on("finish", function() {
                           onChange={(e) => setSearchTerm(e.target.value)}
                         />
                       </div>
-                    </div>
-                    <Separator className="my-4" />
-                  </div>
-                </div>
+                      <Separator className="my-3" />
+                      <div className=" shadow-md rounded-xl p-3">
+                        <ScrollArea className="h-[300px]">
+                          {subtitles.map((sub, index) => (
+                            <div key={index} className="my-2">
+                              {editingIndex === index ? (
+                                <div className="flex gap-2">
+                                  <Input
+                                    value={editedText}
+                                    onChange={handleEditChange}
+                                  />
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => handleEditSave(index)}
+                                  >
+                                    <CheckIcon className="text-green-600" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="my-2">
+                                  {showTime && (
+                                    <div>
+                                      {returnIconSpeaker(
+                                        speakerArrayShow[index]
+                                      )}
+                                      <p className="text-gray-500">
+                                        {speakerArrayShow[index]}
+                                      </p>
+                                    </div>
+                                  )}
 
-                <div className="m-4">
-                  <p className=" mb-5 text-gray-600">
-                    Language:(
-                    <span className="text-amber-500">
-                      {textLanguageDetected}
-                    </span>
-                    )
-                  </p>
-
-                  <div className="p-4">
-                    <div className="mb-4">
-                      <Checkbox
-                        id="terms1"
-                        onCheckedChange={(e: boolean) => {
-                          setShowTime(e);
-                        }}
-                        defaultChecked={true}
-                        checked={showTime}
-                      />
-                      <p>Show timeStamp & speaker?</p>
-                    </div>
-                    <div className="mt-4 shadow-md rounded-xl p-3">
-                      {subtitles.map((sub, index) => (
-                        <div key={index} className="my-2">
-                          {editingIndex === index ? (
-                            <div className="flex gap-2">
-                              <Input
-                                value={editedText}
-                                onChange={handleEditChange}
-                              />
-                              <Button
-                                variant="outline"
-                                onClick={() => handleEditSave(index)}
-                              >
-                                <CheckIcon className="text-green-600" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="my-2">
-                              {showTime && (
-                                <div>
-                                  <MdAccountCircle className="text-emerald-400" />
-                                  <p className="text-gray-500">
-                                    {speakerArrayShow[index]}
+                                  <p
+                                    className={`cursor-pointer ${
+                                      currentSubtitleDesktop === sub
+                                        ? "bg-amber-100 rounded-xl"
+                                        : ""
+                                    }`}
+                                    onClick={() =>
+                                      handleSubtitleClickdesktop(sub.start)
+                                    }
+                                  >
+                                    {showTime && (
+                                      <span className="mr-2 text-gray-500">
+                                        ({formatTime(sub.start)})
+                                      </span>
+                                    )}
+                                    {highlightText(sub.text, searchTerm)}
+                                    <Button
+                                      onClick={() => handleEditClick(index)}
+                                      variant="ghost"
+                                      size="sm"
+                                    >
+                                      <Edit2Icon className="size-[12px] text-gray-500" />
+                                    </Button>
                                   </p>
                                 </div>
                               )}
-
-                              <p
-                                className={`cursor-pointer ${
-                                  currentSubtitleDesktop === sub
-                                    ? "bg-amber-100 rounded-xl"
-                                    : ""
-                                }`}
-                                onClick={() =>
-                                  handleSubtitleClickdesktop(sub.start)
-                                }
-                              >
-                                {showTime && (
-                                  <span className="mr-2 text-gray-500">
-                                    ({formatTime(sub.start)})
-                                  </span>
-                                )}
-                                {highlightText(sub.text, searchTerm)}
-                                <Button
-                                  onClick={() => handleEditClick(index)}
-                                  variant="ghost"
-                                  size="sm"
-                                >
-                                  <Edit2Icon className="size-[12px] text-gray-500" />
-                                </Button>
-                              </p>
                             </div>
-                          )}
-                        </div>
-                      ))}
+                          ))}
+                        </ScrollArea>
+                      </div>
                     </div>
                   </div>
+                ) : (
+                  <>
+                    {isSubmitted ? (
+                      <div className="flex justify-center">
+                        <LoaderIcon className="h-5 w-5 animate-spin" />
+                      </div>
+                    ) : (
+                      <p className="text-2xl text-gray-500 text-center">
+                        Upload your file to start transcribe
+                      </p>
+                    )}
+                  </>
+                )}
+
+                {textLanguageDetected && (
+                  <Button
+                    className="m-4"
+                    onClick={() => {
+                      if (uploadedFile) {
+                        //handleSubmit(uploadedFile);
+                        submitSpeech();
+                      } else {
+                        alert("file not found!");
+                      }
+                    }}
+                    disabled={isSubmitted}
+                  >
+                    {isSubmitted ? (
+                      <LoaderIcon className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <div className="flex items-center">
+                        <LoopIcon className="m-2" />
+                        <p>Retranscribe</p>
+                      </div>
+                    )}
+                  </Button>
+                )}
+                <div className="flex justify-center m-3">
+                  {" "}
+                  <ReactPlayer
+                    ref={videoPlayerRef}
+                    width="100%"
+                    height="100%"
+                    playing={videoIsplaying}
+                    light={false}
+                    url="https://firebasestorage.googleapis.com/v0/b/audiscribe-942e8.appspot.com/o/users%2FqwhrQtz0c4bBGcYfxAMHlnokihb2%2Fdata%2FaudioToTranscribe%7D?alt=media&token=742bd824-5898-48ac-b745-1425b0084146"
+                    onDuration={(e) => console.log(`duration:${e}`)}
+                    onSeek={(e) => console.log("onSeek", e)}
+                    onProgress={handleProgressDesktop}
+                  />
                 </div>
-                <Button
-                  className="m-4"
-                  onClick={() => {
-                    if (uploadedFile) {
-                      //handleSubmit(uploadedFile);
-                      submitSpeech();
-                    } else {
-                      alert("file not found!");
-                    }
-                  }}
-                  disabled={isSubmitted}
-                >
-                  {isSubmitted ? (
-                    <LoaderIcon className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <div className="flex items-center">
-                      <LoopIcon className="m-2" />
-                      <p>Retranscribe</p>
-                    </div>
-                  )}
-                </Button>
+
                 <div className="flex justify-center">
                   {isAudioUrlDispo && isVideo && !youtubePlayerUrl && (
                     <div className=" w-4/5  p-1  rounded-t-md bg-slate-50">
-                      <div className="flex justify-center m-3">
-                        <ReactPlayer
-                          width="100%"
-                          height="100%"
-                          playing={videoIsplaying}
-                          light={false}
-                          url={audioUrl.current}
-                          onDuration={(e) => console.log(`duration:${e}`)}
-                          onSeek={(e) => console.log("onSeek", e)}
-                          onProgress={(e) => console.log(`onprogress: ${e}`)}
-                        />
-                      </div>
-
                       <div className="flex justify-center m-2">
                         <Button
                           variant="outline"
@@ -1863,8 +1890,10 @@ stream.on("finish", function() {
               </div>
               <div className="flex justify-center">
                 {isAudioUrlDispo && isVideo && youtubePlayerUrl && (
-                  <div className="bg-gray-100 p-2 rounded-md">
+                  <div className="bg-gray-100 p-2 rounded-md fixed bottom-0 end-1">
                     <YouTubePlayer
+                      width={400}
+                      height={200}
                       ref={playerRef1}
                       url={youtubeUrl}
                       controls={true}
@@ -1899,15 +1928,20 @@ stream.on("finish", function() {
               <br />
               <br />
               <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
             </div>
           </ScrollArea>
           {isAudioUrlDispo && !isVideo && (
-            <div className="fixed bottom-0 w-4/5 bg-slate-200 p-10 rounded-t-md">
+            <div className="fixed bottom-0 w-4/5 bg-slate-200 p-3 rounded-t-md">
               <audio
                 ref={audioRef1}
                 src={audioUrl.current}
                 controls
-                className="w-full mb-4 "
+                className="w-full "
               />
             </div>
           )}
@@ -1983,15 +2017,367 @@ stream.on("finish", function() {
         <div className="w-full  mt-5">
           <div className="grid gap-5">
             <div className="grid gap-1">
+              <div className="mb-4 mt-1 ">
+                <div className="flex justify-center">
+                  {uploadIsLoaded ? (
+                    <Progress value={progresspercent} className="w-[60%]" />
+                  ) : null}
+                </div>
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="item-1">
+                    <AccordionTrigger>More...</AccordionTrigger>
+                    <AccordionContent>
+                      <div className="grid  gap-4 ">
+                        <Separator />
+                        <Popover open={openMobile} onOpenChange={setOpenMobile}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={open}
+                              className="w-[200px] justify-between"
+                            >
+                              {value
+                                ? frameworks.find(
+                                    (framework) => framework.value === value
+                                  )?.label
+                                : "Select task..."}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[200px] p-0">
+                            <Command>
+                              <CommandInput placeholder="Search task..." />
+                              <CommandList>
+                                <CommandEmpty>No task found.</CommandEmpty>
+                                <CommandGroup>
+                                  {frameworks.map((framework) => (
+                                    <CommandItem
+                                      key={framework.value}
+                                      value={framework.value}
+                                      onSelect={(currentValue) => {
+                                        setValue(
+                                          currentValue === value
+                                            ? ""
+                                            : currentValue
+                                        );
+                                        // selectedCurrentTask.current = currentValue;
+                                        if (currentValue == "translate") {
+                                          setAutoDetectLanguage(false);
+                                        } else {
+                                          selectedCurrentLanguage.current =
+                                            undefined;
+                                          setAutoDetectLanguage(true);
+                                        }
+                                        setOpenMobile(false);
+                                        //console.log(selectedCurrentTask.current);
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          value === framework.value
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                      {framework.label}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>{" "}
+                        {!autoDetectLanguage && (
+                          <Popover
+                            open={openLanguageMobile}
+                            onOpenChange={setOpenLanguageMobile}
+                          >
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={open}
+                                className="w-[200px] justify-between"
+                              >
+                                {valueLanguage
+                                  ? language.find(
+                                      (framework) =>
+                                        framework.value === valueLanguage
+                                    )?.label
+                                  : "Select Language..."}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[200px] p-0">
+                              <Command>
+                                <CommandInput placeholder="Search Language..." />
+                                <CommandList>
+                                  <CommandEmpty>
+                                    Language not found.
+                                  </CommandEmpty>
+                                  <CommandGroup>
+                                    {language.map((framework) => (
+                                      <CommandItem
+                                        key={framework.value}
+                                        value={framework.value}
+                                        onSelect={(currentValue) => {
+                                          setLanguageValue(
+                                            currentValue === valueLanguage
+                                              ? ""
+                                              : currentValue
+                                          );
+                                          selectedCurrentLanguage.current =
+                                            currentValue;
+
+                                          setOpenLanguageMobile(false);
+                                          //console.log(selectedCurrentTask.current);
+                                        }}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            valueLanguage === framework.value
+                                              ? "opacity-100"
+                                              : "opacity-0"
+                                          )}
+                                        />
+                                        {framework.label}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                        )}
+                        <div className="flex items-center gap-2">
+                          <div>
+                            <Checkbox
+                              id="terms2"
+                              onCheckedChange={(e: boolean) => {
+                                setAutoDetectLanguage(e);
+                                if (!e) {
+                                  selectedCurrentLanguage.current = undefined;
+                                } else {
+                                  selectedCurrentLanguage.current =
+                                    valueLanguage;
+                                }
+                                //console.log(e);
+                              }}
+                              defaultChecked={true}
+                            />
+                            <br />
+                            <p className="text-gray-500 text-[10px]">
+                              Auto detect Language?
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 ">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="outline">
+                                <FaToolbox className="text-amber-500" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[425px]">
+                              <DialogHeader>
+                                <DialogTitle>Some Tools</DialogTitle>
+                                <DialogDescription>
+                                  additionnal tools to simplify your life.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="flex justify-center mt-10">
+                                <div className="grid gap-2 w-full  shadow-sm rounded-sm p-5 bg-gray-100">
+                                  <p className="text-center font-bold">Tools</p>
+                                  <Separator />
+                                  <Drawer
+                                    open={openMobileDialogYoutubemp3}
+                                    onOpenChange={setOpenMobileDialogYoutubemp3}
+                                  >
+                                    <DrawerTrigger asChild>
+                                      <Button variant="outline">
+                                        Youtube to mp3
+                                      </Button>
+                                    </DrawerTrigger>
+                                    <DrawerContent>
+                                      <DrawerHeader className="text-left">
+                                        <DrawerTitle>
+                                          Youtube to mp3 downloader.
+                                        </DrawerTitle>
+                                        <DrawerDescription>
+                                          Past youtube link below to download
+                                          it.
+                                        </DrawerDescription>
+                                      </DrawerHeader>
+                                      <div className="grid gap-5 p-5 m-4">
+                                        <Input
+                                          placeholder="Youtube link..."
+                                          onChange={(e) =>
+                                            setinputYoutubeMp3Download(
+                                              e.target.value
+                                            )
+                                          }
+                                          value={inputYoutubeMp3Download}
+                                        />
+                                        <Button onClick={downloadMp3FromYT}>
+                                          {isyoutubeMp3Submitted ? (
+                                            <ReloadIcon className="animate-spin size-5" />
+                                          ) : (
+                                            <DownloadIcon />
+                                          )}
+                                        </Button>
+                                      </div>
+
+                                      <DrawerFooter className="pt-2">
+                                        <DrawerClose asChild>
+                                          <Button variant="outline">
+                                            Cancel
+                                          </Button>
+                                        </DrawerClose>
+                                      </DrawerFooter>
+                                    </DrawerContent>
+                                  </Drawer>
+                                  <Button>Tranlation</Button>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                          <Drawer
+                            open={openForMobileExport}
+                            onOpenChange={setOpenForMobileExport}
+                          >
+                            <DrawerTrigger asChild>
+                              <Button variant="outline">
+                                <FaFileExport className="text-amber-500" />
+                              </Button>
+                            </DrawerTrigger>
+                            <DrawerContent>
+                              <DrawerHeader className="text-left">
+                                <DrawerTitle>Download your file</DrawerTitle>
+                                <DrawerDescription>
+                                  Choose your format.
+                                </DrawerDescription>
+                              </DrawerHeader>
+                              <div className="w-full">
+                                <div className="flex justify-center">
+                                  <div className="grid gap-2 w-full  shadow-sm rounded-sm p-5 bg-gray-100">
+                                    <p className=" font-bold text-xl ">
+                                      Export:
+                                    </p>
+                                    <Separator />
+                                    <Button
+                                      variant="outline"
+                                      className="hover:bg-green-100"
+                                      onClick={() => {
+                                        const result = convertSubtitlesToString(
+                                          subtitles,
+                                          exportWithShowTime,
+                                          exportWithSpeakerName
+                                        );
+                                        creatPDF(result);
+                                      }}
+                                    >
+                                      export to PDF.{" "}
+                                      <FaRegFilePdf className="mx-2 text-red-600" />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      className="hover:bg-green-100"
+                                      onClick={() => {
+                                        const result = convertSubtitlesToString(
+                                          subtitles,
+                                          exportWithShowTime,
+                                          exportWithSpeakerName
+                                        );
+                                        downloadWordFile(result);
+                                      }}
+                                    >
+                                      export to Docx.
+                                      <TbFileTypeDocx className="mx-2 text-blue-600" />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      className="hover:bg-green-100"
+                                      onClick={() => {
+                                        const result = convertSubtitlesToString(
+                                          subtitles,
+                                          exportWithShowTime,
+                                          exportWithSpeakerName
+                                        );
+                                        handleDownloadTxt(result);
+                                      }}
+                                    >
+                                      export to Txt.
+                                      <GrDocumentTxt className="mx-2 text-gray-600" />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      className="hover:bg-green-100"
+                                      onClick={() => {
+                                        const result =
+                                          convertSubtitlesToSRT(subtitles);
+                                        handleDownloadSrt(
+                                          result,
+                                          "srtfile.srt"
+                                        );
+                                      }}
+                                    >
+                                      export to Srt.
+                                      <MdOutlineSubtitles className="mx-2 text-gray-600" />
+                                    </Button>
+                                    <div className="flex items-center gap-3">
+                                      <div>
+                                        <Checkbox
+                                          id="terms1"
+                                          onCheckedChange={(e: boolean) => {
+                                            setExportWithShowTime(e);
+                                          }}
+                                          checked={exportWithShowTime}
+                                        />
+                                        <br />
+                                        <p className="text-gray-500 text-sm text-center">
+                                          export with TimeStamp?
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <Checkbox
+                                          id="terms1"
+                                          onCheckedChange={(e: boolean) => {
+                                            setExportWithSpeakerName(e);
+                                          }}
+                                          checked={exportWithSpeakerName}
+                                        />
+                                        <br />
+                                        <p className="text-gray-500 text-sm text-center">
+                                          export with Speaker name?
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>{" "}
+                              </div>
+                              <DrawerFooter className="pt-2">
+                                <DrawerClose asChild>
+                                  <Button variant="outline">Cancel</Button>
+                                </DrawerClose>
+                              </DrawerFooter>
+                            </DrawerContent>
+                          </Drawer>
+                        </div>{" "}
+                        <Separator />
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </div>
               <div className="flex justify-center">
-                <div
-                  {...getRootProps({ style })}
-                  className="mt-[100px] mb-2 max-w-[400px]"
-                >
+                <div {...getRootProps({ style })} className=" max-w-[400px]">
                   <input {...getInputProps()} />
                   {uploadedFile ? (
                     <div>
-                      <h4 className="text-center">Fichier uploadé:</h4>
+                      <h4 className="text-center">Uploaded file:</h4>
                       <p className="text-center">{uploadedFile.name}</p>
                     </div>
                   ) : (
@@ -2038,448 +2424,139 @@ stream.on("finish", function() {
                   </div>
                 </div>
               </div>
-
-              <div className="mb-4 mt-1 ">
-                <div className="flex justify-center">
-                  {uploadIsLoaded ? (
-                    <Progress value={progresspercent} className="w-[60%]" />
-                  ) : null}
-                </div>
-                <br />
-                <br />
-                <div className="grid  gap-4 ">
-                  <Separator />
-                  <Popover open={openMobile} onOpenChange={setOpenMobile}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={open}
-                        className="w-[200px] justify-between"
-                      >
-                        {value
-                          ? frameworks.find(
-                              (framework) => framework.value === value
-                            )?.label
-                          : "Select task..."}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[200px] p-0">
-                      <Command>
-                        <CommandInput placeholder="Search task..." />
-                        <CommandList>
-                          <CommandEmpty>No task found.</CommandEmpty>
-                          <CommandGroup>
-                            {frameworks.map((framework) => (
-                              <CommandItem
-                                key={framework.value}
-                                value={framework.value}
-                                onSelect={(currentValue) => {
-                                  setValue(
-                                    currentValue === value ? "" : currentValue
-                                  );
-                                  // selectedCurrentTask.current = currentValue;
-                                  if (currentValue == "translate") {
-                                    setAutoDetectLanguage(false);
-                                  } else {
-                                    selectedCurrentLanguage.current = undefined;
-                                    setAutoDetectLanguage(true);
-                                  }
-                                  setOpenMobile(false);
-                                  //console.log(selectedCurrentTask.current);
-                                }}
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    value === framework.value
-                                      ? "opacity-100"
-                                      : "opacity-0"
-                                  )}
-                                />
-                                {framework.label}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>{" "}
-                  {!autoDetectLanguage && (
-                    <Popover
-                      open={openLanguageMobile}
-                      onOpenChange={setOpenLanguageMobile}
-                    >
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          aria-expanded={open}
-                          className="w-[200px] justify-between"
-                        >
-                          {valueLanguage
-                            ? language.find(
-                                (framework) => framework.value === valueLanguage
-                              )?.label
-                            : "Select Language..."}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[200px] p-0">
-                        <Command>
-                          <CommandInput placeholder="Search Language..." />
-                          <CommandList>
-                            <CommandEmpty>Language not found.</CommandEmpty>
-                            <CommandGroup>
-                              {language.map((framework) => (
-                                <CommandItem
-                                  key={framework.value}
-                                  value={framework.value}
-                                  onSelect={(currentValue) => {
-                                    setLanguageValue(
-                                      currentValue === valueLanguage
-                                        ? ""
-                                        : currentValue
-                                    );
-                                    selectedCurrentLanguage.current =
-                                      currentValue;
-
-                                    setOpenLanguageMobile(false);
-                                    //console.log(selectedCurrentTask.current);
-                                  }}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      valueLanguage === framework.value
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                  />
-                                  {framework.label}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <div>
-                      <Checkbox
-                        id="terms2"
-                        onCheckedChange={(e: boolean) => {
-                          setAutoDetectLanguage(e);
-                          if (!e) {
-                            selectedCurrentLanguage.current = undefined;
-                          } else {
-                            selectedCurrentLanguage.current = valueLanguage;
-                          }
-                          //console.log(e);
-                        }}
-                        defaultChecked={true}
-                      />
-                      <br />
-                      <p className="text-gray-500 text-[10px]">
-                        Auto detect Language?
-                      </p>
-                    </div>
+            </div>
+            {textLanguageDetected ? (
+              <div className="m-1">
+                <p className="text-[10px] mb-3 text-gray-600">
+                  Language:(
+                  <span className="text-amber-500">{textLanguageDetected}</span>
+                  )
+                </p>
+                <div>
+                  <div className="mb-4">
+                    <Checkbox
+                      id="terms1"
+                      onCheckedChange={(e: boolean) => {
+                        setShowTime(e);
+                      }}
+                      defaultChecked={true}
+                      checked={showTime}
+                    />
+                    <p>Show timeStamp?</p>
                   </div>
-                  <div className="flex items-center gap-2 ">
+
+                  <div className="flex items-center gap-5 ">
                     <Button variant="outline" onClick={handleCopy}>
                       <CopyIcon className="text-amber-500" />
                     </Button>
+
                     <Input
                       placeholder="Search text or word..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
+                  </div>
 
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="outline">
-                          <FaToolbox className="text-amber-500" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-[425px]">
-                        <DialogHeader>
-                          <DialogTitle>Some Tools</DialogTitle>
-                          <DialogDescription>
-                            additionnal tools to simplify your life.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="flex justify-center mt-10">
-                          <div className="grid gap-2 w-full  shadow-sm rounded-sm p-5 bg-gray-100">
-                            <p className="text-center font-bold">Tools</p>
-                            <Separator />
-                            <Drawer
-                              open={openMobileDialogYoutubemp3}
-                              onOpenChange={setOpenMobileDialogYoutubemp3}
-                            >
-                              <DrawerTrigger asChild>
-                                <Button variant="outline">
-                                  Youtube to mp3
-                                </Button>
-                              </DrawerTrigger>
-                              <DrawerContent>
-                                <DrawerHeader className="text-left">
-                                  <DrawerTitle>
-                                    Youtube to mp3 downloader.
-                                  </DrawerTitle>
-                                  <DrawerDescription>
-                                    Past youtube link below to download it.
-                                  </DrawerDescription>
-                                </DrawerHeader>
-                                <div className="grid gap-5 p-5 m-4">
-                                  <Input
-                                    placeholder="Youtube link..."
-                                    onChange={(e) =>
-                                      setinputYoutubeMp3Download(e.target.value)
-                                    }
-                                    value={inputYoutubeMp3Download}
-                                  />
-                                  <Button onClick={downloadMp3FromYT}>
-                                    {isyoutubeMp3Submitted ? (
-                                      <ReloadIcon className="animate-spin size-5" />
-                                    ) : (
-                                      <DownloadIcon />
-                                    )}
-                                  </Button>
-                                </div>
-
-                                <DrawerFooter className="pt-2">
-                                  <DrawerClose asChild>
-                                    <Button variant="outline">Cancel</Button>
-                                  </DrawerClose>
-                                </DrawerFooter>
-                              </DrawerContent>
-                            </Drawer>
-                            <Button>Tranlation</Button>
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                    <Drawer
-                      open={openForMobileExport}
-                      onOpenChange={setOpenForMobileExport}
-                    >
-                      <DrawerTrigger asChild>
-                        <Button variant="outline">
-                          <FaFileExport className="text-amber-500" />
-                        </Button>
-                      </DrawerTrigger>
-                      <DrawerContent>
-                        <DrawerHeader className="text-left">
-                          <DrawerTitle>Download your file</DrawerTitle>
-                          <DrawerDescription>
-                            Choose your format.
-                          </DrawerDescription>
-                        </DrawerHeader>
-                        <div className="w-full">
-                          <div className="flex justify-center">
-                            <div className="grid gap-2 w-full  shadow-sm rounded-sm p-5 bg-gray-100">
-                              <p className=" font-bold text-xl ">Export:</p>
-                              <Separator />
+                  <Separator className="my-3" />
+                  <div className="shadow-md rounded-xl p-3">
+                    <ScrollArea className="h-[400px]">
+                      {subtitles.map((sub, index) => (
+                        <div key={index} className="my-2">
+                          {editingIndex === index ? (
+                            <div className="flex gap-2">
+                              <Input
+                                value={editedText}
+                                onChange={handleEditChange}
+                              />
                               <Button
                                 variant="outline"
-                                className="hover:bg-green-100"
-                                onClick={() => {
-                                  const result = convertSubtitlesToString(
-                                    subtitles,
-                                    exportWithShowTime,
-                                    exportWithSpeakerName
-                                  );
-                                  creatPDF(result);
-                                }}
+                                size="sm"
+                                onClick={() => handleEditSave(index)}
                               >
-                                export to PDF.{" "}
-                                <FaRegFilePdf className="mx-2 text-red-600" />
+                                <CheckIcon className="text-green-600" />
                               </Button>
-                              <Button
-                                variant="outline"
-                                className="hover:bg-green-100"
-                                onClick={() => {
-                                  const result = convertSubtitlesToString(
-                                    subtitles,
-                                    exportWithShowTime,
-                                    exportWithSpeakerName
-                                  );
-                                  downloadWordFile(result);
-                                }}
-                              >
-                                export to Docx.
-                                <TbFileTypeDocx className="mx-2 text-blue-600" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                className="hover:bg-green-100"
-                                onClick={() => {
-                                  const result = convertSubtitlesToString(
-                                    subtitles,
-                                    exportWithShowTime,
-                                    exportWithSpeakerName
-                                  );
-                                  handleDownloadTxt(result);
-                                }}
-                              >
-                                export to Txt.
-                                <GrDocumentTxt className="mx-2 text-gray-600" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                className="hover:bg-green-100"
-                                onClick={() => {
-                                  const result =
-                                    convertSubtitlesToSRT(subtitles);
-                                  handleDownloadSrt(result, "srtfile.srt");
-                                }}
-                              >
-                                export to Srt.
-                                <MdOutlineSubtitles className="mx-2 text-gray-600" />
-                              </Button>
-                              <div className="flex items-center gap-3">
-                                <div>
-                                  <Checkbox
-                                    id="terms1"
-                                    onCheckedChange={(e: boolean) => {
-                                      setExportWithShowTime(e);
-                                    }}
-                                    checked={exportWithShowTime}
-                                  />
-                                  <br />
-                                  <p className="text-gray-500 text-sm text-center">
-                                    export with TimeStamp?
-                                  </p>
-                                </div>
-                                <div>
-                                  <Checkbox
-                                    id="terms1"
-                                    onCheckedChange={(e: boolean) => {
-                                      setExportWithSpeakerName(e);
-                                    }}
-                                    checked={exportWithSpeakerName}
-                                  />
-                                  <br />
-                                  <p className="text-gray-500 text-sm text-center">
-                                    export with Speaker name?
-                                  </p>
-                                </div>
-                              </div>
                             </div>
-                          </div>{" "}
-                        </div>
-                        <DrawerFooter className="pt-2">
-                          <DrawerClose asChild>
-                            <Button variant="outline">Cancel</Button>
-                          </DrawerClose>
-                        </DrawerFooter>
-                      </DrawerContent>
-                    </Drawer>
-                  </div>{" "}
-                  <Separator />
-                </div>
-              </div>
-            </div>{" "}
-            <div className="m-1">
-              <p className="text-[10px] mb-3 text-gray-600">
-                Language:(
-                <span className="text-amber-500">{textLanguageDetected}</span>)
-              </p>
-              <div>
-                <div className="mb-4">
-                  <Checkbox
-                    id="terms1"
-                    onCheckedChange={(e: boolean) => {
-                      setShowTime(e);
-                    }}
-                    defaultChecked={true}
-                    checked={showTime}
-                  />
-                  <p>Show timeStamp?</p>
-                </div>
-                <div className="mt-4 shadow-md rounded-xl p-3">
-                  {subtitles.map((sub, index) => (
-                    <div key={index} className="my-2">
-                      {editingIndex === index ? (
-                        <div className="flex gap-2">
-                          <Input
-                            value={editedText}
-                            onChange={handleEditChange}
-                          />
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditSave(index)}
-                          >
-                            <CheckIcon className="text-green-600" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="my-1">
-                          {showTime && (
-                            <div>
-                              <MdAccountCircle className="text-emerald-400" />
-                              <p className="text-gray-500">
-                                {speakerArrayShow[index]}
+                          ) : (
+                            <div className="my-1">
+                              {showTime && (
+                                <div>
+                                  {returnIconSpeaker(speakerArrayShow[index])}
+                                  <p className="text-gray-500">
+                                    {speakerArrayShow[index]}
+                                  </p>
+                                </div>
+                              )}
+                              <p
+                                className={`cursor-pointer ${
+                                  currentSubtitle === sub
+                                    ? "bg-amber-100 rounded-xl "
+                                    : ""
+                                }`}
+                                onClick={() => handleSubtitleClick(sub.start)}
+                              >
+                                {showTime && (
+                                  <span className="mr-2 text-gray-500">
+                                    ({formatTime(sub.start)})
+                                  </span>
+                                )}
+                                {highlightText(sub.text, searchTerm)}
+                                <Button
+                                  onClick={() => handleEditClick(index)}
+                                  variant="ghost"
+                                  size="sm"
+                                >
+                                  <Edit2Icon className="size-[12px] text-gray-500" />
+                                </Button>
                               </p>
                             </div>
                           )}
-                          <p
-                            className={`cursor-pointer ${
-                              currentSubtitle === sub
-                                ? "bg-amber-100 rounded-xl "
-                                : ""
-                            }`}
-                            onClick={() => handleSubtitleClick(sub.start)}
-                          >
-                            {showTime && (
-                              <span className="mr-2 text-gray-500">
-                                ({formatTime(sub.start)})
-                              </span>
-                            )}
-                            {highlightText(sub.text, searchTerm)}
-                            <Button
-                              onClick={() => handleEditClick(index)}
-                              variant="ghost"
-                              size="sm"
-                            >
-                              <Edit2Icon className="size-[12px] text-gray-500" />
-                            </Button>
-                          </p>
                         </div>
-                      )}
-                    </div>
-                  ))}
+                      ))}
+                    </ScrollArea>
+                  </div>
                 </div>
               </div>
-            </div>
-            <Button
-              onClick={() => {
-                if (uploadedFile) {
-                  //handleSubmit(uploadedFile);
-                  submitSpeech();
-                } else {
-                  alert("file not found!");
-                }
-              }}
-              disabled={isSubmitted}
-            >
-              {isSubmitted ? (
-                <LoaderIcon className="h-5 w-5 animate-spin" />
-              ) : (
-                <div className="flex items-center">
-                  <LoopIcon className="m-2" />
-                  <p>Retranscribe</p>
-                </div>
-              )}
-            </Button>
+            ) : (
+              <>
+                {isSubmitted ? (
+                  <div className="flex justify-center">
+                    <LoaderIcon className="h-5 w-5 animate-spin" />
+                  </div>
+                ) : (
+                  <p className="text-2xl text-gray-500 text-center">
+                    Upload your file to start transcribe
+                  </p>
+                )}
+              </>
+            )}
+            {textLanguageDetected && (
+              <Button
+                onClick={() => {
+                  if (uploadedFile) {
+                    //handleSubmit(uploadedFile);
+                    submitSpeech();
+                  } else {
+                    alert("file not found!");
+                  }
+                }}
+                disabled={isSubmitted}
+              >
+                {isSubmitted ? (
+                  <LoaderIcon className="h-5 w-5 animate-spin" />
+                ) : (
+                  <div className="flex items-center">
+                    <LoopIcon className="m-2" />
+                    <p>Retranscribe</p>
+                  </div>
+                )}
+              </Button>
+            )}
             <div className="flex justify-center">
               {isAudioUrlDispo && isVideo && !youtubePlayerUrl && (
                 <div className=" w-4/5  p-1  rounded-t-md bg-slate-50">
                   <div className="flex justify-center m-3">
                     <ReactPlayer
+                      ref={videoPlayerRef1}
                       width="100%"
                       height="100%"
                       playing={videoIsplaying}
@@ -2487,7 +2564,7 @@ stream.on("finish", function() {
                       url={audioUrl.current}
                       onDuration={(e) => console.log(`duration:${e}`)}
                       onSeek={(e) => console.log("onSeek", e)}
-                      onProgress={(e) => console.log(`onprogress: ${e}`)}
+                      onProgress={handleProgressDesktop}
                     />
                   </div>
 
@@ -2507,8 +2584,10 @@ stream.on("finish", function() {
           </div>
           <div className="flex justify-center">
             {isAudioUrlDispo && isVideo && youtubePlayerUrl && (
-              <div className="bg-gray-100 p-2 rounded-md">
+              <div className="bg-gray-100 p-2 rounded-md fixed bottom-0">
                 <YouTubePlayer
+                  width={350}
+                  height={200}
                   ref={playerRef}
                   url={youtubeUrl}
                   controls={true}
@@ -2548,7 +2627,7 @@ stream.on("finish", function() {
         </div>
 
         {isAudioUrlDispo && !isVideo && (
-          <div className="fixed bottom-0 flex  w-full bg-slate-200 p-5 rounded-t-md">
+          <div className="fixed bottom-0 flex  w-full bg-slate-200 p-2 rounded-t-md">
             <audio
               ref={audioRef}
               src={audioUrl.current}
@@ -2561,31 +2640,3 @@ stream.on("finish", function() {
     );
   }
 }
-
-/*
-
-{subtitles.map((sub, index) => (
-                          <div key={index + 1}>
-                            <p>
-                              <MdAccountCircle />
-                              <span className="text-gray-500">speaker</span>
-                            </p>
-
-                            <p
-                              key={index}
-                              className={`my-2 cursor-pointer ${
-                                currentSubtitle === sub ? "bg-yellow-300" : ""
-                              }`}
-                              onClick={() => handleSubtitleClick(sub.start)}
-                            >
-                              {" "}
-                              {showTime && (
-                                <span className="mr-2 text-gray-500">
-                                  ({formatTime(sub.start)})
-                                </span>
-                              )}
-                              {highlightText(sub.text, searchTerm)}
-                            </p>
-                          </div>
-                        ))}
-*/
