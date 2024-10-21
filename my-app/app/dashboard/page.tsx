@@ -53,14 +53,11 @@ import {
 } from "lucide-react";
 import { Document, Packer, Paragraph, TextRun, PageBreak } from "docx";
 import { saveAs } from "file-saver";
-
+import noData from "../../public/nodata2.svg";
 import { Player } from "react-simple-player";
 import { useRouter } from "next/navigation";
 import * as fal from "@fal-ai/serverless-client";
-//import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import Image from "next/image";
-//import { useToast } from "@/components/ui/use-toast";
-//import { signOut, onAuthStateChanged, User } from "firebase/auth";
 import { cn } from "@/lib/utils";
 import {
   ref,
@@ -224,12 +221,6 @@ const rejectStyle = {
   borderColor: "#ff1744",
 };
 type LanguageType = undefined | string;
-interface ShunkItems {
-  id: number;
-  texte: string;
-  shunkedTime: string;
-  speaker: string;
-}
 export default function Dashboard() {
   const [uploadedFile, setUploadedFile] = useState<any>(null);
   const [isAudioUrlDispo, setAudioUrlDispo] = useState(false);
@@ -261,7 +252,6 @@ export default function Dashboard() {
   const [userEmail, setUserEmail] = useState<string | null>("");
   const [videoIsplaying, setVideoPlaying] = useState(false);
   const [userId, setUserid] = useState("");
-  const subscriptionId = useRef("");
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const audioUrl = useRef("");
@@ -271,7 +261,6 @@ export default function Dashboard() {
   const isTranslante = useRef(false);
   const [isVideo, setIsVideo] = useState(false);
   const [autoDetectLanguage, setAutoDetectLanguage] = useState(true);
-  const [items, setItems] = useState<ShunkItems[]>([]);
   const [value, setValue] = useState("transcribe");
   const [valueLanguage, setLanguageValue] = useState("en");
   const setUsedTextLengh = useRef(0);
@@ -870,7 +859,6 @@ export default function Dashboard() {
       const response = await axios.request(options);
       console.log(response.data.dlink);
       if (response) {
-        setSubtitles([]);
         setCheckingYoutubeUrl(false);
         audioUrl.current = response.data.dlink;
         submitSpeech();
@@ -1093,9 +1081,9 @@ export default function Dashboard() {
         setUsedTextLengh.current = result.text.length;
 
         //used text for firebase update request limit
-        console.log(`used text: ${setUsedTextLengh.current}`);
+        /* console.log(`used text: ${setUsedTextLengh.current}`);
         console.log(`array length : ${result.chunks.length}`);
-        console.log(`language : ${result.inferred_languages}`);
+        console.log(`language : ${result.inferred_languages}`);*/
         setTextLanguageDetected(`${result.inferred_languages}`);
         /* console.log(
           `first text: (${result.chunks[0].timestamp}) ${result.chunks[0].text}`
@@ -1291,7 +1279,8 @@ stream.on("finish", function() {
     // On prend le premier fichier s'il est accepté
     setUploadedFile(acceptedFiles[0]);
     handleSubmit(acceptedFiles[0]);
-    setSubtitles([]);
+
+    transcriptionResultInSrt.current = "";
   };
   const { getRootProps, getInputProps, isFocused, isDragAccept, isDragReject } =
     useDropzone({ accept: { "audio/*": [], "video/*": [] }, onDrop });
@@ -1605,13 +1594,13 @@ stream.on("finish", function() {
           </div>
         </ScrollArea>
 
-        <div className="flex justify-center w-4/5">
+        <div className="flex justify-center w-4/5 bg-gray-50">
           <Separator orientation="vertical" />
           <ScrollArea className="h-[700px] w-full">
             <div className="w-full mx-3 mt-5">
               <div className="grid gap-5">
                 <div className="flex justify-between p-12">
-                  <p className="text-3xl font-bold underline  text-center ">
+                  <p className="text-3xl font-bold underline  text-amber-500 text-center ">
                     AudiScribe
                   </p>
                   <div>
@@ -1660,7 +1649,7 @@ stream.on("finish", function() {
                     </DropdownMenu>
                   </div>
                 </div>
-                <div className="grid gap-1">
+                <div className="grid gap-1 bg-white p-10 rounded-md">
                   <div>
                     <div className="flex justify-center my-2">
                       {uploadIsLoaded ? (
@@ -1826,9 +1815,19 @@ stream.on("finish", function() {
                         <LoaderIcon className="h-5 w-5 animate-spin" />
                       </div>
                     ) : (
-                      <p className="text-2xl text-gray-500 text-center">
-                        Upload your file to start transcribe
-                      </p>
+                      <div>
+                        <Separator className="my-10" />
+                        <p className="text-2xl text-center bg-gradient-to-r from-amber-500  to-pink-500 bg-clip-text text-transparent">
+                          Upload your file to start transcribe
+                        </p>
+                        <div className="flex justify-center mt-10">
+                          <Image
+                            alt="no data"
+                            src={noData}
+                            className="size-[300px]"
+                          />
+                        </div>
+                      </div>
                     )}
                   </>
                 )}
@@ -1856,24 +1855,25 @@ stream.on("finish", function() {
                     )}
                   </Button>
                 )}
-                <div className="flex justify-center m-3">
-                  {" "}
-                  <ReactPlayer
-                    ref={videoPlayerRef}
-                    width="100%"
-                    height="100%"
-                    playing={videoIsplaying}
-                    light={false}
-                    url="https://firebasestorage.googleapis.com/v0/b/audiscribe-942e8.appspot.com/o/users%2FqwhrQtz0c4bBGcYfxAMHlnokihb2%2Fdata%2FaudioToTranscribe%7D?alt=media&token=742bd824-5898-48ac-b745-1425b0084146"
-                    onDuration={(e) => console.log(`duration:${e}`)}
-                    onSeek={(e) => console.log("onSeek", e)}
-                    onProgress={handleProgressDesktop}
-                  />
-                </div>
 
                 <div className="flex justify-center">
                   {isAudioUrlDispo && isVideo && !youtubePlayerUrl && (
                     <div className=" w-4/5  p-1  rounded-t-md bg-slate-50">
+                      <div className="flex justify-center m-3">
+                        {" "}
+                        <ReactPlayer
+                          ref={videoPlayerRef}
+                          width="100%"
+                          height="100%"
+                          playing={videoIsplaying}
+                          light={false}
+                          url="https://firebasestorage.googleapis.com/v0/b/audiscribe-942e8.appspot.com/o/users%2FqwhrQtz0c4bBGcYfxAMHlnokihb2%2Fdata%2FaudioToTranscribe%7D?alt=media&token=742bd824-5898-48ac-b745-1425b0084146"
+                          onDuration={(e) => console.log(`duration:${e}`)}
+                          onSeek={(e) => console.log("onSeek", e)}
+                          onProgress={handleProgressDesktop}
+                        />
+                      </div>
+
                       <div className="flex justify-center m-2">
                         <Button
                           variant="outline"
@@ -1903,6 +1903,7 @@ stream.on("finish", function() {
                 )}
               </div>{" "}
               <br />
+              <Separator />
               <br />
               <div className="grid gap-3 my-10">
                 <p className="text-center">2024 AudiScribe </p>
@@ -1951,9 +1952,11 @@ stream.on("finish", function() {
   }
   function mobileScreen() {
     return (
-      <div className="lg:hidden p-3">
+      <div className="lg:hidden p-3 bg-gray-50">
         <div className="flex justify-between  top-2 end-2 m-2">
-          <p className="text-xl font bold  text-center">AudiScribe</p>
+          <p className="text-xl font-bold underline text-amber-500  text-center">
+            AudiScribe
+          </p>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">
@@ -2372,55 +2375,57 @@ stream.on("finish", function() {
                   </AccordionItem>
                 </Accordion>
               </div>
-              <div className="flex justify-center">
-                <div {...getRootProps({ style })} className=" max-w-[400px]">
-                  <input {...getInputProps()} />
-                  {uploadedFile ? (
-                    <div>
-                      <h4 className="text-center">Uploaded file:</h4>
-                      <p className="text-center">{uploadedFile.name}</p>
-                    </div>
-                  ) : (
-                    <div className="grid gap-2">
-                      <div className="flex justify-center">
-                        <UploadCloud />
+              <div className="bg-white p-5 rounded-md">
+                <div className="flex justify-center">
+                  <div {...getRootProps({ style })} className=" max-w-[400px]">
+                    <input {...getInputProps()} />
+                    {uploadedFile ? (
+                      <div>
+                        <h4 className="text-center">Uploaded file:</h4>
+                        <p className="text-center">{uploadedFile.name}</p>
                       </div>
-                      <p className="text-center">
-                        Drag and drop audio /video files here , or click to
-                        select files
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <p className="text-center text-gray-600">-----Or-----</p>
-              <div className="flex justify-center">
-                <div className="grid gap-3">
-                  <div className="flex items-center gap-2">
-                    <Input
-                      className="w-[70%] "
-                      placeholder="Paste youtube link Here..."
-                      value={youtubeUrl}
-                      onChange={(e) => {
-                        setYoutubeUrl(e.target.value);
-                      }}
-                    />
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        setYoutubeUrl("");
-                        firstcheck.current = 0;
-                      }}
-                    >
-                      <DeleteIcon />
-                    </Button>
+                    ) : (
+                      <div className="grid gap-2">
+                        <div className="flex justify-center">
+                          <UploadCloud />
+                        </div>
+                        <p className="text-center">
+                          Drag and drop audio /video files here , or click to
+                          select files
+                        </p>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex justify-center">
-                    {checkingUrl ? (
-                      <>
-                        <LoaderIcon className="animate-spin size-5" />
-                      </>
-                    ) : null}
+                </div>
+                <p className="text-center text-gray-600">-----Or-----</p>
+                <div className="flex justify-center">
+                  <div className="grid gap-3">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        className="w-[70%] "
+                        placeholder="Paste youtube link Here..."
+                        value={youtubeUrl}
+                        onChange={(e) => {
+                          setYoutubeUrl(e.target.value);
+                        }}
+                      />
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setYoutubeUrl("");
+                          firstcheck.current = 0;
+                        }}
+                      >
+                        <DeleteIcon />
+                      </Button>
+                    </div>
+                    <div className="flex justify-center">
+                      {checkingUrl ? (
+                        <>
+                          <LoaderIcon className="animate-spin size-5" />
+                        </>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2523,9 +2528,19 @@ stream.on("finish", function() {
                     <LoaderIcon className="h-5 w-5 animate-spin" />
                   </div>
                 ) : (
-                  <p className="text-2xl text-gray-500 text-center">
-                    Upload your file to start transcribe
-                  </p>
+                  <div>
+                    <Separator className="my-5" />
+                    <p className="  text-2xl text-center bg-gradient-to-r from-amber-500  to-pink-500 bg-clip-text text-transparent">
+                      Upload your file to start transcribe
+                    </p>
+                    <div className="flex justify-center mt-10">
+                      <Image
+                        alt="no data"
+                        src={noData}
+                        className="size-[200px]"
+                      />
+                    </div>
+                  </div>
                 )}
               </>
             )}
@@ -2597,6 +2612,7 @@ stream.on("finish", function() {
             )}
           </div>{" "}
           <br />
+          <Separator />
           <br />
           <div className="grid gap-3 my-10">
             <p className="text-center text-sm text-gray-600 ">
