@@ -1648,7 +1648,7 @@ stream.on("finish", function() {
                     </DropdownMenu>
                   </div>
                 </div>
-                <div className="grid gap-1 bg-white p-10 rounded-md">
+                <div className="grid gap-1 bg-white p-10 rounded-lg">
                   <div>
                     <div className="flex justify-center my-2">
                       {uploadIsLoaded ? (
@@ -1681,7 +1681,7 @@ stream.on("finish", function() {
                     </div>
                     <p className="text-center text-gray-600">-----Or-----</p>
                     <div className="flex justify-center">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 p-3 bg-gray-100 rounded-lg">
                         <Input
                           className="max-w-[500px] min-w-[400px]"
                           placeholder="Paste youtube link Here..."
@@ -1690,21 +1690,26 @@ stream.on("finish", function() {
                             setYoutubeUrl(e.target.value);
                           }}
                         />
-                        <Button
-                          variant="ghost"
-                          onClick={() => {
-                            setYoutubeUrl("");
-                            firstcheck.current = 0;
-                          }}
-                        >
-                          <DeleteIcon />
-                        </Button>
+
                         <div>
                           {checkingUrl ? (
                             <>
                               <LoaderIcon className="animate-spin size-5" />
                             </>
-                          ) : null}
+                          ) : (
+                            <>
+                              <Button
+                                className="bg-white hover:bg-amber-100"
+                                variant="ghost"
+                                onClick={() => {
+                                  setYoutubeUrl("");
+                                  firstcheck.current = 0;
+                                }}
+                              >
+                                <DeleteIcon />
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1814,18 +1819,12 @@ stream.on("finish", function() {
                         <LoaderIcon className="h-5 w-5 animate-spin" />
                       </div>
                     ) : (
-                      <div>
-                        <Separator className="my-10" />
-                        <p className="text-2xl text-center bg-gradient-to-r from-amber-500  to-pink-500 bg-clip-text text-transparent">
-                          Upload your file to start transcribe
-                        </p>
-                        <div className="flex justify-center mt-10">
-                          <Image
-                            alt="no data"
-                            src={noData}
-                            className="size-[300px]"
-                          />
-                        </div>
+                      <div className="flex justify-center mt-10">
+                        <Image
+                          alt="no data"
+                          src={noData}
+                          className="size-[300px]"
+                        />
                       </div>
                     )}
                   </>
@@ -2386,42 +2385,46 @@ stream.on("finish", function() {
                           <UploadCloud />
                         </div>
                         <p className="text-center">
-                          Drag and drop audio /video files here , or click to
+                          Drag and drop audio/video files here,or click to
                           select files
                         </p>
                       </div>
                     )}
                   </div>
                 </div>
-                <p className="text-center text-gray-600">-----Or-----</p>
-                <div className="flex justify-center">
-                  <div className="grid gap-3">
-                    <div className="flex items-center gap-2">
+                <p className="text-center text-gray-300">-----Or-----</p>
+                <div className="flex justify-center w-full">
+                  <div className="grid gap-3 w-full max-w-[400px]">
+                    <div className="flex items-center  gap-2 bg-gray-100 p-3 rounded-lg">
                       <Input
-                        className="w-[70%] "
+                        className="w-full "
                         placeholder="Paste youtube link Here..."
                         value={youtubeUrl}
                         onChange={(e) => {
                           setYoutubeUrl(e.target.value);
                         }}
                       />
-                      <Button
-                        variant="ghost"
-                        onClick={() => {
-                          setYoutubeUrl("");
-                          firstcheck.current = 0;
-                        }}
-                      >
-                        <DeleteIcon />
-                      </Button>
-                    </div>
-                    <div className="flex justify-center">
+
                       {checkingUrl ? (
                         <>
                           <LoaderIcon className="animate-spin size-5" />
                         </>
-                      ) : null}
+                      ) : (
+                        <>
+                          <Button
+                            className="bg-white hover:bg-amber-100"
+                            variant="ghost"
+                            onClick={() => {
+                              setYoutubeUrl("");
+                              firstcheck.current = 0;
+                            }}
+                          >
+                            <DeleteIcon />
+                          </Button>
+                        </>
+                      )}
                     </div>
+                    <div className="flex justify-center"></div>
                   </div>
                 </div>
               </div>
@@ -2641,18 +2644,12 @@ stream.on("finish", function() {
                     <LoaderIcon className="h-5 w-5 animate-spin" />
                   </div>
                 ) : (
-                  <div>
-                    <Separator className="my-5" />
-                    <p className="  text-2xl text-center bg-gradient-to-r from-amber-500  to-pink-500 bg-clip-text text-transparent">
-                      Upload your file to start transcribe
-                    </p>
-                    <div className="flex justify-center mt-10">
-                      <Image
-                        alt="no data"
-                        src={noData}
-                        className="size-[200px]"
-                      />
-                    </div>
+                  <div className="flex justify-center mt-5">
+                    <Image
+                      alt="no data"
+                      src={noData}
+                      className="size-[200px]"
+                    />
                   </div>
                 )}
               </>
