@@ -299,7 +299,7 @@ export default function Dashboard() {
     setEditedText(subtitles[index].text);
   };
 
-  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEditChange = (e: any) => {
     setEditedText(e.target.value);
   };
 
@@ -1044,7 +1044,7 @@ export default function Dashboard() {
     const parts = text.split(regex);
     return parts.map((part, index) =>
       part.toLowerCase() === term.toLowerCase() ? (
-        <span key={index} className="bg-green-300">
+        <span key={index} className="bg-green-300 rounded-md">
           {part}
         </span>
       ) : (
@@ -1607,8 +1607,7 @@ stream.on("finish", function() {
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="outline">
-                          {" "}
-                          {userName ? <p>{userName}</p> : <p>My...</p>}
+                          <MdAccountCircle className="size-[30px] text-gray-500" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="w-56">
@@ -1746,8 +1745,8 @@ stream.on("finish", function() {
                         />
                       </div>
                       <Separator className="my-3" />
-                      <div className=" shadow-md rounded-xl p-3">
-                        <ScrollArea className="h-[300px]">
+                      <div className=" shadow-md rounded-xl p-3 bg-white">
+                        <ScrollArea className="h-[400px]">
                           {subtitles.map((sub, index) => (
                             <div key={index} className="my-2">
                               {editingIndex === index ? (
@@ -1959,9 +1958,8 @@ stream.on("finish", function() {
           </p>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                {" "}
-                {userName ? <p>{userName}</p> : <p>My...</p>}
+              <Button variant="ghost">
+                <MdAccountCircle className="size-[30px] text-gray-500" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
@@ -2021,17 +2019,11 @@ stream.on("finish", function() {
           <div className="grid gap-5">
             <div className="grid gap-1">
               <div className="mb-4 mt-1 ">
-                <div className="flex justify-center">
-                  {uploadIsLoaded ? (
-                    <Progress value={progresspercent} className="w-[60%]" />
-                  ) : null}
-                </div>
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="item-1">
                     <AccordionTrigger>More...</AccordionTrigger>
                     <AccordionContent>
                       <div className="grid  gap-4 ">
-                        <Separator />
                         <Popover open={openMobile} onOpenChange={setOpenMobile}>
                           <PopoverTrigger asChild>
                             <Button
@@ -2194,7 +2186,7 @@ stream.on("finish", function() {
                               <div className="flex justify-center mt-10">
                                 <div className="grid gap-2 w-full  shadow-sm rounded-sm p-5 bg-gray-100">
                                   <p className="text-center font-bold">Tools</p>
-                                  <Separator />
+
                                   <Drawer
                                     open={openMobileDialogYoutubemp3}
                                     onOpenChange={setOpenMobileDialogYoutubemp3}
@@ -2369,13 +2361,17 @@ stream.on("finish", function() {
                             </DrawerContent>
                           </Drawer>
                         </div>{" "}
-                        <Separator />
                       </div>
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
               </div>
               <div className="bg-white p-5 rounded-md">
+                <div className="flex justify-center my-1">
+                  {uploadIsLoaded ? (
+                    <Progress value={progresspercent} className="w-[60%]" />
+                  ) : null}
+                </div>
                 <div className="flex justify-center">
                   <div {...getRootProps({ style })} className=" max-w-[400px]">
                     <input {...getInputProps()} />
@@ -2460,18 +2456,135 @@ stream.on("finish", function() {
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
+                    <Drawer
+                      open={openForMobileExport}
+                      onOpenChange={setOpenForMobileExport}
+                    >
+                      <DrawerTrigger asChild>
+                        <Button variant="outline">
+                          <FaFileExport className="text-amber-500" />
+                        </Button>
+                      </DrawerTrigger>
+                      <DrawerContent>
+                        <DrawerHeader className="text-left">
+                          <DrawerTitle>Download your file</DrawerTitle>
+                          <DrawerDescription>
+                            Choose your format.
+                          </DrawerDescription>
+                        </DrawerHeader>
+                        <div className="w-full">
+                          <div className="flex justify-center">
+                            <div className="grid gap-2 w-full  shadow-sm rounded-sm p-5 bg-gray-100">
+                              <p className=" font-bold text-xl ">Export:</p>
+                              <Separator />
+                              <Button
+                                variant="outline"
+                                className="hover:bg-green-100"
+                                onClick={() => {
+                                  const result = convertSubtitlesToString(
+                                    subtitles,
+                                    exportWithShowTime,
+                                    exportWithSpeakerName
+                                  );
+                                  creatPDF(result);
+                                }}
+                              >
+                                export to PDF.{" "}
+                                <FaRegFilePdf className="mx-2 text-red-600" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                className="hover:bg-green-100"
+                                onClick={() => {
+                                  const result = convertSubtitlesToString(
+                                    subtitles,
+                                    exportWithShowTime,
+                                    exportWithSpeakerName
+                                  );
+                                  downloadWordFile(result);
+                                }}
+                              >
+                                export to Docx.
+                                <TbFileTypeDocx className="mx-2 text-blue-600" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                className="hover:bg-green-100"
+                                onClick={() => {
+                                  const result = convertSubtitlesToString(
+                                    subtitles,
+                                    exportWithShowTime,
+                                    exportWithSpeakerName
+                                  );
+                                  handleDownloadTxt(result);
+                                }}
+                              >
+                                export to Txt.
+                                <GrDocumentTxt className="mx-2 text-gray-600" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                className="hover:bg-green-100"
+                                onClick={() => {
+                                  const result =
+                                    convertSubtitlesToSRT(subtitles);
+                                  handleDownloadSrt(result, "srtfile.srt");
+                                }}
+                              >
+                                export to Srt.
+                                <MdOutlineSubtitles className="mx-2 text-gray-600" />
+                              </Button>
+                              <div className="flex items-center gap-3">
+                                <div>
+                                  <Checkbox
+                                    id="terms1"
+                                    onCheckedChange={(e: boolean) => {
+                                      setExportWithShowTime(e);
+                                    }}
+                                    checked={exportWithShowTime}
+                                  />
+                                  <br />
+                                  <p className="text-gray-500 text-sm text-center">
+                                    export with TimeStamp?
+                                  </p>
+                                </div>
+                                <div>
+                                  <Checkbox
+                                    id="terms1"
+                                    onCheckedChange={(e: boolean) => {
+                                      setExportWithSpeakerName(e);
+                                    }}
+                                    checked={exportWithSpeakerName}
+                                  />
+                                  <br />
+                                  <p className="text-gray-500 text-sm text-center">
+                                    export with Speaker name?
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>{" "}
+                        </div>
+                        <DrawerFooter className="pt-2">
+                          <DrawerClose asChild>
+                            <Button variant="outline">Cancel</Button>
+                          </DrawerClose>
+                        </DrawerFooter>
+                      </DrawerContent>
+                    </Drawer>
                   </div>
 
                   <Separator className="my-3" />
-                  <div className="shadow-md rounded-xl p-3">
+                  <div className="shadow-md rounded-xl p-3 bg-white">
                     <ScrollArea className="h-[400px]">
                       {subtitles.map((sub, index) => (
                         <div key={index} className="my-2">
                           {editingIndex === index ? (
                             <div className="flex gap-2">
-                              <Input
+                              <Textarea
                                 value={editedText}
                                 onChange={handleEditChange}
+                                className="h-[100px]"
                               />
                               <Button
                                 variant="outline"
