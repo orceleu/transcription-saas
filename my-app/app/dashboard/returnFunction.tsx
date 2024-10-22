@@ -33,4 +33,12 @@ const returnIconSpeaker = (speaker: string) => {
   }
   return <div>returnIconSpeaker</div>;
 };
-export { returnIconSpeaker };
+const addAudioElement = (blob: any) => {
+  const url = URL.createObjectURL(blob);
+  console.log(url);
+  const audio = document.createElement("audio");
+  audio.src = url;
+  audio.controls = true;
+  document.body.appendChild(audio);
+};
+export { returnIconSpeaker, addAudioElement };

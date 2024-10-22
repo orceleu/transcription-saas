@@ -76,6 +76,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { AudioRecorder } from "react-audio-voice-recorder";
 import {
   Drawer,
   DrawerClose,
@@ -136,7 +137,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import YouTubePlayer from "react-player/youtube";
-import { returnIconSpeaker } from "./returnFunction";
+import { addAudioElement, returnIconSpeaker } from "./returnFunction";
 interface Item {
   name: string;
   path: string;
@@ -674,7 +675,7 @@ export default function Dashboard() {
   const handleActiveButton = () => {
     firstcheck.current += 1;
     console.log(firstcheck.current);
-    if (firstcheck.current < 4) {
+    if (firstcheck.current < 3) {
       //console.log("not locked");
 
       if (youtubeUrl.slice(0, 13) === "https://youtu") {
@@ -784,6 +785,38 @@ export default function Dashboard() {
       }
     }
   };
+  const uploadRecordedToFirebaseInBlob = (blob: Blob) => {
+    const storageRef = ref(
+      storage,
+      `users/${user?.uid}/data/audioToTranscribe`
+    );
+    const uploadTask = uploadBytesResumable(storageRef, blob);
+
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const progress = Math.round(
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+        );
+        setProgresspercent(progress);
+        if (progresspercent == 100) {
+          setChange(!changed);
+          console.log("upload finished");
+        }
+      },
+      (error) => {
+        alert(error);
+      },
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          transcriptionResultInSrt.current = "";
+          audioUrl.current = downloadURL;
+          submitSpeech();
+          setAudioUrlDispo(true);
+        });
+      }
+    );
+  };
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -891,7 +924,7 @@ export default function Dashboard() {
 
           if (response) {
             setisyoutubeMp3Submitted(false);
-            console.log(response.data.dlink);
+            //console.log(response.data.dlink);
             router.push(response.data.dlink);
           }
         } catch (error) {
@@ -1714,6 +1747,18 @@ stream.on("finish", function() {
                       </div>
                     </div>
                   </div>
+                  <div className="flex justify-center my-2">
+                    <AudioRecorder
+                      onRecordingComplete={uploadRecordedToFirebaseInBlob}
+                      audioTrackConstraints={{
+                        noiseSuppression: true,
+                        echoCancellation: true,
+                      }}
+                      downloadOnSavePress={false}
+                      downloadFileExtension="webm"
+                      showVisualizer={true}
+                    />
+                  </div>
                 </div>
 
                 {textLanguageDetected ? (
@@ -2424,8 +2469,20 @@ stream.on("finish", function() {
                         </>
                       )}
                     </div>
-                    <div className="flex justify-center"></div>
                   </div>
+                </div>
+
+                <div className="flex justify-center my-2">
+                  <AudioRecorder
+                    onRecordingComplete={uploadRecordedToFirebaseInBlob}
+                    audioTrackConstraints={{
+                      noiseSuppression: true,
+                      echoCancellation: true,
+                    }}
+                    downloadOnSavePress={false}
+                    downloadFileExtension="webm"
+                    showVisualizer={true}
+                  />
                 </div>
               </div>
             </div>
