@@ -292,6 +292,9 @@ export default function Dashboard() {
   const [speakerArrayShow, setSpeakerArrayShow] = useState<string[]>([]);
   const MAX_LENGTH = 300;
   const priceId = "price_1Pp8vvHMq3uIqhfsUZwVE60I";
+  const durationAllowedToUpload = useRef(60); //60sec
+  const fileSizeAllowedToUpload = useRef(500000000); //500MB
+
   const addSpeaker = (newItem: string) => {
     setSpeakerArrayShow((prevItems) => [...prevItems, newItem]);
   };
@@ -415,7 +418,7 @@ export default function Dashboard() {
     },
     {
       value: "translate",
-      label: "Translation to -->",
+      label: "Translation(experimental)->",
     },
   ];
   const language = [
@@ -566,7 +569,7 @@ export default function Dashboard() {
       const blob = await Packer.toBlob(doc);
 
       // Télécharger le fichier .docx
-      saveAs(blob, "exemple.docx");
+      saveAs(blob, "audiScribe_.docx");
     } else {
       toast({
         variant: "destructive",
@@ -584,7 +587,7 @@ export default function Dashboard() {
       // Créer un élément <a> pour télécharger le fichier
       const link = document.createElement("a");
       link.href = url;
-      link.download = "exemple.txt";
+      link.download = "audiScribe_.txt";
 
       // Ajouter le lien au DOM, cliquer dessus, puis le supprimer
       document.body.appendChild(link);
@@ -602,7 +605,7 @@ export default function Dashboard() {
   };
   const creatPDF = (text: string) => {
     if (text) {
-      const finalText = ` GENERATED WITH AudiSribe AI ---Upgrade your plan to remove this text \n ${text} --- `;
+      const finalText = ` GENERATED WITH AudiSribe AI \n---Upgrade your plan to remove this text\n\n ${text}  `;
       const doc = new jsPDF();
       const pageHeight = doc.internal.pageSize.height; // Hauteur d'une page
       const marginTop = 10; // Marge en haut de la page
@@ -621,12 +624,13 @@ export default function Dashboard() {
 
         // Ajouter la ligne de texte au PDF
         doc.text(line, 10, yPosition);
+
         yPosition += lineHeight; // Incrémenter la position verticale pour la ligne suivante
       });
-      doc.setFontSize(12);
+      doc.setFontSize(10);
       doc.setFont("helvetica", "bold");
       // Télécharger le fichier PDF
-      doc.save("exemple.pdf");
+      doc.save("audiScribe_.pdf");
     } else {
       toast({
         variant: "destructive",
@@ -641,7 +645,7 @@ export default function Dashboard() {
         await navigator.clipboard.writeText(texte);
         alert("Copied to clipboard!");
       } catch (err) {
-        console.error("Échec de la copie du texte : ", err);
+        console.error("Error : ", err);
       }
     } else {
       toast({
@@ -715,18 +719,7 @@ export default function Dashboard() {
   }, [youtubeUrl]);
 
   //upload audio
-  const handleSubmit = (e: any) => {
-    // e.preventDefault();
-    //setSubmitted(true);
-    const file = e;
-    if (file && file.type.startsWith("video/")) {
-      console.log("video detected!");
-      setIsVideo(true);
-    } else {
-      console.log("audio detected!");
-      setIsVideo(false);
-    }
-
+  const handleSubmit = (file: any) => {
     if (!file) {
       toast({
         variant: "destructive",
@@ -737,44 +730,57 @@ export default function Dashboard() {
         (file && file.type.startsWith("audio/")) ||
         file.type.startsWith("video/")
       ) {
-        //console.log("est un fichier audio");
-        //console.log(`${file.size / 1024} KB`);
-        if (file.size > 20000000) {
+        if (file.size > fileSizeAllowedToUpload.current) {
           toast({
             variant: "destructive",
-            title: "audio size too large (> 20MB).",
+            title: "audio size too large (> 500MB).",
           });
         } else {
-          setUploadLoaded(true);
-          const storageRef = ref(
-            storage,
-            `users/${user?.uid}/data/audioToTranscribe`
+          const media = document.createElement(
+            file.type.startsWith("video") ? "video" : "audio"
           );
-          const uploadTask = uploadBytesResumable(storageRef, file);
-
-          uploadTask.on(
-            "state_changed",
-            (snapshot) => {
-              const progress = Math.round(
-                (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+          media.src = URL.createObjectURL(file);
+          media.onloadedmetadata = () => {
+            if (media.duration < durationAllowedToUpload.current) {
+              setUploadLoaded(true);
+              const storageRef = ref(
+                storage,
+                `users/${user?.uid}/data/audioToTranscribe`
               );
-              setProgresspercent(progress);
-              if (progresspercent == 100) {
-                setChange(!changed);
-                console.log("upload finished");
-              }
-            },
-            (error) => {
-              alert(error);
-            },
-            () => {
-              getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                audioUrl.current = downloadURL;
-                submitSpeech();
-                setAudioUrlDispo(true);
+              const uploadTask = uploadBytesResumable(storageRef, file);
+
+              uploadTask.on(
+                "state_changed",
+                (snapshot) => {
+                  const progress = Math.round(
+                    (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+                  );
+                  setProgresspercent(progress);
+                  if (progresspercent == 100) {
+                    setChange(!changed);
+                    console.log("upload finished");
+                  }
+                },
+                (error) => {
+                  alert(error);
+                },
+                () => {
+                  getDownloadURL(uploadTask.snapshot.ref).then(
+                    (downloadURL) => {
+                      audioUrl.current = downloadURL;
+                      submitSpeech();
+                      setAudioUrlDispo(true);
+                    }
+                  );
+                }
+              );
+            } else {
+              toast({
+                variant: "destructive",
+                title: "Too much time uploaded!",
               });
             }
-          );
+          };
         }
       } else {
         //console.log("nest pas");
@@ -786,6 +792,7 @@ export default function Dashboard() {
     }
   };
   const uploadRecordedToFirebaseInBlob = (blob: Blob) => {
+    setUploadLoaded(true);
     const storageRef = ref(
       storage,
       `users/${user?.uid}/data/audioToTranscribe`
@@ -1619,7 +1626,6 @@ stream.on("finish", function() {
                     </Button>
                   </DialogContent>
                 </Dialog>
-                <Button>Tranlation</Button>
               </div>
             </div>
             <br />
@@ -2278,7 +2284,6 @@ stream.on("finish", function() {
                                       </DrawerFooter>
                                     </DrawerContent>
                                   </Drawer>
-                                  <Button>Tranlation</Button>
                                 </div>
                               </div>
                             </DialogContent>
@@ -2480,7 +2485,7 @@ stream.on("finish", function() {
                       echoCancellation: true,
                     }}
                     downloadOnSavePress={false}
-                    downloadFileExtension="webm"
+                    downloadFileExtension="mp3"
                     showVisualizer={true}
                   />
                 </div>
