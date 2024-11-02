@@ -2,7 +2,7 @@ import { account, ID, OAuthProvider } from "../appwrite/appwrite";
 
 const login = async (email, password) => {
   const session = await account.createEmailPasswordSession(email, password);
-  setLoggedInUser(await account.get());
+  //setLoggedInUser(await account.get());
 };
 
 const register = async (email, password, name) => {

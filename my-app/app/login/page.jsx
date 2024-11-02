@@ -1,12 +1,25 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { account, databases, ID, storage } from "../appwrite/appwrite";
-import { addDoc, updateDoc } from "../appwrite/databaseFunction";
+import {
+  addDoc,
+  addDocTextTranscripted,
+  addUserAccount,
+  addUserData,
+  listDoc,
+  listUserData,
+  updateDoc,
+  updateUserAccountFree,
+  updateuserAccountPro,
+} from "../appwrite/databaseFunction";
+import { Permission, Query, Role } from "appwrite";
+
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { login, logout, loginWithGoogle, register } from "./auth";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { getURL } from "next/dist/shared/lib/utils";
 const LoginPage = () => {
   const [loggedInUser, setLoggedInUser] = useState(null);
   const [email, setEmail] = useState("");
@@ -18,6 +31,9 @@ const LoginPage = () => {
   const [progresspercent, setProgresspercent] = useState(0);
   const fileId = useRef("");
   const { toast } = useToast();
+  const DATABASE_ID = "6722601a0008810208ab";
+  const COLLETION_ID = "672260660021672e0fa6";
+  const COLLETION_ID2 = "6724d8290021af03f736";
   function handleChange(event) {
     setFile(event.target.files[0]);
   }
@@ -88,6 +104,7 @@ const LoginPage = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
         console.log("Fichier uploadé avec succès", xhr.response);
         getFileUrl(fileId.current);
+        addUserData(fileId.current, loggedInUser.$id, "hystoric added");
       } else {
         console.error("Erreur pendant l'upload", xhr.responseText);
       }
@@ -98,6 +115,19 @@ const LoginPage = () => {
     formData.append("file", file);
     formData.append("fileId", fileId.current);
 
+    /*formData.append("permissions[]", [
+      Permission.write(Role.user(loggedInUser.$id)),
+    ]);
+    formData.append("permissions[]", [
+      Permission.read(Role.user(loggedInUser.$id)),
+    ]);
+    formData.append("permissions[]", [
+      Permission.update(Role.user(loggedInUser.$id)),
+    ]);
+    formData.append("permissions[]", [
+      Permission.delete(Role.user(loggedInUser.$id)),
+    ]);
+*/
     // Envoyez la requête
     xhr.send(formData);
   };
@@ -106,7 +136,10 @@ const LoginPage = () => {
     const result = await storage.listFiles(
       "67225954001822e6e440" // bucketId
     );
-
+    // Filtrez les fichiers pour afficher uniquement ceux que l'utilisateur authentifié peut lire
+    /*const fichiersUtilisateur = result.files.filter((file) =>
+      file.$permissions.read.includes(`user:${account.get().$id}`)
+    );*/
     console.log(result);
     setListFiles(result.files);
   };
@@ -118,7 +151,24 @@ const LoginPage = () => {
 
     console.log(result.href);
   };
+  const deleteFiles = async (fileId) => {
+    const result = await storage.deleteFile(
+      "67225954001822e6e440", // bucketId
+      fileId // fileId
+    );
 
+    console.log(result);
+  };
+
+  const getDocument = async (documentId) => {
+    const result = await databases.getDocument(
+      DATABASE_ID, // databaseId
+      COLLETION_ID2, // collectionId
+      documentId // documentId
+    );
+    console.log(result);
+    alert(result);
+  };
   if (loggedInUser) {
     return (
       <div className="grid gap-4">
@@ -140,18 +190,47 @@ const LoginPage = () => {
         >
           Logout
         </button>
-        <Button onClick={() => addDoc(loggedInUser.$id)}>
-          add data to database
+
+        <Button
+          onClick={() => {
+            addUserAccount(loggedInUser.$id);
+          }}
+        >
+          create user account
         </Button>
-        <Button onClick={() => updateDoc(loggedInUser.$id)}>
-          update data to database
+        <Button
+          onClick={() => {
+            addUserData(
+              ID.unique(),
+              loggedInUser.$id,
+              "Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores asperiores doloribus ipsam aliquid tempora iusto. Libero laudantium enim voluptatibus minus labore dolor doloremque quos commodi, ipsa officiis tenetur fugiat autem."
+            );
+          }}
+        >
+          add user data historic
         </Button>
+        <Button onClick={() => updateUserAccountFree(loggedInUser.$id, 1)}>
+          update user account free
+        </Button>
+        <Button onClick={() => updateuserAccountPro(loggedInUser.$id, 10)}>
+          update user account pro
+        </Button>
+
         <Button onClick={() => getFileUrl()}>get url</Button>
-        <Button onClick={() => listFiles()}>list File</Button>
+        <Button onClick={() => listUserData(loggedInUser.$id)}>
+          list user data File
+        </Button>
         {listFile && (
-          <ul>
+          <div>
             {listFile.map((file) => (
-              <li key={file.$id}>
+              <div
+                className="grid gap-3 p-3 shadow-md m-3"
+                key={file.$id}
+                onClick={() => {
+                  getDocument(file.$id);
+                  getFileUrl(file.$id);
+                }}
+              >
                 <strong>Nom :</strong> {file.name}
                 <br />
                 <strong>Date de création :</strong>{" "}
@@ -159,9 +238,16 @@ const LoginPage = () => {
                 <br />
                 <strong>Taille :</strong>{" "}
                 {(file.sizeOriginal / 1048576).toFixed(3)} Mo
-              </li>
+                <Button
+                  onClick={() => {
+                    deleteFiles(file.$id);
+                  }}
+                >
+                  Delete
+                </Button>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </div>
     );
