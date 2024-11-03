@@ -144,7 +144,11 @@ import {
   returnIconSpeaker,
 } from "./returnFunction";
 import { account, ID } from "../appwrite/appwrite";
-import { addUserData, listUserData } from "../appwrite/databaseFunction";
+import {
+  addUserData,
+  deleteItemUserData,
+  listUserData,
+} from "../appwrite/databaseFunction";
 interface Item {
   name: string;
   path: string;
@@ -234,6 +238,9 @@ interface UserDataHistoric {
   historic: string;
   $id: string;
   $createdAt: string;
+  associedFileName: string;
+  type: string;
+  size: string;
 }
 export default function Dashboard() {
   const [uploadedFile, setUploadedFile] = useState<any>(null);
@@ -308,6 +315,9 @@ export default function Dashboard() {
   const durationAllowedToUpload = 200; //60sec
   const fileSizeAllowedToUpload = 500000000; //500MB
   const fileId = useRef("");
+  const associedFileName = useRef("");
+  const type = useRef("");
+  const size = useRef("");
   const [userData, setUserData] = useState<UserDataHistoric[]>([]);
   const deleteItemUserHistoric = (id: string) => {
     const deletedTable = userData.filter((value) => value.$id !== id);
@@ -317,11 +327,22 @@ export default function Dashboard() {
     userId: string,
     historic: string,
     id: string,
-    createdAt: string
+    createdAt: string,
+    associedFileName: string,
+    type: string,
+    size: string
   ) => {
     setUserData((prev) => [
       ...prev,
-      { userId: userId, historic: historic, $id: id, $createdAt: createdAt },
+      {
+        userId: userId,
+        historic: historic,
+        $id: id,
+        $createdAt: createdAt,
+        associedFileName: associedFileName,
+        type: type,
+        size: size,
+      },
     ]);
   };
   const addSpeaker = (newItem: string) => {
@@ -764,6 +785,9 @@ export default function Dashboard() {
         (file && file.type.startsWith("audio/")) ||
         file.type.startsWith("video/")
       ) {
+        associedFileName.current = file.name;
+        type.current = file.type;
+        size.current = file.size.toString();
         if (file.size > fileSizeAllowedToUpload) {
           toast({
             variant: "destructive",
@@ -811,9 +835,10 @@ export default function Dashboard() {
                   console.log("Fichier uploadé avec succès", xhr.response);
                   audioUrl.current = getFileUrl(fileId.current);
                   transcriptionResultInSrt.current = "";
-                  //addUserData(fileId.current, userId, "hystoric added");
+
                   submitSpeech();
                   setAudioUrlDispo(true);
+                 
                 } else {
                   console.error("Erreur pendant l'upload", xhr.responseText);
                 }
@@ -896,7 +921,10 @@ export default function Dashboard() {
         data.documents[i].userId,
         data.documents[i].historic,
         data.documents[i].$id,
-        data.documents[i].$createdAt
+        data.documents[i].$createdAt,
+        data.documents[i].associedFileName,
+        data.documents[i].type,
+        data.documents[i].size
       );
     }
   };
@@ -1031,7 +1059,14 @@ export default function Dashboard() {
     const parsedSubtitles = parseSRT(transcriptionResultInSrt.current);
     setSubtitles(parsedSubtitles);
     if (fileId.current) {
-      addUserData(fileId.current, userId, transcriptionResultInSrt.current);
+      addUserData(
+        fileId.current,
+        userId,
+        transcriptionResultInSrt.current,
+        associedFileName.current,
+        type.current,
+        size.current
+      );
     } else {
       console.log("No fileId found!");
     }
@@ -1158,19 +1193,8 @@ export default function Dashboard() {
         setLoading(false);
         setText(result.text as string);
         setUsedTextLengh.current = result.text.length;
-
-        //used text for firebase update request limit
-        /* console.log(`used text: ${setUsedTextLengh.current}`);
-        console.log(`array length : ${result.chunks.length}`);
-        console.log(`language : ${result.inferred_languages}`);*/
         setTextLanguageDetected(`${result.inferred_languages}`);
-        /* console.log(
-          `first text: (${result.chunks[0].timestamp}) ${result.chunks[0].text}`
-        );*/
         for (let i = 0; i < result.chunks.length; i++) {
-          /*console.log(
-            ` text-${i}: (${result.chunks[i].timestamp}) ${result.chunks[i].text}`
-          );*/
           speakerArray.current.push(`(${result.chunks[i].speaker})`);
           addSpeaker(`(${result.chunks[i].speaker})`);
           let resultInSrt = convertToSRT(
@@ -1180,8 +1204,9 @@ export default function Dashboard() {
           );
           handleAddConvertedSrtInText(resultInSrt);
         }
-
         setSubmitted(false);
+        setUserData([]);
+        listUserDATA();
         toast({
           variant: "default",
           title: "Note.",
@@ -1193,7 +1218,13 @@ export default function Dashboard() {
       setSubmitted(false);
     }
   };
-
+  const deleteItemUser_data = async (id: string) => {
+    const result = await deleteItemUserData(id);
+    if (result) {
+      deleteItemUserHistoric(id);
+      console.log(result);
+    }
+  };
   const addPlan = async (
     stripe_subscription_id: string,
     stripe_customer_id: string,
@@ -1211,148 +1242,26 @@ export default function Dashboard() {
       console.error("Error:", e);
     }
   };
-  const addUsedChar = async () => {
-    try {
-      await updateDoc(doc(db, "usersPlan", userId), {
-        used_char: usedCharCurrent - setUsedTextLengh.current,
-      });
 
-      console.log("great! .");
-    } catch (e) {
-      console.error("Error:", e);
-    }
-  };
-  /*
-is_pro,
-time_used,
-subscription_Id
-
-*/
   const fetchPost = async () => {
     const docRef = doc(db, "usersPlan", userId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       //setHavingPlan(true);
       // cus_Id.current = docSnap.data().having_plan
-      getCustomerAlldata(userId);
+      //getCustomerAlldata(userId);
     } else {
       // docSnap.data() will be undefined in this case
       console.log("no plan found!");
       //setHavingPlan(false);
     }
   };
-  const getCustomerAlldata = async (userId: string) => {
-    const docRef = doc(db, "usersPlan", userId); // replace with customerID
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      if (docSnap.data().is_pro == true) {
-        setHavingPlan(true);
-        setUsedCharCurrent(docSnap.data().time_used);
-        console.log(docSnap.data().is_pro);
-        console.log(docSnap.data().time_used);
-        //setplanType(` ${docSnap.data().plan}`);
-        /*subscriptionId.current = docSnap.data().subscription_id;
-        const subscription = await stripe.subscriptions.retrieve(
-          `${docSnap.data().subscription_id}`
-        );
-        console.log(`subscription data:${subscription.status}`);*/
-      } else {
-        setHavingPlan(false);
-      }
-    } else {
-      setHavingPlan(false);
-    }
-  };
+
   useEffect(() => {
-    if (userId !== "") {
-      fetchPost();
+    if (userId) {
+      listUserDATA();
     }
   }, [userId]);
-  /*const addUsedChar = async () => {
-    try {
-      await updateDoc(doc(db, "usersPlan", userId), {
-        used_char: usedCharCurrent - texte.length,
-      });
-
-      console.log("great! .");
-    } catch (e) {
-      console.error("Error:", e);
-    }
-  };
-const addCustomerSub_Id = async (
-  stripe_subscription_id,
-  stripe_customer_id,
-  userId
-) => {
-  try {
-    await setDoc(doc(db, "usersPlan", userId), {
-      having_plan: true,
-      subscription_id: stripe_subscription_id,
-      customer_id: stripe_customer_id,
-      plan: "starter",
-      used_char: 40000,
-    });
-    console.log("inserted to userPlan! .");
-  } catch (e) {
-    console.error("Error:", e);
-  }
-};
-   const storedUrlSelected = localStorage.getItem("urlstored");
-      if (storedUrlSelected) {
-        const indexforVerif = stringToNumber(storedUrlSelected);
-
-        index = indexforVerif;
-        setUrlStored(storedUrlSelected);
-      }
-      
-      function stringToNumber(input: string): number {
-    const num = Number(input);
-
-    if (isNaN(num)) {
-      throw new Error("The input string is not a valid number.");
-    }
-
-    return num;
-  }
-  
-   const saveUrlToLocal = (value: string) => {
-    localStorage.setItem("urlstored", value);
-    console.log(`data added:${value}`);
-  };
-
-  let blob;
-
-function download() {
-  if (!blob) return;
-  var url = window.URL.createObjectURL(blob);
-  a.href = url;
-  a.download = 'test.pdf';
-  a.click();
-  window.URL.revokeObjectURL(url);
-}
-
-stream.on("finish", function() {
-   // get a blob you can do whatever you like with
-  blob = stream.toBlob("application/pdf");
-
-  const url = stream.toBlobURL('application/pdf');
-  const iframe = document.querySelector('iframe')
-  iframe.src = url;
-});
-
-*/
-  const convertSecondsToMinutes = (
-    secondsTuple: [number, number]
-  ): [string, string] => {
-    return secondsTuple.map((seconds) => {
-      const minutes = Math.floor(seconds / 60);
-      const remainingSeconds = Math.floor(seconds % 60);
-
-      return `${minutes}:${
-        remainingSeconds < 10 ? "0" : ""
-      }${remainingSeconds}`;
-    }) as [string, string];
-  };
 
   const onDrop = (acceptedFiles: any) => {
     // On prend le premier fichier s'il est accepté
@@ -1733,26 +1642,33 @@ stream.on("finish", function() {
                 {userData && (
                   <div>
                     {userData.map((data) => (
-                      <div className="grid ga-3 shadow-md rounded-md p-3 bg-pink-200 my-2">
-                        <strong>{data.$createdAt}</strong>
+                      <div
+                        className="grid ga-3 shadow-md rounded-md p-3 bg-pink-200 my-2"
+                        onClick={() => {
+                          //transcriptionResultInSrt.current = data.historic;
+                          const parsedSubtitles = parseSRT(data.historic);
+                          setSubtitles(parsedSubtitles);
+                          setTextLanguageDetected("fr");
+                          audioUrl.current = getFileUrl(data.$id);
+                          setAudioUrlDispo(true);
+
+                          // language,name ,type(mp3),size to added
+                        }}
+                      >
+                        <strong>{data.associedFileName}</strong>
+
+                        <div className="grid gap-1">
+                          <p>Size:{data.size}</p>
+                          <p>Type:{data.type}</p>
+                        </div>
+
                         <div className="flex items-center gap-2">
-                          <p
-                            className="w-3/4"
-                            onClick={() => {
-                              //transcriptionResultInSrt.current = data.historic;
-                              const parsedSubtitles = parseSRT(data.historic);
-                              setSubtitles(parsedSubtitles);
-                              setTextLanguageDetected("fr");
-                              audioUrl.current = getFileUrl(data.$id);
-                              setAudioUrlDispo(true);
-                              // language,name ,type(mp3),size to added
-                            }}
-                          >
-                            {returnSliceChar(data.historic)}
-                          </p>
+                          <p className="w-3/4">{data.$createdAt}</p>
                           <Button
                             className="w-1/4"
-                            onClick={() => deleteItemUserHistoric(data.$id)}
+                            onClick={() => {
+                              deleteItemUser_data(data.$id);
+                            }}
                           >
                             <TrashIcon />
                           </Button>

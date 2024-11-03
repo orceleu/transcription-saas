@@ -12,6 +12,8 @@ const addUserAccount = async (documentId) => {
       isPro: false,
       usedProTime: 0,
       usedFreeTime: 3,
+      stripeSubscriptionId: "",
+      stripeCustomerId: "",
     },
     [
       Permission.write(Role.any()),
@@ -54,7 +56,14 @@ const updateuserAccountPro = async (documentId, usedProTime) => {
   console.log(result);
 };
 
-const addUserData = async (uniqueId, userId, historicsData) => {
+const addUserData = async (
+  uniqueId,
+  userId,
+  historicsData,
+  associedFileName,
+  type,
+  size
+) => {
   const promise = databases.createDocument(
     DATABASE_ID,
     USER_DATA_COLLECTION_ID,
@@ -63,6 +72,9 @@ const addUserData = async (uniqueId, userId, historicsData) => {
     {
       userId: userId,
       historic: historicsData,
+      associedFileName: associedFileName,
+      type: type,
+      size: size,
     },
     [
       Permission.write(Role.any()),
@@ -80,14 +92,14 @@ const addUserData = async (uniqueId, userId, historicsData) => {
     }
   );
 };
-const deleteDoc = async (documentId) => {
+const deleteItemUserData = async (documentId) => {
   const result = await databases.deleteDocument(
     DATABASE_ID,
     USER_DATA_COLLECTION_ID,
     documentId // documentId
   );
 
-  console.log(result);
+  return result;
 };
 const listUserData = async (userId) => {
   const result = await databases.listDocuments(
@@ -104,7 +116,7 @@ export {
   updateUserAccountFree,
   updateuserAccountPro,
   listUserData,
-  deleteDoc,
+  deleteItemUserData,
 };
 /*
 
