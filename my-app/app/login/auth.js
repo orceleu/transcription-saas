@@ -17,7 +17,7 @@ const loginWithGoogle = async () => {
   try {
     await account.createOAuth2Session(
       OAuthProvider.Google,
-      "http://localhost:3000/login"
+      "http://localhost:3000/dashboard"
     );
   } catch (error) {
     console.error(error);

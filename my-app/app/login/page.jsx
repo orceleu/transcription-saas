@@ -20,12 +20,14 @@ import { login, logout, loginWithGoogle, register } from "./auth";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { getURL } from "next/dist/shared/lib/utils";
+import { TrashIcon } from "lucide-react";
 const LoginPage = () => {
   const [loggedInUser, setLoggedInUser] = useState(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [listFile, setListFiles] = useState([]);
+  const [userData, setUserData] = useState([]);
   const router = useRouter();
   const [file, setFile] = useState();
   const [progresspercent, setProgresspercent] = useState(0);
@@ -40,9 +42,9 @@ const LoginPage = () => {
 
   const checkLogin = async () => {
     setLoggedInUser(await account.get());
-    /*if (await account.get()) {
+    if (await account.get()) {
       router.push("/dashboard");
-    } */
+    }
   };
   useEffect(() => {
     if (progresspercent == 100) {
@@ -169,6 +171,13 @@ const LoginPage = () => {
     console.log(result);
     alert(result);
   };
+
+  const listUserDATA = async () => {
+    const data = await listUserData(loggedInUser.$id);
+    setUserData(data.documents);
+    console.log(data.documents);
+  };
+
   if (loggedInUser) {
     return (
       <div className="grid gap-4">
@@ -176,6 +185,7 @@ const LoginPage = () => {
         <p>id {loggedInUser.$id}</p>
         <p>email {loggedInUser.email}</p>
         <Progress value={progresspercent} className="w-[60%]" />
+
         <form onSubmit={handleSubmit}>
           <h1>React File Upload</h1>
           <input type="file" onChange={handleChange} />
@@ -217,9 +227,7 @@ const LoginPage = () => {
         </Button>
 
         <Button onClick={() => getFileUrl()}>get url</Button>
-        <Button onClick={() => listUserData(loggedInUser.$id)}>
-          list user data File
-        </Button>
+        <Button onClick={() => listUserDATA()}>list user data File</Button>
         {listFile && (
           <div>
             {listFile.map((file) => (

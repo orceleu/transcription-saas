@@ -1,5 +1,6 @@
 import React from "react";
 import { MdAccountCircle } from "react-icons/md";
+import { storage } from "../appwrite/appwrite";
 
 const returnIconSpeaker = (speaker: string) => {
   switch (speaker) {
@@ -41,4 +42,12 @@ const addAudioElement = (blob: any) => {
   audio.controls = true;
   document.body.appendChild(audio);
 };
-export { returnIconSpeaker, addAudioElement };
+const getFileUrl = (fileid: any) => {
+  const result = storage.getFileView(
+    "67225954001822e6e440", // bucketId
+    fileid // fileId
+  );
+
+  return result.href;
+};
+export { returnIconSpeaker, addAudioElement, getFileUrl };

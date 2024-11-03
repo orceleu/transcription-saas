@@ -95,7 +95,7 @@ const listUserData = async (userId) => {
     USER_DATA_COLLECTION_ID,
     [Query.contains("userId", userId)]
   );
-  console.log(result);
+  return result;
 };
 
 export {
@@ -116,7 +116,6 @@ controle de l'user-----
 {
 isPro,
 usedProTime,
-isFree,
 usedFreeTime
 }
 
@@ -126,7 +125,9 @@ donnees de l'user-------
 
 {
 userId,
-historic
+historic,
+associedFileName,
+associedFileSize
 }
 
 */

@@ -38,6 +38,7 @@ import {
   DeleteIcon,
   DownloadIcon,
   Edit2Icon,
+  HistoryIcon,
   Infinity,
   LoaderIcon,
   MoreHorizontal,
@@ -137,7 +138,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import YouTubePlayer from "react-player/youtube";
-import { addAudioElement, returnIconSpeaker } from "./returnFunction";
+import {
+  addAudioElement,
+  getFileUrl,
+  returnIconSpeaker,
+} from "./returnFunction";
+import { account, ID } from "../appwrite/appwrite";
+import { addUserData, listUserData } from "../appwrite/databaseFunction";
 interface Item {
   name: string;
   path: string;
@@ -222,6 +229,12 @@ const rejectStyle = {
   borderColor: "#ff1744",
 };
 type LanguageType = undefined | string;
+interface UserDataHistoric {
+  userId: string;
+  historic: string;
+  $id: string;
+  $createdAt: string;
+}
 export default function Dashboard() {
   const [uploadedFile, setUploadedFile] = useState<any>(null);
   const [isAudioUrlDispo, setAudioUrlDispo] = useState(false);
@@ -292,9 +305,25 @@ export default function Dashboard() {
   const [speakerArrayShow, setSpeakerArrayShow] = useState<string[]>([]);
   const MAX_LENGTH = 300;
   const priceId = "price_1Pp8vvHMq3uIqhfsUZwVE60I";
-  const durationAllowedToUpload = useRef(60); //60sec
-  const fileSizeAllowedToUpload = useRef(500000000); //500MB
-
+  const durationAllowedToUpload = 200; //60sec
+  const fileSizeAllowedToUpload = 500000000; //500MB
+  const fileId = useRef("");
+  const [userData, setUserData] = useState<UserDataHistoric[]>([]);
+  const deleteItemUserHistoric = (id: string) => {
+    const deletedTable = userData.filter((value) => value.$id !== id);
+    setUserData(deletedTable);
+  };
+  const addUserHistoricData = (
+    userId: string,
+    historic: string,
+    id: string,
+    createdAt: string
+  ) => {
+    setUserData((prev) => [
+      ...prev,
+      { userId: userId, historic: historic, $id: id, $createdAt: createdAt },
+    ]);
+  };
   const addSpeaker = (newItem: string) => {
     setSpeakerArrayShow((prevItems) => [...prevItems, newItem]);
   };
@@ -543,7 +572,11 @@ export default function Dashboard() {
       });
     }
   };
+  const returnSliceChar = (text: string) => {
+    const result = text.slice(0, 20);
 
+    return `${result}...`;
+  };
   const downloadWordFile = async (text: string) => {
     if (text) {
       // Diviser le texte en paragraphes (chaque nouvelle ligne dans un nouveau paragraphe)
@@ -726,11 +759,12 @@ export default function Dashboard() {
         title: "No file found.",
       });
     } else {
+      fileId.current = ID.unique();
       if (
         (file && file.type.startsWith("audio/")) ||
         file.type.startsWith("video/")
       ) {
-        if (file.size > fileSizeAllowedToUpload.current) {
+        if (file.size > fileSizeAllowedToUpload) {
           toast({
             variant: "destructive",
             title: "audio size too large (> 500MB).",
@@ -741,39 +775,57 @@ export default function Dashboard() {
           );
           media.src = URL.createObjectURL(file);
           media.onloadedmetadata = () => {
-            if (media.duration < durationAllowedToUpload.current) {
+            if (media.duration < durationAllowedToUpload) {
               setUploadLoaded(true);
-              const storageRef = ref(
-                storage,
-                `users/${user?.uid}/data/audioToTranscribe`
-              );
-              const uploadTask = uploadBytesResumable(storageRef, file);
+              // Créez un nouvel XMLHttpRequest
+              const xhr = new XMLHttpRequest();
 
-              uploadTask.on(
-                "state_changed",
-                (snapshot) => {
-                  const progress = Math.round(
-                    (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-                  );
-                  setProgresspercent(progress);
+              // Configurez l'URL et la méthode
+              xhr.open(
+                "POST",
+                `https://cloud.appwrite.io/v1/storage/buckets/67225954001822e6e440/files`,
+                true
+              );
+              xhr.setRequestHeader(
+                "X-Appwrite-Project",
+                "67224b080010c36860d8"
+              );
+
+              // Ajoutez un écouteur de progression
+              xhr.upload.addEventListener("progress", (event) => {
+                if (event.lengthComputable) {
+                  const percentComplete = (event.loaded / event.total) * 100;
+                  console.log(`Progression : ${percentComplete.toFixed(2)}%`);
+                  // Mettez à jour ici votre barre de progression dans l'UI
+                  setProgresspercent(Number(percentComplete));
                   if (progresspercent == 100) {
                     setChange(!changed);
                     console.log("upload finished");
                   }
-                },
-                (error) => {
-                  alert(error);
-                },
-                () => {
-                  getDownloadURL(uploadTask.snapshot.ref).then(
-                    (downloadURL) => {
-                      audioUrl.current = downloadURL;
-                      submitSpeech();
-                      setAudioUrlDispo(true);
-                    }
-                  );
                 }
-              );
+              });
+
+              // Ajoutez un écouteur pour vérifier la fin de l'upload
+              xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                  console.log("Fichier uploadé avec succès", xhr.response);
+                  audioUrl.current = getFileUrl(fileId.current);
+                  transcriptionResultInSrt.current = "";
+                  //addUserData(fileId.current, userId, "hystoric added");
+                  submitSpeech();
+                  setAudioUrlDispo(true);
+                } else {
+                  console.error("Erreur pendant l'upload", xhr.responseText);
+                }
+              };
+
+              // Créez un FormData pour envoyer le fichier
+              const formData = new FormData();
+              formData.append("file", file);
+              formData.append("fileId", fileId.current);
+
+              // Envoyez la requête
+              xhr.send(formData);
             } else {
               toast({
                 variant: "destructive",
@@ -791,6 +843,7 @@ export default function Dashboard() {
       }
     }
   };
+
   const uploadRecordedToFirebaseInBlob = (blob: Blob) => {
     setUploadLoaded(true);
     const storageRef = ref(
@@ -825,26 +878,28 @@ export default function Dashboard() {
     );
   };
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      if (currentUser) {
-        const name = currentUser?.displayName;
-        const userEmail = currentUser?.email;
-        const uiid = currentUser?.uid;
-        setUserEmail(userEmail);
-        setUserid(uiid);
-        console.log(currentUser?.displayName);
-        if (name !== undefined && name !== null) {
-          setUserName(name);
-        } else {
-        }
-      }
-      if (currentUser == null) {
-        //router.push("/");
-      }
-    });
-    return () => unsubscribe();
-  }, [user]);
+    const checkLogin = async () => {
+      const user = await account.get();
+      /*if (await account.get()) {
+        router.push("/dashboard");
+      } */
+      setUserEmail(user.email);
+      setUserid(user.$id);
+    };
+
+    checkLogin();
+  }, [userEmail]);
+  const listUserDATA = async () => {
+    const data: any = await listUserData(userId);
+    for (let i = 0; i < data.total; i++) {
+      addUserHistoricData(
+        data.documents[i].userId,
+        data.documents[i].historic,
+        data.documents[i].$id,
+        data.documents[i].$createdAt
+      );
+    }
+  };
   useEffect(() => {
     if (progresspercent == 100) {
       setTimeout(() => {
@@ -857,27 +912,6 @@ export default function Dashboard() {
       }, 500);
     }
   }, [progresspercent]);
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      if (currentUser) {
-        const name = currentUser?.displayName;
-        const userEmail = currentUser?.email;
-        const uiid = currentUser?.uid;
-        setUserEmail(userEmail);
-        setUserid(uiid);
-        console.log(currentUser?.displayName);
-        if (name !== undefined && name !== null) {
-          setUserName(name);
-        } else {
-        }
-      }
-      if (currentUser == null) {
-        //router.push("/");
-      }
-    });
-    return () => unsubscribe();
-  }, [user]);
 
   const options = {
     method: "GET",
@@ -996,6 +1030,11 @@ export default function Dashboard() {
   useEffect(() => {
     const parsedSubtitles = parseSRT(transcriptionResultInSrt.current);
     setSubtitles(parsedSubtitles);
+    if (fileId.current) {
+      addUserData(fileId.current, userId, transcriptionResultInSrt.current);
+    } else {
+      console.log("No fileId found!");
+    }
   }, [transcriptionResultInSrt.current]);
 
   useEffect(() => {
@@ -1687,6 +1726,41 @@ stream.on("finish", function() {
                     </DropdownMenu>
                   </div>
                 </div>
+
+                <Button variant="outline" onClick={() => listUserDATA()}>
+                  <HistoryIcon />
+                </Button>
+                {userData && (
+                  <div>
+                    {userData.map((data) => (
+                      <div className="grid ga-3 shadow-md rounded-md p-3 bg-pink-200 my-2">
+                        <strong>{data.$createdAt}</strong>
+                        <div className="flex items-center gap-2">
+                          <p
+                            className="w-3/4"
+                            onClick={() => {
+                              //transcriptionResultInSrt.current = data.historic;
+                              const parsedSubtitles = parseSRT(data.historic);
+                              setSubtitles(parsedSubtitles);
+                              setTextLanguageDetected("fr");
+                              audioUrl.current = getFileUrl(data.$id);
+                              setAudioUrlDispo(true);
+                              // language,name ,type(mp3),size to added
+                            }}
+                          >
+                            {returnSliceChar(data.historic)}
+                          </p>
+                          <Button
+                            className="w-1/4"
+                            onClick={() => deleteItemUserHistoric(data.$id)}
+                          >
+                            <TrashIcon />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="grid gap-1 bg-white p-10 rounded-lg">
                   <div>
                     <div className="flex justify-center my-2">
