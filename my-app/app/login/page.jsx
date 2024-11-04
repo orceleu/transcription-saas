@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { account, databases, ID, storage } from "../appwrite/appwrite";
-import { AppwriteException, Permission, Query, Role } from "appwrite";
+import { account, databases, ID } from "../appwrite/appwrite";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Accordion,
@@ -12,24 +11,16 @@ import {
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { loginWithGoogle } from "./auth";
-import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { getURL } from "next/dist/shared/lib/utils";
 import { LoaderIcon, TrashIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { FcGoogle } from "react-icons/fc";
 const LoginPage = () => {
-  const [loggedInUser, setLoggedInUser] = useState(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [listFile, setListFiles] = useState([]);
-  const [userData, setUserData] = useState([]);
   const router = useRouter();
   const [isLoginLoading, setIsLoginLoading] = useState(false);
-  const [progresspercent, setProgresspercent] = useState(0);
-  const fileId = useRef("");
   const { toast } = useToast();
   const getUser = async () => {
     if (await account.get()) {
@@ -40,21 +31,35 @@ const LoginPage = () => {
     getUser();
   }, []);
   const login = async (email, password) => {
-    const session = await account.createEmailPasswordSession(email, password);
-    console.log(session);
-    if (session.providerUid) {
-      router.push("/dashboard");
-    } else {
+    try {
+      const session = await account.createEmailPasswordSession(email, password);
       console.log(session);
+      if (session.providerUid) {
+        router.push("/dashboard");
+      }
+    } catch (error) {
+      setIsLoginLoading(false);
+      toast({
+        variant: "destructive",
+        title: `${error}`,
+      });
     }
   };
 
   const register = async (email, password, name) => {
-    const result = await account.create(ID.unique(), email, password, name);
-    console.log(result);
+    try {
+      const result = await account.create(ID.unique(), email, password, name);
+      console.log(result.$createdAt);
 
-    //add userAccount detail
-    await login(email, password);
+      //add userAccount detail
+      await login(email, password);
+    } catch (error) {
+      setIsLoginLoading(false);
+      toast({
+        variant: "destructive",
+        title: `${error}`,
+      });
+    }
   };
   const handleSubmitLogin = (e) => {
     e.preventDefault();
@@ -80,7 +85,7 @@ const LoginPage = () => {
               <TabsTrigger value="createAccount">Register</TabsTrigger>
             </TabsList>
             <TabsContent value="login" className="p-6 space-y-4">
-              <h2 className="text-2xl font-bold text-center">Connexion</h2>
+              <h2 className="text-2xl font-bold text-center">Login</h2>
               <div className="flex justify-center">
                 <Button
                   onClick={() => {
@@ -118,7 +123,7 @@ const LoginPage = () => {
                         </label>
                         <Input
                           type="email"
-                          placeholder="Entrez votre email"
+                          placeholder="Enter your email"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           className="w-full"
@@ -131,7 +136,7 @@ const LoginPage = () => {
                         </label>
                         <Input
                           type="password"
-                          placeholder="Entrez votre mot de passe"
+                          placeholder="Enter your password"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           className="w-full"
@@ -209,7 +214,7 @@ const LoginPage = () => {
                         </label>
                         <Input
                           type="email"
-                          placeholder="Entrez votre email"
+                          placeholder="Enter your email"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           className="w-full"
@@ -222,7 +227,7 @@ const LoginPage = () => {
                         </label>
                         <Input
                           type="password"
-                          placeholder="Entrez votre mot de passe"
+                          placeholder="Enter your password"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           className="w-full"

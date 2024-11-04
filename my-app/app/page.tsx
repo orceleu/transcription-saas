@@ -23,14 +23,22 @@ import { AiOutlineSelect } from "react-icons/ai";
 import { SiConvertio } from "react-icons/si";
 import { MdDoNotDisturb } from "react-icons/md";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   ArrowBigDown,
-  ArrowBigRight,
   Check,
   DeleteIcon,
   EditIcon,
   FileIcon,
   InfinityIcon,
   LanguagesIcon,
+  LoaderIcon,
   LogInIcon,
   MagnetIcon,
   MoreHorizontal,
@@ -43,21 +51,7 @@ import {
 } from "lucide-react";
 import { SelectIcon } from "@radix-ui/react-select";
 
-import {
-  Cloud,
-  CreditCard,
-  Github,
-  Keyboard,
-  LifeBuoy,
-  LogOut,
-  Mail,
-  MessageSquare,
-  Plus,
-  PlusCircle,
-  Settings,
-  UserPlus,
-  Users,
-} from "lucide-react";
+import { Cloud, CreditCard } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -76,30 +70,55 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { StarFilledIcon } from "@radix-ui/react-icons";
+import { loginWithGoogle } from "./login/auth";
+import { FaToolbox } from "react-icons/fa6";
+import { account, ID } from "./appwrite/appwrite";
+import { useToast } from "@/hooks/use-toast";
 export default function Home() {
   const router = useRouter();
-
+  const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [isLoginLoading, setIsLoginLoading] = useState(false);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      console.log(` urerr: ${user}`);
-      if (user != null) {
-        router.push("/dashboard");
-        console.log(currentUser?.displayName);
-      }
-    });
-    return () => unsubscribe();
-  }, [user]);
-  const handleLoginGoogle = async () => {
-    const provider = new GoogleAuthProvider();
+  const login = async (email: string, password: string) => {
     try {
-      await signInWithPopup(auth, provider);
+      const session = await account.createEmailPasswordSession(email, password);
+      console.log(session);
+      if (session.providerUid) {
+        router.push("/dashboard");
+      }
     } catch (error) {
-      console.log(error);
+      setIsLoginLoading(false);
+      toast({
+        variant: "destructive",
+        title: `${error}`,
+      });
     }
   };
+  const register = async (email: string, password: string, name: string) => {
+    try {
+      const result = await account.create(ID.unique(), email, password, name);
+      console.log(result.$createdAt);
+
+      //add userAccount detail
+      await login(email, password);
+    } catch (error) {
+      setIsLoginLoading(false);
+      toast({
+        variant: "destructive",
+        title: `${error}`,
+      });
+    }
+  };
+  const handleSubmitRegister = (e: any) => {
+    e.preventDefault();
+    setIsLoginLoading(true);
+    register(email, password, name);
+  };
+
   return (
     <main>
       <div className="fixed top-0  w-full flex justify-between  p-5 bg-zinc-50  rounded-md">
@@ -112,13 +131,24 @@ export default function Home() {
           <a href="#blog" className="hover:underline">
             Blog
           </a>
-          <Button onClick={handleLoginGoogle}>Login</Button>
-          <Button variant="outline" onClick={handleLoginGoogle}>
+          <Button onClick={loginWithGoogle}>Login</Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              router.push("/login");
+            }}
+          >
             Sign up
           </Button>
         </div>
         <div className="lg:hidden flex items-center gap-5">
-          <Button onClick={handleLoginGoogle}>Login</Button>{" "}
+          <Button
+            onClick={() => {
+              router.push("/login");
+            }}
+          >
+            Login
+          </Button>{" "}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="text-3xl ">
@@ -129,7 +159,11 @@ export default function Home() {
               <DropdownMenuLabel>More</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem onClick={handleLoginGoogle}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    router.push("/login");
+                  }}
+                >
                   <UserIcon className="mr-2 h-4 w-4" />
                   <span>Sign up</span>
                   <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
@@ -146,11 +180,6 @@ export default function Home() {
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLoginGoogle}>
-                <LogInIcon className="mr-2 h-4 w-4" />
-                <span>Login</span>
-                <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -222,7 +251,7 @@ export default function Home() {
             <Input placeholder="Youtube link..." />
           </div>
         </div>
-        <Button size="lg" className="w-full my-5" onClick={handleLoginGoogle}>
+        <Button size="lg" className="w-full my-5" onClick={loginWithGoogle}>
           <FcGoogle className="mx-3 " />
           start transcribing for free
         </Button>
@@ -395,14 +424,90 @@ export default function Home() {
                 </p>
               </div>
               <div className="flex justify-center mt-10">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="font-bold"
-                  onClick={handleLoginGoogle}
-                >
-                  <FcGoogle className="mx-3 " /> Get started for free
-                </Button>
+                <div className="grid gap-2">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="font-bold"
+                    onClick={loginWithGoogle}
+                  >
+                    <FcGoogle className="mx-3 " /> Get started for free
+                  </Button>
+                  <p className="text-center text-gray-200">___Or___</p>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="link"
+                        className="text-gray-200 font-bold"
+                      >
+                        Start with email and password
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Get started </DialogTitle>
+                        <DialogDescription>
+                          Get started with email and password
+                        </DialogDescription>
+                      </DialogHeader>
+
+                      <form
+                        className=" space-y-4"
+                        onSubmit={handleSubmitRegister}
+                      >
+                        {" "}
+                        <div className="p-2">
+                          <label className="block text-sm font-medium mb-1">
+                            Name
+                          </label>
+                          <Input
+                            type="text"
+                            placeholder="Name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="w-full"
+                            required
+                          />
+                        </div>
+                        <div className="p-2">
+                          <label className="block text-sm font-medium mb-1">
+                            Email
+                          </label>
+                          <Input
+                            type="email"
+                            placeholder="Enter your email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full"
+                            required
+                          />
+                        </div>
+                        <div className="p-2">
+                          <label className="block text-sm font-medium mb-1">
+                            Mot de passe
+                          </label>
+                          <Input
+                            type="password"
+                            placeholder="Enter your password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full"
+                            required
+                          />
+                        </div>
+                        <Button type="submit" className="w-full mt-4">
+                          {isLoginLoading ? (
+                            <>
+                              <LoaderIcon className="animate-spin" />
+                            </>
+                          ) : (
+                            <p>Register</p>
+                          )}
+                        </Button>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
             </div>
           </div>
@@ -453,9 +558,91 @@ export default function Home() {
                 </p>
               </div>
               <div className="flex justify-center mt-10">
-                <Button variant="outline" size="lg" className="font-bold">
-                  <FcGoogle className="mx-3 " /> GO pro now
-                </Button>
+                <div className="grid gap-2">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="font-bold"
+                    onClick={loginWithGoogle}
+                  >
+                    <FcGoogle className="mx-3 " /> GO pro now
+                  </Button>
+                  <p className="text-center text-gray-200">___Or___</p>
+
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="link"
+                        className="text-gray-200 font-bold"
+                      >
+                        Start with email and password
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Get started </DialogTitle>
+                        <DialogDescription>
+                          Get started with email and password
+                        </DialogDescription>
+                      </DialogHeader>
+
+                      <form
+                        className=" space-y-4"
+                        onSubmit={handleSubmitRegister}
+                      >
+                        {" "}
+                        <div className="p-2">
+                          <label className="block text-sm font-medium mb-1">
+                            Name
+                          </label>
+                          <Input
+                            type="text"
+                            placeholder="Name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="w-full"
+                            required
+                          />
+                        </div>
+                        <div className="p-2">
+                          <label className="block text-sm font-medium mb-1">
+                            Email
+                          </label>
+                          <Input
+                            type="email"
+                            placeholder="Enter your email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full"
+                            required
+                          />
+                        </div>
+                        <div className="p-2">
+                          <label className="block text-sm font-medium mb-1">
+                            Mot de passe
+                          </label>
+                          <Input
+                            type="password"
+                            placeholder="Enter your password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full"
+                            required
+                          />
+                        </div>
+                        <Button type="submit" className="w-full mt-4">
+                          {isLoginLoading ? (
+                            <>
+                              <LoaderIcon className="animate-spin" />
+                            </>
+                          ) : (
+                            <p>Register</p>
+                          )}
+                        </Button>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
             </div>
           </div>

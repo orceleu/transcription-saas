@@ -17,7 +17,7 @@ const loginWithGoogle = () => {
   try {
     account.createOAuth2Session(
       OAuthProvider.Google,
-      "http://localhost:3000/dashboard"
+      "https://audiscribeai.vercel.app/dashboard"
     );
   } catch (error) {
     console.error(error);

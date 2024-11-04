@@ -733,7 +733,7 @@ export default function Dashboard() {
 
   const handleActiveButton = () => {
     firstcheck.current += 1;
-    console.log(firstcheck.current);
+    //console.log(firstcheck.current);
     if (firstcheck.current < 3) {
       //console.log("not locked");
 
@@ -770,7 +770,9 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
-    handleActiveButton();
+    if (youtubeUrl) {
+      handleActiveButton();
+    }
   }, [youtubeUrl]);
 
   //upload audio
@@ -839,6 +841,12 @@ export default function Dashboard() {
 
                   submitSpeech();
                   setAudioUrlDispo(true);
+                  if (file.type.startsWith("video")) {
+                    setIsVideo(true);
+                  } else {
+                    setIsVideo(false);
+                  }
+
                   setfileNameSelected(associedFileName.current);
                 } else {
                   console.error("Erreur pendant l'upload", xhr.responseText);
@@ -926,10 +934,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     checkLogin();
-    /*if (!userEmail) {
-      console.log("no session!");
-      router.push("/login");
-    }*/
   }, []);
   const listUserDATA = async () => {
     const data: any = await listUserData(userId);
@@ -953,7 +957,6 @@ export default function Dashboard() {
         });
         setProgresspercent(0);
         setUploadLoaded(false);
-        //submitSpeech()
       }, 500);
     }
   }, [progresspercent]);
