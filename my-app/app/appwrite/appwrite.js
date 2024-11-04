@@ -1,5 +1,4 @@
 import { Client, Account, OAuthProvider, Databases, Storage } from "appwrite";
-const sdk = new A();
 const client = new Client();
 const databases = new Databases(client);
 const storage = new Storage(client);
