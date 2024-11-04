@@ -13,9 +13,9 @@ const logout = async () => {
   await account.deleteSession("current");
   //setLoggedInUser(null);
 };
-const loginWithGoogle = async () => {
+const loginWithGoogle = () => {
   try {
-    await account.createOAuth2Session(
+    account.createOAuth2Session(
       OAuthProvider.Google,
       "http://localhost:3000/dashboard"
     );

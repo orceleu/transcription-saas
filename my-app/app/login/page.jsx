@@ -1,26 +1,24 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { account, databases, ID, storage } from "../appwrite/appwrite";
+import { AppwriteException, Permission, Query, Role } from "appwrite";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  addDoc,
-  addDocTextTranscripted,
-  addUserAccount,
-  addUserData,
-  listDoc,
-  listUserData,
-  updateDoc,
-  updateUserAccountFree,
-  updateuserAccountPro,
-} from "../appwrite/databaseFunction";
-import { Permission, Query, Role } from "appwrite";
-
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { login, logout, loginWithGoogle, register } from "./auth";
+import { loginWithGoogle } from "./auth";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { getURL } from "next/dist/shared/lib/utils";
-import { TrashIcon } from "lucide-react";
+import { LoaderIcon, TrashIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { FcGoogle } from "react-icons/fc";
 const LoginPage = () => {
   const [loggedInUser, setLoggedInUser] = useState(null);
   const [email, setEmail] = useState("");
@@ -29,298 +27,135 @@ const LoginPage = () => {
   const [listFile, setListFiles] = useState([]);
   const [userData, setUserData] = useState([]);
   const router = useRouter();
-  const [file, setFile] = useState();
+  const [isLoginLoading, setIsLoginLoading] = useState(false);
   const [progresspercent, setProgresspercent] = useState(0);
   const fileId = useRef("");
   const { toast } = useToast();
-  const DATABASE_ID = "6722601a0008810208ab";
-  const COLLETION_ID = "672260660021672e0fa6";
-  const COLLETION_ID2 = "6724d8290021af03f736";
-  function handleChange(event) {
-    setFile(event.target.files[0]);
-  }
 
   const checkLogin = async () => {
-    setLoggedInUser(await account.get());
-    if (await account.get()) {
-      router.push("/dashboard");
+    try {
+      setLoggedInUser(await account.get());
+      if (await account.get()) {
+        router.replace("/dashboard");
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
-  useEffect(() => {
-    if (progresspercent == 100) {
-      setTimeout(() => {
-        toast({
-          title: "Uploaded!",
-        });
-        setProgresspercent(0);
-        // setUploadLoaded(false);
-        //submitSpeech()
-      }, 500);
-    }
-  }, [progresspercent]);
+
   useEffect(() => {
     checkLogin();
   }, []);
-
-  function handleSubmit(event) {
-    event.preventDefault();
-    uploadFile(file);
-  }
-  /*const uploadFile = async (file) => {
-    const result = await storage.createFile(
-      "67225954001822e6e440", // bucketId
-      loggedInUser.$id, // fileId
-      file
-    );
-
-    console.log(result);
-  };*/
-  const uploadFile = async (file) => {
-    // Créez un nouvel XMLHttpRequest
-    const xhr = new XMLHttpRequest();
-    fileId.current = ID.unique();
-    // Configurez l'URL et la méthode
-    xhr.open(
-      "POST",
-      `https://cloud.appwrite.io/v1/storage/buckets/67225954001822e6e440/files`,
-      true
-    );
-    xhr.setRequestHeader("X-Appwrite-Project", "67224b080010c36860d8");
-
-    // Ajoutez un écouteur de progression
-    xhr.upload.addEventListener("progress", (event) => {
-      if (event.lengthComputable) {
-        const percentComplete = (event.loaded / event.total) * 100;
-        console.log(`Progression : ${percentComplete.toFixed(2)}%`);
-        // Mettez à jour ici votre barre de progression dans l'UI
-        setProgresspercent(Number(percentComplete));
-        if (progresspercent == 100) {
-          //setChange(!changed);
-          console.log("upload finished");
-        }
-      }
-    });
-
-    // Ajoutez un écouteur pour vérifier la fin de l'upload
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        console.log("Fichier uploadé avec succès", xhr.response);
-        getFileUrl(fileId.current);
-        addUserData(fileId.current, loggedInUser.$id, "hystoric added");
-      } else {
-        console.error("Erreur pendant l'upload", xhr.responseText);
-      }
-    };
-
-    // Créez un FormData pour envoyer le fichier
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("fileId", fileId.current);
-
-    /*formData.append("permissions[]", [
-      Permission.write(Role.user(loggedInUser.$id)),
-    ]);
-    formData.append("permissions[]", [
-      Permission.read(Role.user(loggedInUser.$id)),
-    ]);
-    formData.append("permissions[]", [
-      Permission.update(Role.user(loggedInUser.$id)),
-    ]);
-    formData.append("permissions[]", [
-      Permission.delete(Role.user(loggedInUser.$id)),
-    ]);
-*/
-    // Envoyez la requête
-    xhr.send(formData);
+  const login = async (email, password) => {
+    const session = await account.createEmailPasswordSession(email, password);
+    setLoggedInUser(await account.get());
   };
 
-  const listFiles = async () => {
-    const result = await storage.listFiles(
-      "67225954001822e6e440" // bucketId
-    );
-    // Filtrez les fichiers pour afficher uniquement ceux que l'utilisateur authentifié peut lire
-    /*const fichiersUtilisateur = result.files.filter((file) =>
-      file.$permissions.read.includes(`user:${account.get().$id}`)
-    );*/
-    console.log(result);
-    setListFiles(result.files);
+  const register = async (email, password, name) => {
+    await account.create(ID.unique(), email, password, name);
+    //add userAccount detail
+    await login(email, password);
   };
-  const getFileUrl = (fileid) => {
-    const result = storage.getFileView(
-      "67225954001822e6e440", // bucketId
-      fileid // fileId
-    );
-
-    console.log(result.href);
+  const logout = async () => {
+    await account.deleteSession("current");
+    setLoggedInUser(null);
   };
-  const deleteFiles = async (fileId) => {
-    const result = await storage.deleteFile(
-      "67225954001822e6e440", // bucketId
-      fileId // fileId
-    );
-
-    console.log(result);
-  };
-
-  const getDocument = async (documentId) => {
-    const result = await databases.getDocument(
-      DATABASE_ID, // databaseId
-      COLLETION_ID2, // collectionId
-      documentId // documentId
-    );
-    console.log(result);
-    alert(result);
-  };
-
-  const listUserDATA = async () => {
-    const data = await listUserData(loggedInUser.$id);
-    setUserData(data.documents);
-    console.log(data.documents);
-  };
-
-  if (loggedInUser) {
-    return (
-      <div className="grid gap-4">
-        <p>Logged in as {loggedInUser.name}</p>
-        <p>id {loggedInUser.$id}</p>
-        <p>email {loggedInUser.email}</p>
-        <Progress value={progresspercent} className="w-[60%]" />
-
-        <form onSubmit={handleSubmit}>
-          <h1>React File Upload</h1>
-          <input type="file" onChange={handleChange} />
-          <button type="submit">Upload</button>
-        </form>
-        <button
-          type="button"
-          onClick={() => {
-            logout();
-            setLoggedInUser(null);
-          }}
-        >
-          Logout
-        </button>
-
-        <Button
-          onClick={() => {
-            addUserAccount(loggedInUser.$id);
-          }}
-        >
-          create user account
-        </Button>
-        <Button
-          onClick={() => {
-            addUserData(
-              ID.unique(),
-              loggedInUser.$id,
-              "Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores asperiores doloribus ipsam aliquid tempora iusto. Libero laudantium enim voluptatibus minus labore dolor doloremque quos commodi, ipsa officiis tenetur fugiat autem."
-            );
-          }}
-        >
-          add user data historic
-        </Button>
-        <Button onClick={() => updateUserAccountFree(loggedInUser.$id, 1)}>
-          update user account free
-        </Button>
-        <Button onClick={() => updateuserAccountPro(loggedInUser.$id, 10)}>
-          update user account pro
-        </Button>
-
-        <Button onClick={() => getFileUrl()}>get url</Button>
-        <Button onClick={() => listUserDATA()}>list user data File</Button>
-        {listFile && (
-          <div>
-            {listFile.map((file) => (
-              <div
-                className="grid gap-3 p-3 shadow-md m-3"
-                key={file.$id}
-                onClick={() => {
-                  getDocument(file.$id);
-                  getFileUrl(file.$id);
-                }}
-              >
-                <strong>Nom :</strong> {file.name}
-                <br />
-                <strong>Date de création :</strong>{" "}
-                {new Date(file.$createdAt).toISOString().slice(0, 10)}
-                <br />
-                <strong>Taille :</strong>{" "}
-                {(file.sizeOriginal / 1048576).toFixed(3)} Mo
-                <Button
-                  onClick={() => {
-                    deleteFiles(file.$id);
-                  }}
-                >
-                  Delete
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
 
   return (
     <div>
-      <Button onClick={loginWithGoogle}>Login google</Button>
-      <p>Not logged in</p>
-      <button
-        onClick={() => {
-          logout();
-          setLoggedInUser(null);
-        }}
-      >
-        logout
-      </button>
-      <form>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <button type="button" onClick={() => login(email, password)}>
-          Login
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            register(email, password, name);
-          }}
-        >
-          Register
-        </button>
-      </form>
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="w-full max-w-md p-6 space-y-4 bg-white shadow-md rounded-lg">
+          <Tabs defaultValue="login" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="createAccount">Register</TabsTrigger>
+            </TabsList>
+            <TabsContent value="login" className="p-6 space-y-4">
+              <h2 className="text-2xl font-bold text-center">Connexion</h2>
+              <Button
+                onClick={() => {
+                  loginWithGoogle();
+
+                  //setIsLoginLoading(!isLoginLoading);
+                }}
+                variant="outline"
+              >
+                <div className="flex items-center gap-3">
+                  <FcGoogle />
+                  Login google
+                </div>
+              </Button>
+              <div className="flex justify-center">
+                <div className="flex items-center gap-2">
+                  <p className="text-gray-500">____</p>
+                  <p className="text-gray-500">Or</p>
+                  <p className="text-gray-500">____</p>
+                </div>
+              </div>
+
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="item-1">
+                  <AccordionTrigger>
+                    Login with email and password
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className=" space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Email
+                        </label>
+                        <Input
+                          type="email"
+                          placeholder="Entrez votre email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="w-full"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Mot de passe
+                        </label>
+                        <Input
+                          type="password"
+                          placeholder="Entrez votre mot de passe"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="w-full"
+                          required
+                        />
+                      </div>
+
+                      <Button
+                        type="button"
+                        className="w-full mt-4"
+                        onClick={() => {
+                          setIsLoginLoading(true);
+                          login(email, password);
+                        }}
+                      >
+                        {isLoginLoading ? (
+                          <>
+                            <LoaderIcon className="animate-spin" />
+                          </>
+                        ) : (
+                          <p>Register</p>
+                        )}
+                      </Button>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </TabsContent>
+            <TabsContent value="createAccount">
+              <p>register</p>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
     </div>
   );
 };
-function MyFileList({ data }) {
-  return (
-    <ul>
-      {data.map((file) => (
-        <li key={file.id}>
-          <strong>Nom :</strong> {file.name}
-          <br />
-          <strong>Date de création :</strong>{" "}
-          {new Date(file.createdAt).toLocaleDateString()}
-          <br />
-          <strong>Taille :</strong> {file.sizeOriginal / 1048576} Mo
-        </li>
-      ))}
-    </ul>
-  );
-}
+
 export default LoginPage;

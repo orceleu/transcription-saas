@@ -14,7 +14,7 @@ import {
   FaToolbox,
 } from "react-icons/fa6";
 import { TbFileTypeDocx } from "react-icons/tb";
-import { GrDocumentTxt } from "react-icons/gr";
+import { GrDocumentTxt, GrEmptyCircle } from "react-icons/gr";
 import { useDropzone } from "react-dropzone";
 import { signOut, onAuthStateChanged, User } from "firebase/auth";
 import { auth, db } from "@/app/firebase/config";
@@ -25,7 +25,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowBigLeft,
   ArrowBigLeftIcon,
@@ -48,6 +48,7 @@ import {
   SaveIcon,
   SearchIcon,
   Settings,
+  SettingsIcon,
   TrashIcon,
   UploadCloud,
   UploadIcon,
@@ -78,6 +79,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { AudioRecorder } from "react-audio-voice-recorder";
+import { ImFilesEmpty } from "react-icons/im";
 import {
   Drawer,
   DrawerClose,
@@ -138,11 +140,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import YouTubePlayer from "react-player/youtube";
-import {
-  addAudioElement,
-  getFileUrl,
-  returnIconSpeaker,
-} from "./returnFunction";
+import { addAudioElement, returnIconSpeaker } from "./returnFunction";
+import { deleteFileItem, getFileUrl } from "../appwrite/storageFonction";
 import { account, ID } from "../appwrite/appwrite";
 import {
   addUserData,
@@ -310,19 +309,21 @@ export default function Dashboard() {
   const transcriptionResultInSrt = useRef<string>("");
   const speakerArray = useRef<string[]>([]);
   const [speakerArrayShow, setSpeakerArrayShow] = useState<string[]>([]);
-  const MAX_LENGTH = 300;
-  const priceId = "price_1Pp8vvHMq3uIqhfsUZwVE60I";
-  const durationAllowedToUpload = 200; //60sec
-  const fileSizeAllowedToUpload = 500000000; //500MB
+  const [loggedInUser, setLoggedInUser] = useState<any>(null);
   const fileId = useRef("");
   const associedFileName = useRef("");
   const type = useRef("");
   const size = useRef("");
+  const session = useRef(false);
   const [userData, setUserData] = useState<UserDataHistoric[]>([]);
   const deleteItemUserHistoric = (id: string) => {
     const deletedTable = userData.filter((value) => value.$id !== id);
     setUserData(deletedTable);
   };
+  const priceId = "price_1Pp8vvHMq3uIqhfsUZwVE60I";
+  const durationAllowedToUpload = 200; //60sec
+  const fileSizeAllowedToUpload = 500000000; //500MB
+  const [fileNameSelected, setfileNameSelected] = useState("");
   const addUserHistoricData = (
     userId: string,
     historic: string,
@@ -838,7 +839,7 @@ export default function Dashboard() {
 
                   submitSpeech();
                   setAudioUrlDispo(true);
-                 
+                  setfileNameSelected(associedFileName.current);
                 } else {
                   console.error("Erreur pendant l'upload", xhr.responseText);
                 }
@@ -902,18 +903,24 @@ export default function Dashboard() {
       }
     );
   };
-  useEffect(() => {
-    const checkLogin = async () => {
-      const user = await account.get();
-      /*if (await account.get()) {
-        router.push("/dashboard");
-      } */
+  const checkLogin = async () => {
+    const user = await account.get();
+    if (user == null) {
+      router.push("/login");
+    }
+    if (user) {
       setUserEmail(user.email);
       setUserid(user.$id);
-    };
+    }
+  };
+  const logOut = async () => {
+    await account.deleteSession("current");
+    session.current = !session.current;
+  };
 
+  useEffect(() => {
     checkLogin();
-  }, [userEmail]);
+  }, [session.current]);
   const listUserDATA = async () => {
     const data: any = await listUserData(userId);
     for (let i = 0; i < data.total; i++) {
@@ -1158,7 +1165,7 @@ export default function Dashboard() {
     const parts = text.split(regex);
     return parts.map((part, index) =>
       part.toLowerCase() === term.toLowerCase() ? (
-        <span key={index} className="bg-green-300 rounded-md">
+        <span key={index} className="bg-green-200 rounded-md">
           {part}
         </span>
       ) : (
@@ -1220,6 +1227,7 @@ export default function Dashboard() {
   };
   const deleteItemUser_data = async (id: string) => {
     const result = await deleteItemUserData(id);
+    await deleteFileItem(id);
     if (result) {
       deleteItemUserHistoric(id);
       console.log(result);
@@ -1282,9 +1290,6 @@ export default function Dashboard() {
     }),
     [isFocused, isDragAccept, isDragReject]
   );
-  const logOut = async () => {
-    await signOut(auth);
-  };
 
   return (
     <div>
@@ -1296,289 +1301,357 @@ export default function Dashboard() {
   function desktopScreen() {
     return (
       <div className="hidden lg:flex justify-center">
-        <ScrollArea className="h-[700px] w-1/5">
-          <div>
-            <div className="bg-amber-100 p-2 shadow-sm">
-              <p className="font-bold text-center mt-5"> Setting</p>
+        <ScrollArea className="h-[700px] w-1/5 p-1">
+          <div className="flex justify-center mt-8">
+            <div className="grid gap-1 w-[200px] p-3">
+              <p className="text-center">3 transciptions left</p>
+              <Progress />
+              <Button
+                onClick={() => {
+                  if (userEmail !== null && userEmail !== "") {
+                    selectPlan(priceId, userEmail, userId);
+                  }
+                }}
+              >
+                <Infinity />
+                Go Pro
+              </Button>
             </div>
-            <div className="flex justify-center mt-8">
-              <div className="grid gap-1 w-[200px] p-3">
-                <p className="text-center">3 transciptions left</p>
-                <Progress />
-                <Button
-                  onClick={() => {
-                    if (userEmail !== null && userEmail !== "") {
-                      selectPlan(priceId, userEmail, userId);
-                    }
-                  }}
-                >
-                  <Infinity />
-                  Go Pro
-                </Button>
-              </div>
-            </div>
-            <div className="flex justify-center">
-              <div className="grid gap-2 max-w-[300px]  shadow-sm rounded-sm p-5 bg-gray-100">
-                <div className="grid gap-2">
-                  <p className=" font-bold text-xl ">Task:</p>
-                  <Separator />
-                  <Popover open={open} onOpenChange={setOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={open}
-                        className="w-[200px] justify-between"
-                      >
-                        {value
-                          ? frameworks.find(
-                              (framework) => framework.value === value
-                            )?.label
-                          : "Select task..."}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[200px] p-0">
-                      <Command>
-                        <CommandInput placeholder="Search task..." />
-                        <CommandList>
-                          <CommandEmpty>No task found.</CommandEmpty>
-                          <CommandGroup>
-                            {frameworks.map((framework) => (
-                              <CommandItem
-                                key={framework.value}
-                                value={framework.value}
-                                onSelect={(currentValue) => {
-                                  setValue(
-                                    currentValue === value ? "" : currentValue
-                                  );
+          </div>
+          <Tabs defaultValue="account" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="account">
+                <SettingsIcon />
+              </TabsTrigger>
+              <TabsTrigger value="password">
+                <HistoryIcon />
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="account">
+              <div>
+                <div className="flex justify-center mt-4">
+                  <div className="grid gap-2 max-w-[300px]  shadow-sm rounded-sm p-5 bg-gray-100">
+                    <div className="grid gap-2">
+                      <p className=" font-bold text-xl ">Task:</p>
+                      <Separator />
+                      <Popover open={open} onOpenChange={setOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={open}
+                            className="w-[200px] justify-between"
+                          >
+                            {value
+                              ? frameworks.find(
+                                  (framework) => framework.value === value
+                                )?.label
+                              : "Select task..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[200px] p-0">
+                          <Command>
+                            <CommandInput placeholder="Search task..." />
+                            <CommandList>
+                              <CommandEmpty>No task found.</CommandEmpty>
+                              <CommandGroup>
+                                {frameworks.map((framework) => (
+                                  <CommandItem
+                                    key={framework.value}
+                                    value={framework.value}
+                                    onSelect={(currentValue) => {
+                                      setValue(
+                                        currentValue === value
+                                          ? ""
+                                          : currentValue
+                                      );
 
-                                  if (currentValue == "translate") {
-                                    setAutoDetectLanguage(false);
-                                  } else {
-                                    selectedCurrentLanguage.current = undefined;
-                                    setAutoDetectLanguage(true);
-                                  }
-                                  setOpen(false);
-                                  //console.log(selectedCurrentTask.current);
-                                }}
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    value === framework.value
-                                      ? "opacity-100"
-                                      : "opacity-0"
-                                  )}
-                                />
-                                {framework.label}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>{" "}
-                  {!autoDetectLanguage && (
-                    <Popover open={openLanguage} onOpenChange={setOpenLanguage}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          aria-expanded={open}
-                          className="w-[200px] justify-between"
+                                      if (currentValue == "translate") {
+                                        setAutoDetectLanguage(false);
+                                      } else {
+                                        selectedCurrentLanguage.current =
+                                          undefined;
+                                        setAutoDetectLanguage(true);
+                                      }
+                                      setOpen(false);
+                                      //console.log(selectedCurrentTask.current);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        value === framework.value
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                    />
+                                    {framework.label}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>{" "}
+                      {!autoDetectLanguage && (
+                        <Popover
+                          open={openLanguage}
+                          onOpenChange={setOpenLanguage}
                         >
-                          {valueLanguage
-                            ? language.find(
-                                (framework) => framework.value === valueLanguage
-                              )?.label
-                            : "Select Language..."}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[200px] p-0">
-                        <Command>
-                          <CommandInput placeholder="Search Language..." />
-                          <CommandList>
-                            <CommandEmpty>Language not found.</CommandEmpty>
-                            <CommandGroup>
-                              {language.map((framework) => (
-                                <CommandItem
-                                  key={framework.value}
-                                  value={framework.value}
-                                  onSelect={(currentValue) => {
-                                    setLanguageValue(
-                                      currentValue === valueLanguage
-                                        ? ""
-                                        : currentValue
-                                    );
-                                    selectedCurrentLanguage.current =
-                                      currentValue;
-                                    setOpenLanguage(false);
-                                    //console.log(selectedCurrentTask.current);
-                                  }}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      valueLanguage === framework.value
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                  />
-                                  {framework.label}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                  <div>
-                    <Checkbox
-                      id="terms2"
-                      onCheckedChange={(e: boolean) => {
-                        setAutoDetectLanguage(e);
-                        if (!e) {
-                          selectedCurrentLanguage.current = undefined;
-                        } else {
-                          selectedCurrentLanguage.current = valueLanguage;
-                        }
-                        //console.log(e);
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={open}
+                              className="w-[200px] justify-between"
+                            >
+                              {valueLanguage
+                                ? language.find(
+                                    (framework) =>
+                                      framework.value === valueLanguage
+                                  )?.label
+                                : "Select Language..."}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[200px] p-0">
+                            <Command>
+                              <CommandInput placeholder="Search Language..." />
+                              <CommandList>
+                                <CommandEmpty>Language not found.</CommandEmpty>
+                                <CommandGroup>
+                                  {language.map((framework) => (
+                                    <CommandItem
+                                      key={framework.value}
+                                      value={framework.value}
+                                      onSelect={(currentValue) => {
+                                        setLanguageValue(
+                                          currentValue === valueLanguage
+                                            ? ""
+                                            : currentValue
+                                        );
+                                        selectedCurrentLanguage.current =
+                                          currentValue;
+                                        setOpenLanguage(false);
+                                        //console.log(selectedCurrentTask.current);
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          valueLanguage === framework.value
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                      {framework.label}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                      <div>
+                        <Checkbox
+                          id="terms2"
+                          onCheckedChange={(e: boolean) => {
+                            setAutoDetectLanguage(e);
+                            if (!e) {
+                              selectedCurrentLanguage.current = undefined;
+                            } else {
+                              selectedCurrentLanguage.current = valueLanguage;
+                            }
+                            //console.log(e);
+                          }}
+                          defaultChecked={true}
+                        />
+                        <br />
+                        <p className="text-gray-500">Auto detect Language?</p>
+                      </div>
+                    </div>
+
+                    <p className=" font-bold text-xl ">Export:</p>
+                    <Separator />
+                    <Button
+                      variant="outline"
+                      className="hover:bg-green-100"
+                      onClick={() => {
+                        const result = convertSubtitlesToString(
+                          subtitles,
+                          exportWithShowTime,
+                          exportWithSpeakerName
+                        );
+                        creatPDF(result);
                       }}
-                      defaultChecked={true}
-                    />
-                    <br />
-                    <p className="text-gray-500">Auto detect Language?</p>
+                    >
+                      export to PDF.{" "}
+                      <FaRegFilePdf className="mx-2 text-red-600" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="hover:bg-green-100"
+                      onClick={() => {
+                        const result = convertSubtitlesToString(
+                          subtitles,
+                          exportWithShowTime,
+                          exportWithSpeakerName
+                        );
+                        downloadWordFile(result);
+                      }}
+                    >
+                      export to Docx.
+                      <TbFileTypeDocx className="mx-2 text-blue-600" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="hover:bg-green-100"
+                      onClick={() => {
+                        const result = convertSubtitlesToString(
+                          subtitles,
+                          exportWithShowTime,
+                          exportWithSpeakerName
+                        );
+
+                        handleDownloadTxt(result);
+                      }}
+                    >
+                      export to Txt.
+                      <GrDocumentTxt className="mx-2 text-gray-600" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="hover:bg-green-100"
+                      onClick={() => {
+                        const result = convertSubtitlesToSRT(subtitles);
+                        handleDownloadSrt(result, "srtfile.srt");
+                      }}
+                    >
+                      export to Srt.
+                      <MdOutlineSubtitles className="mx-2 text-gray-600" />
+                    </Button>
+                    <div>
+                      <Checkbox
+                        id="terms1"
+                        onCheckedChange={(e: boolean) => {
+                          setExportWithShowTime(e);
+                        }}
+                        checked={exportWithShowTime}
+                      />
+                      <br />
+                      <p className="text-gray-500 text-sm text-center">
+                        export with TimeStamp?
+                      </p>
+                    </div>
+                    <div>
+                      <Checkbox
+                        id="terms1"
+                        onCheckedChange={(e: boolean) => {
+                          setExportWithSpeakerName(e);
+                        }}
+                        checked={exportWithSpeakerName}
+                      />
+                      <br />
+                      <p className="text-gray-500 text-sm text-center">
+                        export with Speaker name?
+                      </p>
+                    </div>
+                  </div>
+                </div>{" "}
+                <div className="flex justify-center mt-10">
+                  <div className="grid gap-2 max-w-[200px]  shadow-sm rounded-sm p-5 bg-gray-100">
+                    <p className="text-center font-bold">Tools</p>
+                    <Separator />
+                    <Dialog
+                      open={openDesktopDialogYoutubemp3}
+                      onOpenChange={setOpenDesktopDialogYoutubemp3}
+                    >
+                      <DialogTrigger asChild>
+                        <Button variant="outline">Youtube to mp3</Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>Youtube mp3 downloader</DialogTitle>
+                          <DialogDescription>
+                            Past youtube link below and get the audio file.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <Input
+                          placeholder="Youtube link..."
+                          onChange={(e) =>
+                            setinputYoutubeMp3Download(e.target.value)
+                          }
+                          value={inputYoutubeMp3Download}
+                        />
+                        <Button onClick={downloadMp3FromYT}>
+                          {isyoutubeMp3Submitted ? (
+                            <ReloadIcon className="animate-spin size-5" />
+                          ) : (
+                            <DownloadIcon />
+                          )}
+                        </Button>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </div>
-
-                <p className=" font-bold text-xl ">Export:</p>
-                <Separator />
-                <Button
-                  variant="outline"
-                  className="hover:bg-green-100"
-                  onClick={() => {
-                    const result = convertSubtitlesToString(
-                      subtitles,
-                      exportWithShowTime,
-                      exportWithSpeakerName
-                    );
-                    creatPDF(result);
-                  }}
-                >
-                  export to PDF. <FaRegFilePdf className="mx-2 text-red-600" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="hover:bg-green-100"
-                  onClick={() => {
-                    const result = convertSubtitlesToString(
-                      subtitles,
-                      exportWithShowTime,
-                      exportWithSpeakerName
-                    );
-                    downloadWordFile(result);
-                  }}
-                >
-                  export to Docx.
-                  <TbFileTypeDocx className="mx-2 text-blue-600" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="hover:bg-green-100"
-                  onClick={() => {
-                    const result = convertSubtitlesToString(
-                      subtitles,
-                      exportWithShowTime,
-                      exportWithSpeakerName
-                    );
-
-                    handleDownloadTxt(result);
-                  }}
-                >
-                  export to Txt.
-                  <GrDocumentTxt className="mx-2 text-gray-600" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="hover:bg-green-100"
-                  onClick={() => {
-                    const result = convertSubtitlesToSRT(subtitles);
-                    handleDownloadSrt(result, "srtfile.srt");
-                  }}
-                >
-                  export to Srt.
-                  <MdOutlineSubtitles className="mx-2 text-gray-600" />
-                </Button>
-                <div>
-                  <Checkbox
-                    id="terms1"
-                    onCheckedChange={(e: boolean) => {
-                      setExportWithShowTime(e);
-                    }}
-                    checked={exportWithShowTime}
-                  />
-                  <br />
-                  <p className="text-gray-500 text-sm text-center">
-                    export with TimeStamp?
-                  </p>
-                </div>
-                <div>
-                  <Checkbox
-                    id="terms1"
-                    onCheckedChange={(e: boolean) => {
-                      setExportWithSpeakerName(e);
-                    }}
-                    checked={exportWithSpeakerName}
-                  />
-                  <br />
-                  <p className="text-gray-500 text-sm text-center">
-                    export with Speaker name?
-                  </p>
-                </div>
+                <br />
+                <br />
               </div>
-            </div>{" "}
-            <div className="flex justify-center mt-10">
-              <div className="grid gap-2 max-w-[200px]  shadow-sm rounded-sm p-5 bg-gray-100">
-                <p className="text-center font-bold">Tools</p>
-                <Separator />
-                <Dialog
-                  open={openDesktopDialogYoutubemp3}
-                  onOpenChange={setOpenDesktopDialogYoutubemp3}
-                >
-                  <DialogTrigger asChild>
-                    <Button variant="outline">Youtube to mp3</Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Youtube mp3 downloader</DialogTitle>
-                      <DialogDescription>
-                        Past youtube link below and get the audio file.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <Input
-                      placeholder="Youtube link..."
-                      onChange={(e) =>
-                        setinputYoutubeMp3Download(e.target.value)
-                      }
-                      value={inputYoutubeMp3Download}
-                    />
-                    <Button onClick={downloadMp3FromYT}>
-                      {isyoutubeMp3Submitted ? (
-                        <ReloadIcon className="animate-spin size-5" />
-                      ) : (
-                        <DownloadIcon />
-                      )}
-                    </Button>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </div>
-            <br />
-            <br />
-          </div>
+            </TabsContent>
+            <TabsContent value="password">
+              {userData.length !== 0 ? (
+                <div className="p-2">
+                  {userData.map((data) => (
+                    <div
+                      className="grid gap-3 shadow-md rounded-md p-3 bg-gray-50 hover:bg-slate-100 my-2"
+                      onClick={() => {
+                        //transcriptionResultInSrt.current = data.historic;
+                        const parsedSubtitles = parseSRT(data.historic);
+                        setSubtitles(parsedSubtitles);
+                        setTextLanguageDetected("fr");
+                        audioUrl.current = getFileUrl(data.$id);
+                        setAudioUrlDispo(true);
+                        setfileNameSelected(data.associedFileName);
+
+                        // language,name ,type(mp3),size to added
+                      }}
+                    >
+                      <strong className="text-amber-600">
+                        {data.associedFileName}
+                      </strong>
+
+                      <div className="grid gap-1">
+                        <p className="text-[11px]">Size:{data.size} KB</p>
+                        <p className="text-[11px]">Type:{data.type}</p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <p className="w-3/4 text-[11px]">{data.$createdAt}</p>
+                        <Button
+                          className="w-1/4"
+                          variant="ghost"
+                          onClick={() => {
+                            deleteItemUser_data(data.$id);
+                          }}
+                        >
+                          <TrashIcon className="text-red-400" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex justify-center">
+                  <div className="grid gap-2">
+                    <ImFilesEmpty className="mt-10 text-amber-300" size={60} />
+                    <p className="text-gray-500 text-center">No file found</p>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </ScrollArea>
 
         <div className="flex justify-center w-4/5 bg-gray-50">
@@ -1636,47 +1709,6 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <Button variant="outline" onClick={() => listUserDATA()}>
-                  <HistoryIcon />
-                </Button>
-                {userData && (
-                  <div>
-                    {userData.map((data) => (
-                      <div
-                        className="grid ga-3 shadow-md rounded-md p-3 bg-pink-200 my-2"
-                        onClick={() => {
-                          //transcriptionResultInSrt.current = data.historic;
-                          const parsedSubtitles = parseSRT(data.historic);
-                          setSubtitles(parsedSubtitles);
-                          setTextLanguageDetected("fr");
-                          audioUrl.current = getFileUrl(data.$id);
-                          setAudioUrlDispo(true);
-
-                          // language,name ,type(mp3),size to added
-                        }}
-                      >
-                        <strong>{data.associedFileName}</strong>
-
-                        <div className="grid gap-1">
-                          <p>Size:{data.size}</p>
-                          <p>Type:{data.type}</p>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <p className="w-3/4">{data.$createdAt}</p>
-                          <Button
-                            className="w-1/4"
-                            onClick={() => {
-                              deleteItemUser_data(data.$id);
-                            }}
-                          >
-                            <TrashIcon />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
                 <div className="grid gap-1 bg-white p-10 rounded-lg">
                   <div>
                     <div className="flex justify-center my-2">
@@ -1976,7 +2008,10 @@ export default function Dashboard() {
             </div>
           </ScrollArea>
           {isAudioUrlDispo && !isVideo && (
-            <div className="fixed bottom-0 w-4/5 bg-slate-200 p-3 rounded-t-md">
+            <div className="grid gap-3 fixed bottom-0 w-4/5 bg-slate-200 p-3 rounded-t-md">
+              <strong className="text-center text-amber-600">
+                {fileNameSelected}
+              </strong>
               <audio
                 ref={audioRef1}
                 src={audioUrl.current}

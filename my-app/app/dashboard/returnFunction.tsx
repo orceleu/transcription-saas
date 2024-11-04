@@ -1,6 +1,5 @@
 import React from "react";
 import { MdAccountCircle } from "react-icons/md";
-import { storage } from "../appwrite/appwrite";
 
 const returnIconSpeaker = (speaker: string) => {
   switch (speaker) {
@@ -32,7 +31,7 @@ const returnIconSpeaker = (speaker: string) => {
       <MdAccountCircle className="text-emerald-400" />;
       break;
   }
-  return <div>returnIconSpeaker</div>;
+  return <MdAccountCircle className="text-emerald-400" />;
 };
 const addAudioElement = (blob: any) => {
   const url = URL.createObjectURL(blob);
@@ -42,12 +41,5 @@ const addAudioElement = (blob: any) => {
   audio.controls = true;
   document.body.appendChild(audio);
 };
-const getFileUrl = (fileid: any) => {
-  const result = storage.getFileView(
-    "67225954001822e6e440", // bucketId
-    fileid // fileId
-  );
 
-  return result.href;
-};
-export { returnIconSpeaker, addAudioElement, getFileUrl };
+export { returnIconSpeaker, addAudioElement };
