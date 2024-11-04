@@ -1603,8 +1603,9 @@ export default function Dashboard() {
             <TabsContent value="password">
               {userData.length !== 0 ? (
                 <div className="p-2">
-                  {userData.map((data) => (
+                  {userData.map((data, index) => (
                     <div
+                      key={index}
                       className="grid gap-3 shadow-md rounded-md p-3 bg-gray-50 hover:bg-slate-100 my-2"
                       onClick={() => {
                         //transcriptionResultInSrt.current = data.historic;
@@ -1618,18 +1619,25 @@ export default function Dashboard() {
                         // language,name ,type(mp3),size to added
                       }}
                     >
-                      <strong className="text-amber-600">
+                      <strong className="text-amber-600" key={index + 1}>
                         {data.associedFileName}
                       </strong>
 
-                      <div className="grid gap-1">
-                        <p className="text-[11px]">Size:{data.size} KB</p>
-                        <p className="text-[11px]">Type:{data.type}</p>
+                      <div className="grid gap-1" key={index + 2}>
+                        <p className="text-[11px]" key={index + 3}>
+                          Size:{data.size} KB
+                        </p>
+                        <p className="text-[11px]" key={index + 4}>
+                          Type:{data.type}
+                        </p>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        <p className="w-3/4 text-[11px]">{data.$createdAt}</p>
+                      <div className="flex items-center gap-2" key={index + 5}>
+                        <p className="w-3/4 text-[11px]" key={index + 6}>
+                          {data.$createdAt}
+                        </p>
                         <Button
+                          key={index + 7}
                           className="w-1/4"
                           variant="ghost"
                           onClick={() => {
