@@ -58,7 +58,8 @@ import { saveAs } from "file-saver";
 import noData from "../../public/nodata2.svg";
 import { Player } from "react-simple-player";
 import { useRouter } from "next/navigation";
-import * as fal from "@fal-ai/serverless-client";
+import { fal } from "@fal-ai/client";
+
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import {
@@ -235,6 +236,7 @@ type LanguageType = undefined | string;
 interface UserDataHistoric {
   userId: string;
   historic: string;
+  requestId: string;
   $id: string;
   $createdAt: string;
   associedFileName: string;
@@ -275,10 +277,7 @@ export default function Dashboard() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const audioUrl = useRef("");
-  const [usedCharCurrent, setUsedCharCurrent] = useState(0);
-  const [having_plan, setHavingPlan] = useState(true);
   const firstcheck = useRef(0);
-  const isTranslante = useRef(false);
   const [isVideo, setIsVideo] = useState(false);
   const [autoDetectLanguage, setAutoDetectLanguage] = useState(true);
   const [value, setValue] = useState("transcribe");
@@ -309,24 +308,24 @@ export default function Dashboard() {
   const transcriptionResultInSrt = useRef<string>("");
   const speakerArray = useRef<string[]>([]);
   const [speakerArrayShow, setSpeakerArrayShow] = useState<string[]>([]);
-  const [loggedInUser, setLoggedInUser] = useState<any>(null);
   const fileId = useRef("");
   const associedFileName = useRef("");
   const type = useRef("");
   const size = useRef("");
-  const session = useRef(false);
+  const falRequestId = useRef("");
   const [userData, setUserData] = useState<UserDataHistoric[]>([]);
   const deleteItemUserHistoric = (id: string) => {
     const deletedTable = userData.filter((value) => value.$id !== id);
     setUserData(deletedTable);
   };
-  const priceId = "price_1Pp8vvHMq3uIqhfsUZwVE60I";
+  const priceId = "price_1QHrUJHMq3uIqhfs2SDnMlJW";
   const durationAllowedToUpload = 200; //60sec
   const fileSizeAllowedToUpload = 500000000; //500MB
   const [fileNameSelected, setfileNameSelected] = useState("");
   const addUserHistoricData = (
     userId: string,
     historic: string,
+    requestId: string,
     id: string,
     createdAt: string,
     associedFileName: string,
@@ -338,6 +337,7 @@ export default function Dashboard() {
       {
         userId: userId,
         historic: historic,
+        requestId: requestId,
         $id: id,
         $createdAt: createdAt,
         associedFileName: associedFileName,
@@ -837,7 +837,7 @@ export default function Dashboard() {
                 if (xhr.status >= 200 && xhr.status < 300) {
                   console.log("Fichier uploadé avec succès", xhr.response);
                   audioUrl.current = getFileUrl(fileId.current);
-                  transcriptionResultInSrt.current = "";
+                  // transcriptionResultInSrt.current = "";
 
                   submitSpeech();
                   setAudioUrlDispo(true);
@@ -941,6 +941,7 @@ export default function Dashboard() {
       addUserHistoricData(
         data.documents[i].userId,
         data.documents[i].historic,
+        data.documents[i].requestId,
         data.documents[i].$id,
         data.documents[i].$createdAt,
         data.documents[i].associedFileName,
@@ -1078,18 +1079,19 @@ export default function Dashboard() {
   useEffect(() => {
     const parsedSubtitles = parseSRT(transcriptionResultInSrt.current);
     setSubtitles(parsedSubtitles);
-    if (fileId.current) {
+    /*if (fileId.current) {
       addUserData(
         fileId.current,
         userId,
         transcriptionResultInSrt.current,
+        falRequestId.current,
         associedFileName.current,
         type.current,
         size.current
       );
     } else {
       console.log("No fileId found!");
-    }
+    }*/
   }, [transcriptionResultInSrt.current]);
 
   useEffect(() => {
@@ -1187,10 +1189,27 @@ export default function Dashboard() {
     );
   };
 
+  const dataReturnedProcess = (data: any) => {
+    setLoading(false);
+    setText(data.text as string);
+    //setUsedTextLengh.current = data.text.length;
+    setTextLanguageDetected(`${data.inferred_languages}`);
+    for (let i = 0; i < data.chunks.length; i++) {
+      speakerArray.current.push(`(${data.chunks[i].speaker})`);
+      addSpeaker(`(${data.chunks[i].speaker})`);
+      let resultInSrt = convertToSRT(
+        i,
+        `(${data.chunks[i].timestamp})`,
+        `${data.chunks[i].text}`
+      );
+      handleAddConvertedSrtInText(resultInSrt);
+    }
+  };
+
   const submitSpeech = async () => {
     setSubmitted(true);
     try {
-      const result: any = await fal.subscribe("fal-ai/whisper", {
+      const { data, requestId } = await fal.subscribe("fal-ai/whisper", {
         input: {
           audio_url: audioUrl.current,
           task: "transcribe",
@@ -1207,26 +1226,32 @@ export default function Dashboard() {
             update.logs.map((log) => log.message).forEach(console.log);
           }
         },*/
+        // webhookUrl: "",
       });
-
-      if (result) {
-        setLoading(false);
-        setText(result.text as string);
-        setUsedTextLengh.current = result.text.length;
-        setTextLanguageDetected(`${result.inferred_languages}`);
-        for (let i = 0; i < result.chunks.length; i++) {
-          speakerArray.current.push(`(${result.chunks[i].speaker})`);
-          addSpeaker(`(${result.chunks[i].speaker})`);
-          let resultInSrt = convertToSRT(
-            i,
-            `(${result.chunks[i].timestamp})`,
-            `${result.chunks[i].text}`
-          );
-          handleAddConvertedSrtInText(resultInSrt);
-        }
+      console.log(`Id de la requete: ${requestId}`);
+      falRequestId.current = requestId;
+      if (falRequestId.current && fileId.current) {
+        addUserData(
+          fileId.current,
+          userId,
+          transcriptionResultInSrt.current,
+          requestId,
+          associedFileName.current,
+          type.current,
+          size.current
+        );
+      } else {
+        console.log("error: if (requestId && fileId.current) 1212");
+      }
+      if (data) {
+        dataReturnedProcess(data);
         setSubmitted(false);
         setUserData([]);
-        listUserDATA();
+        //attend avant de liste les donnees historique de l'user
+        setTimeout(() => {
+          listUserDATA();
+        }, 3000);
+
         toast({
           variant: "default",
           title: "Note.",
@@ -1237,6 +1262,14 @@ export default function Dashboard() {
       console.log(error);
       setSubmitted(false);
     }
+  };
+  //"5111ca19-1af7-48b6-a2a9-fcd6da066eb9"
+  const retrieveRequestResult = async (requestId: string) => {
+    const result: any = await fal.queue.result("fal-ai/whisper", {
+      requestId: "5111ca19-1af7-48b6-a2a9-fcd6da066eb9",
+    });
+    console.log(result.data);
+    dataReturnedProcess(result.data);
   };
   const deleteItemUser_data = async (id: string) => {
     const result = await deleteItemUserData(id);
@@ -1623,11 +1656,13 @@ export default function Dashboard() {
                       onClick={() => {
                         //transcriptionResultInSrt.current = data.historic;
                         const parsedSubtitles = parseSRT(data.historic);
+                        // console.log(transcriptionResultInSrt.current)
                         setSubtitles(parsedSubtitles);
-                        setTextLanguageDetected("fr");
+                        //setTextLanguageDetected("fr");
                         audioUrl.current = getFileUrl(data.$id);
                         setAudioUrlDispo(true);
                         setfileNameSelected(data.associedFileName);
+                        retrieveRequestResult(data.requestId);
 
                         // language,name ,type(mp3),size to added
                       }}

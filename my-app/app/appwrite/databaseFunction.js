@@ -60,6 +60,7 @@ const addUserData = async (
   uniqueId,
   userId,
   historicsData,
+  requestId,
   associedFileName,
   type,
   size
@@ -72,6 +73,7 @@ const addUserData = async (
     {
       userId: userId,
       historic: historicsData,
+      requestId: requestId,
       associedFileName: associedFileName,
       type: type,
       size: size,

@@ -213,7 +213,6 @@ export default function Home() {
             </p>
           </div>
         </div>
-
         <div className=" grid gap-5 md:grid-cols-2 w-full my-10 p-5 max-w-[900px] bg-gray-50 rounded-md">
           <p className="text-center">
             <span className="text-2xl">🎯</span> Accuracy 98%
@@ -235,7 +234,6 @@ export default function Home() {
           </p>
         </div>
         <div className="relative z-[-1] flex place-items-center before:absolute before:h-[500px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-amber-100 after:via-amber-300 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-amber-700 before:dark:opacity-10 after:dark:from-amber-900 after:dark:via-[#ffaf01] after:dark:opacity-40 sm:before:w-[580px] sm:after:w-[340px] before:lg:h-[460px]"></div>
-
         <div className="w-full md:w-[500px] mt-[100px] shadow-md shadow-amber-200 rounded-md p-2">
           <div className="grid gap-2 my-10 p-5 rounded-md border-black border-[1px]">
             <p className="text-center my-4">Upload file to transcribe them</p>
@@ -329,11 +327,9 @@ export default function Home() {
         <p className="text-center text-3xl font-bold">
           Simple and Easy to use cloud based AI software.
         </p>
-
         <p className="text-gray-400 my-5 text-center">
           (no installation needed)
         </p>
-
         <div className="bg-red-200 p-10 rounded-md my-[100px] w-full max-w-[600px]">
           <div className="grid  gap-3 ">
             <p className="text-center text-3xl font-semibold my-3 underline">
@@ -365,7 +361,6 @@ export default function Home() {
           <ArrowBigDown className="size-[50px] md:size-[100px]" />
           <ArrowBigDown className="size-[50px] md:size-[100px]" />
         </div>
-
         <div className="flex justify-center">
           <Image
             alt="capture"
@@ -375,280 +370,237 @@ export default function Home() {
           />
         </div>
 
-        <p className="text-center text-3xl font-bold mt-[200px]" id="pricing">
-          Simple and affordable pricing
-        </p>
-        <p className="text-gray-600 text-center my-2">
-          Sign up and start transcribing your first file.
-        </p>
-        <div className="w-full p-10 my-[100px]  max-w-[700px] bg-slate-900 rounded-md">
-          <p className="text-center text-3xl text-white my-2">
-            Audiscribe Free
-          </p>
-          <Separator className="my-2" />
-          <div className="flex justify-center">
-            <div className="grid gap-2 mt-10">
-              <div className="flex items-center gap-3">
-                <Check className="text-blue-100" />
-                <p className="text-white text-center text-2xl">Free forever</p>
+        <div className="grid gap-5 grid-cols-1 lg:grid-cols-2">
+          <div>
+            <p
+              className="text-center text-3xl font-bold  mt-[200px]"
+              id="pricing"
+            >
+              Simple and affordable pricing
+            </p>
+            <p className="text-gray-600 text-center my-5 md:my-10">
+              Our easy, pay-as-you-transcribe pricing allows you to top-up your
+              credit whenever you need it. The more transcription hours you
+              top-up on your account, the more you will save. No plans, no
+              packages, no commitments required.
+            </p>{" "}
+            <div className="flex justify-center  h-[150px]">
+              <div className="grid grid-cols-3 gap-2 ">
+                <div className="w-[100px] lg:w-[150px] hover:bg-gray-200 h-[80px] bg-gray-100 rounded-lg amber-indigo-600 border-[3px]">
+                  <div className="flex justify-center p-2">
+                    <div className="grid gap-1">
+                      <strong>Free</strong>
+                      <p>20mn</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="w-[100px] lg:w-[150px] h-[80px] bg-gray-100 hover:bg-gray-200 rounded-lg border-amber-600 border-[3px]">
+                  <div className="flex justify-center p-2">
+                    <div className="grid gap-1">
+                      <strong>5$</strong>
+                      <p>2 Hours</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="w-[100px] lg:w-[150px] h-[80px] bg-gray-100 hover:bg-gray-200 rounded-lg border-amber-600 border-[3px]">
+                  <div className="flex justify-center p-2">
+                    <div className="grid gap-1">
+                      <strong>10$</strong>
+                      <p>6 Hours</p>
+                    </div>
+                  </div>
+                </div>{" "}
+                <div className="w-[100px] lg:w-[150px] h-[80px] bg-gray-100 hover:bg-gray-200 rounded-lg border-amber-600 border-[3px]">
+                  <div className="flex justify-center p-2">
+                    <div className="grid gap-1">
+                      <strong>15$</strong>
+                      <p>8 Hours</p>
+                    </div>
+                  </div>
+                </div>{" "}
+                <div className="w-[100px] lg:w-[150px] h-[80px] bg-gray-100 hover:bg-gray-200 rounded-lg border-amber-600 border-[3px]">
+                  <div className="flex justify-center p-2">
+                    <div className="grid gap-1">
+                      <strong>25$</strong>
+                      <p>15 Hours</p>
+                    </div>
+                  </div>
+                </div>{" "}
+                <div className="w-[100px] lg:w-[150px] h-[80px] bg-gray-100 hover:bg-gray-200 rounded-lg border-amber-600 border-[3px]">
+                  <div className="flex justify-center p-2">
+                    <div className="grid gap-1">
+                      <strong>35$</strong>
+                      <p>20 Hours</p>
+                    </div>
+                  </div>
+                </div>{" "}
+                <div className="w-[100px] lg:w-[150px] h-[80px] bg-gray-100 hover:bg-gray-200 rounded-lg border-amber-600 border-[3px]">
+                  <div className="flex justify-center p-2">
+                    <div className="grid gap-1">
+                      <strong>50$</strong>
+                      <p>30 Hours</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <Check className="text-blue-100" />
-                <p className="text-white text-center text-2xl">
-                  3 transcriptions per month
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Check className="text-blue-100" />
-                <p className="text-white text-center text-2xl">
-                  15mb per file uploaded
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Check className="text-blue-100" />
-                <p className="text-white text-center text-2xl">
-                  access to additionnal tools
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Check className="text-blue-100" />
-                <p className="text-white text-center text-2xl">
-                  translation(100+ languages)
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Check className="text-blue-100" />
-                <p className="text-white text-center text-2xl">
-                  export to PDF,DOCX,TXT,SRT
-                </p>
-              </div>
-              <div className="flex justify-center mt-10">
-                <div className="grid gap-2">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="font-bold"
-                    onClick={loginWithGoogle}
-                  >
-                    <FcGoogle className="mx-3 " /> Get started for free
-                  </Button>
-                  <p className="text-center text-gray-200">___Or___</p>
-                  <Dialog>
-                    <DialogTrigger asChild>
+            </div>
+          </div>
+          <div className="grid gap-3 lg:mt-[300px]">
+            <div className="w-full p-10 my-[100px]  md:mt-[60px]  max-w-[700px] bg-amber-700 rounded-md">
+              <p className="text-center text-3xl text-white my-2">
+                Try Audiscribe Free
+              </p>
+              <Separator className="my-2" />
+              <div className="flex justify-center">
+                <div className="grid gap-2 mt-10">
+                  <div className="flex justify-center mt-10">
+                    <div className="grid gap-2">
                       <Button
-                        variant="link"
-                        className="text-gray-200 font-bold"
+                        variant="outline"
+                        size="lg"
+                        className="font-bold"
+                        onClick={loginWithGoogle}
                       >
-                        Start with email and password
+                        <FcGoogle className="mx-3 " /> Get started for free
                       </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                      <DialogHeader>
-                        <DialogTitle>Get started </DialogTitle>
-                        <DialogDescription>
-                          Get started with email and password
-                        </DialogDescription>
-                      </DialogHeader>
+                      <p className="text-center text-gray-200">___Or___</p>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="link"
+                            className="text-gray-200 font-bold"
+                          >
+                            Start with email and password
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                          <DialogHeader>
+                            <DialogTitle>Get started </DialogTitle>
+                            <DialogDescription>
+                              Get started with email and password
+                            </DialogDescription>
+                          </DialogHeader>
 
-                      <form
-                        className=" space-y-4"
-                        onSubmit={handleSubmitRegister}
-                      >
-                        {" "}
-                        <div className="p-2">
-                          <label className="block text-sm font-medium mb-1">
-                            Name
-                          </label>
-                          <Input
-                            type="text"
-                            placeholder="Name"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="w-full"
-                            required
-                          />
-                        </div>
-                        <div className="p-2">
-                          <label className="block text-sm font-medium mb-1">
-                            Email
-                          </label>
-                          <Input
-                            type="email"
-                            placeholder="Enter your email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full"
-                            required
-                          />
-                        </div>
-                        <div className="p-2">
-                          <label className="block text-sm font-medium mb-1">
-                            Mot de passe
-                          </label>
-                          <Input
-                            type="password"
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full"
-                            required
-                          />
-                        </div>
-                        <Button type="submit" className="w-full mt-4">
-                          {isLoginLoading ? (
-                            <>
-                              <LoaderIcon className="animate-spin" />
-                            </>
-                          ) : (
-                            <p>Register</p>
-                          )}
-                        </Button>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
+                          <form
+                            className=" space-y-4"
+                            onSubmit={handleSubmitRegister}
+                          >
+                            {" "}
+                            <div className="p-2">
+                              <label className="block text-sm font-medium mb-1">
+                                Name
+                              </label>
+                              <Input
+                                type="text"
+                                placeholder="Name"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="w-full"
+                                required
+                              />
+                            </div>
+                            <div className="p-2">
+                              <label className="block text-sm font-medium mb-1">
+                                Email
+                              </label>
+                              <Input
+                                type="email"
+                                placeholder="Enter your email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full"
+                                required
+                              />
+                            </div>
+                            <div className="p-2">
+                              <label className="block text-sm font-medium mb-1">
+                                Mot de passe
+                              </label>
+                              <Input
+                                type="password"
+                                placeholder="Enter your password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full"
+                                required
+                              />
+                            </div>
+                            <Button type="submit" className="w-full mt-4">
+                              {isLoginLoading ? (
+                                <>
+                                  <LoaderIcon className="animate-spin" />
+                                </>
+                              ) : (
+                                <p>Register</p>
+                              )}
+                            </Button>
+                          </form>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
-        <div className="w-full border-amber-300 border-[2px] p-10 max-w-[700px] my-10 bg-amber-900 rounded-md">
-          <p className="text-center text-3xl text-white my-2">Audiscribe Pro</p>
-          <p className="text-center text-blue-100 font-semibold ">(9$/Month)</p>
-          <Separator className="my-2" />
-
-          <div className="flex justify-center">
-            <div className="grid gap-2 mt-10">
-              <div className="flex items-center gap-3">
-                <Check className="text-blue-200" />
-                <p className="text-white text-center text-2xl">
-                  30 hours of transcription/month
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Check className="text-blue-200" />
-                <p className="text-white text-center text-2xl">
-                  unlimited request
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Check className="text-blue-200" />
-                <p className="text-white text-center text-2xl">
-                  1gb per file uploaded
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Check className="text-blue-200" />
-                <p className="text-white text-center text-2xl">
-                  access to additionnal tools
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Check className="text-blue-200" />
-                <p className="text-white text-center text-2xl">
-                  translation(100+ languages)
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Check className="text-blue-200" />
-                <p className="text-white text-center text-2xl">
-                  export to PDF,DOCX,TXT,SRT
-                </p>
-              </div>
-              <div className="flex justify-center mt-10">
-                <div className="grid gap-2">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="font-bold"
-                    onClick={loginWithGoogle}
-                  >
-                    <FcGoogle className="mx-3 " /> GO pro now
-                  </Button>
-                  <p className="text-center text-gray-200">___Or___</p>
-
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="link"
-                        className="text-gray-200 font-bold"
-                      >
-                        Start with email and password
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                      <DialogHeader>
-                        <DialogTitle>Get started </DialogTitle>
-                        <DialogDescription>
-                          Get started with email and password
-                        </DialogDescription>
-                      </DialogHeader>
-
-                      <form
-                        className=" space-y-4"
-                        onSubmit={handleSubmitRegister}
-                      >
-                        {" "}
-                        <div className="p-2">
-                          <label className="block text-sm font-medium mb-1">
-                            Name
-                          </label>
-                          <Input
-                            type="text"
-                            placeholder="Name"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="w-full"
-                            required
-                          />
-                        </div>
-                        <div className="p-2">
-                          <label className="block text-sm font-medium mb-1">
-                            Email
-                          </label>
-                          <Input
-                            type="email"
-                            placeholder="Enter your email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full"
-                            required
-                          />
-                        </div>
-                        <div className="p-2">
-                          <label className="block text-sm font-medium mb-1">
-                            Mot de passe
-                          </label>
-                          <Input
-                            type="password"
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full"
-                            required
-                          />
-                        </div>
-                        <Button type="submit" className="w-full mt-4">
-                          {isLoginLoading ? (
-                            <>
-                              <LoaderIcon className="animate-spin" />
-                            </>
-                          ) : (
-                            <p>Register</p>
-                          )}
-                        </Button>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </div>
+        <Separator className="my-2" />
+        <div className="w-full p-10  my-10 bg-gray-50 rounded-md">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 my-[90px]">
+            <div className="w-full h-full rounded-lg">
+              <p className="text-4xl font-bold my-10">features</p>
+              <p>
+                We have a few features that help you to reduce the amount of
+                time you spend transcribing. Easily convert your content:
+                automatically transcribe video, automatically transcribe text,
+                enhancing accessibility and efficiency.
+              </p>
+            </div>
+            <div className="w-full h-full bg-slate-300 rounded-lg"> </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="w-full h-[100px] bg-slate-300 rounded-lg">
+              <p>
+                Accuracy Get accurate language transcriptions, even if your
+                video or audio contains multiple languages.
+              </p>{" "}
+            </div>
+            <div className="w-full h-[100px] bg-slate-300 rounded-lg">
+              <p>
+                Transcribe in over 70 Languages Transcribe in any language you
+                need.
+              </p>
+            </div>{" "}
+            <div className="w-full h-[100px] bg-slate-300 rounded-lg">
+              {" "}
+              <p>
+                Speaker Identification Utilise Speaker Identification for
+                precise speaker labelling in your audios and videos.
+              </p>
+            </div>{" "}
+            <div className="w-full h-[100px] bg-slate-300 rounded-lg">
+              {" "}
+              <p>
+                Editor (Coming soon) Use our text Editor for customized
+                transcription formatting.
+              </p>
+            </div>{" "}
+            <div className="w-full h-[100px] bg-slate-300 rounded-lg">
+              {" "}
+              <p>
+                Multi-format Files Upload files in popular formats and download
+                transcriptions in various layouts, including timestamped.
+              </p>
+            </div>{" "}
+            <div className="w-full h-[100px] bg-slate-300 rounded-lg">
+              {" "}
+              <p>
+                Dashboard Easily manage all of your transcriptions in one place.
+              </p>
             </div>
           </div>
         </div>
         <p className="text-center my-10 text-5xl font-bold">Customer review</p>
-
         <p className="text-center ">
           Rated Excellent 4.8/5 based on 450+ reviews
         </p>

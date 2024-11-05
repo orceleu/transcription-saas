@@ -47,6 +47,7 @@ export async function POST(req) {
   console.log(`Subscriptions:, ${subscriptionIds}`);
 
   */
+
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
 
@@ -59,7 +60,7 @@ export async function POST(req) {
     metadata: {
       userId: `${user_Id}`,
     },
-    mode: "subscription",
+    mode: "payment",
     success_url: "https://natural-voice.vercel.app/checkout/success",
     cancel_url: "https://natural-voice.vercel.app/checkout/cancel",
     customer_email: customer_Email,
