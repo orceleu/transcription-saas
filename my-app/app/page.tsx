@@ -82,6 +82,12 @@ import { loginWithGoogle } from "./login/auth";
 import { FaStamp, FaToolbox } from "react-icons/fa6";
 import { account, ID } from "./appwrite/appwrite";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 export default function Home() {
   const router = useRouter();
   const { toast } = useToast();
@@ -205,7 +211,7 @@ export default function Home() {
           </p>
 
           <div className="flex justify-center">
-            <p className="text-center text-gray-600 max-w-[700px] my-10">
+            <p className="text-center lg:text-xl text-gray-600 max-w-[700px] my-10">
               <span className="text-violet-900 font-bold mx-2 underline">
                 Fast
               </span>
@@ -261,7 +267,7 @@ export default function Home() {
           </div>
 
           <div className="grid gap-2 ">
-            <p className="text-center text-3xl mt-16 md:mt-0  font-bold">
+            <p className="text-center text-3xl mt-16 md:mt-0  font-bold ">
               Perfect <span className="text-amber-700">for</span>
             </p>
 
@@ -269,28 +275,28 @@ export default function Home() {
               <div className=" grid gap-1 p-[10px] md:p-[50px]">
                 <p>
                   <span className="font-bold underline">Student</span>__{" "}
-                  <span className=" text-[10px] md:text-[12px] text-gray-600">
+                  <span className=" text-[10px] md:text-[14px] text-gray-600">
                     Convert audio/video in PDF and you can use in other AI tools
                     like chatPDF.
                   </span>{" "}
                 </p>
                 <p>
                   <span className="font-bold underline">Journalist</span>__{" "}
-                  <span className=" text-[10px] md:text-[12px] text-gray-600">
+                  <span className=" text-[10px] md:text-[14px] text-gray-600">
                     Transcribe Interviews.
                   </span>{" "}
                 </p>
                 <p>
                   <span className="font-bold underline">Researsher</span>__{" "}
-                  <span className=" text-[10px] md:text-[12px] text-gray-600">
+                  <span className=" text-[10px] md:text-[14px] text-gray-600">
                     Search keyword in audio/video.
                   </span>{" "}
                 </p>
                 <p>
                   <span className="font-bold underline">Videast</span>__{" "}
-                  <span className=" text-[10px] md:text-[12px] text-gray-600">
+                  <span className=" text-[10px] md:text-[14px] text-gray-600">
                     Export accurate transcription in SRT file.
-                  </span>{" "}
+                  </span>
                 </p>
               </div>
               <Image
@@ -444,43 +450,15 @@ export default function Home() {
           </div>
         </div>
         <Separator className="my-10" />
-        <p className="text-center text-3xl font-bold">
+        <p className="text-center text-3xl lg:text-5xl font-bold">
           Simple and Easy to use cloud based AI software.
         </p>
-        <p className="text-gray-400 my-5 text-center">
-          no installation needed,acces on any device.
+        <p className="text-gray-400 my-5 text-center lg:text-xl">
+          no installation needed,acces on{" "}
+          <span className="text-amber-700 underline font-bold">
+            any device.
+          </span>
         </p>
-        <div className="bg-red-200 p-10 rounded-md my-[100px] w-full max-w-[600px]">
-          <div className="grid  gap-3 ">
-            <p className="text-center text-3xl font-semibold my-3 underline">
-              3 Steps
-            </p>
-            <div className="p-2 bg-red-100 rounded-md w-full md:w-[500px]">
-              <div className="flex justify-center">
-                <div className="flex items-center gap-3">
-                  <AiOutlineSelect className="text-emerald-500 mx-3 my-auto size-[40px]" />
-                  <p className="text-xl font-semibold">Select.</p>
-                </div>
-              </div>
-            </div>
-            <div className="p-2 bg-red-100 rounded-md w-full md:w-[500px]">
-              <div className="flex justify-center">
-                <div className="flex items-center gap-3">
-                  <IoCloudUpload className="text-emerald-500 mx-3 my-auto size-[40px]" />
-                  <p className="text-xl font-semibold">Upload.</p>
-                </div>
-              </div>
-            </div>
-            <div className="p-2 bg-red-100 rounded-md w-full md:w-[500px]">
-              <div className="flex justify-center">
-                <div className="flex items-center gap-3">
-                  <SiConvertio className="text-emerald-500 mx-3 my-auto size-[40px]" />
-                  <p className="text-xl font-semibold">Convert.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>{" "}
         <div className="flex items-center gap-5 md:gap-10 my-10">
           <ArrowBigDown className="size-[50px] md:size-[100px]" />
           <ArrowBigDown className="size-[50px] md:size-[100px]" />
@@ -496,12 +474,12 @@ export default function Home() {
         <div className="grid gap-5 grid-cols-1 lg:grid-cols-2">
           <div>
             <p
-              className="text-center text-3xl font-bold  mt-[200px]"
+              className="text-center text-3xl lg:text-5xl font-bold  mt-[200px]"
               id="pricing"
             >
               Simple and affordable pricing
             </p>
-            <p className="text-gray-600 text-center my-5 md:my-10">
+            <p className="text-gray-600 text-center lg:text-xl my-5 md:my-10">
               Our easy, pay-as-you-transcribe pricing allows you to top-up your
               credit whenever you need it. The more transcription hours you
               top-up on your account, the more you will save. No plans, no
@@ -660,11 +638,13 @@ export default function Home() {
           </div>
         </div>
         <Separator className="my-2" />
-        <div className="w-full p-5  my-10 bg-slate-100 rounded-lg">
+        <div className="w-full p-5 lg:p-10  my-10 bg-slate-100 rounded-lg">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 my-[40px]">
             <div className="w-full h-full rounded-lg">
-              <p className="text-3xl font-bold my-10">features</p>
-              <p>
+              <p className="text-3xl lg:text-5xl text-center text-violet-700 font-bold my-10">
+                features
+              </p>
+              <p className="lg:text-xl">
                 We have a few features that help you to reduce the amount of
                 time you spend transcribing. Easily convert your content:
                 automatically transcribe video, automatically transcribe text,
@@ -673,7 +653,7 @@ export default function Home() {
             </div>
             <div className="w-full p-10 lg:h-full bg-white rounded-lg">
               <div className="flex justify-center my-10">
-                <LightningBoltIcon className="text-violet-500 size-[100px]" />
+                <LightningBoltIcon className="text-violet-500 size-[100px] lg:size-[200px]" />
               </div>
             </div>
           </div>
@@ -775,7 +755,9 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <p className="text-center my-10 text-5xl font-bold">Customer review</p>
+        <p className="text-center my-10 text-3xl lg:text-5xl font-bold">
+          Customer review
+        </p>
         <p className="text-center ">
           Rated Excellent 4.8/5 based on 450+ reviews
         </p>
@@ -851,75 +833,26 @@ export default function Home() {
           </div>{" "}
         </div>
         <p className="text-center my-10 text-5xl font-bold">FAQ</p>
-        <Separator className="my-10" />
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-10 ">
-          <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
-            <p className="my-3 text-center text-xl font-semibold">
-              Who can use AudiScribe?
-            </p>
-            <p>
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="item-1">
+            <AccordionTrigger>Who can use AudiScribe?</AccordionTrigger>
+            <AccordionContent>
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
               aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
               perferendis modi repellat! Nobis odio enim adipisci voluptate
               obcaecati incidunt ipsam illo!
-            </p>
-          </div>
-          <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
-            <p className="my-3 text-center text-xl font-semibold">
-              How many languages its support?
-            </p>
-            <p>
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="item-2">
+            <AccordionTrigger>Who can use AudiScribe?</AccordionTrigger>
+            <AccordionContent>
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
               aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
               perferendis modi repellat! Nobis odio enim adipisci voluptate
               obcaecati incidunt ipsam illo!
-            </p>
-          </div>{" "}
-          <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
-            <p className="my-3 text-center text-xl font-semibold">
-              Is there a free version?
-            </p>
-            <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
-              aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
-              perferendis modi repellat! Nobis odio enim adipisci voluptate
-              obcaecati incidunt ipsam illo!
-            </p>
-          </div>{" "}
-          <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
-            <p className="my-3 text-center text-xl font-semibold">
-              How many format does Audiscribe support?
-            </p>
-            <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
-              aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
-              perferendis modi repellat! Nobis odio enim adipisci voluptate
-              obcaecati incidunt ipsam illo!
-            </p>
-          </div>{" "}
-          <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
-            <p className="my-3 text-center text-xl font-semibold">
-              How many format can i export files?
-            </p>
-            <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
-              aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
-              perferendis modi repellat! Nobis odio enim adipisci voluptate
-              obcaecati incidunt ipsam illo!
-            </p>
-          </div>{" "}
-          <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
-            <p className="my-3 text-center text-xl font-semibold">
-              Is there additionnal tools?
-            </p>
-            <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
-              aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
-              perferendis modi repellat! Nobis odio enim adipisci voluptate
-              obcaecati incidunt ipsam illo!
-            </p>
-          </div>
-        </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
         <p className="text-3xl text-center font-bold my-10" id="blog">
           Blog
         </p>
