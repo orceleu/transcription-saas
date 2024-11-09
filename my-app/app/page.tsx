@@ -136,7 +136,14 @@ export default function Home() {
   return (
     <main>
       <div className="fixed top-0  w-full flex justify-between p-5 bg-gray-50 ">
-        <p className="text-xl font-semibold">AudiScribe</p>
+        <div className="flex items-center gap-3">
+          <div className="p-1 rounded-full bg-slate-100">
+            <TimerIcon className="text-amber-300 " size={20} />
+          </div>
+
+          <p className="text-xl font-semibold">AudiScribe</p>
+        </div>
+
         <div className="hidden lg:flex items-center gap-5">
           <Button variant="link">Home</Button>
           <a href="#pricing" className="hover:underline">
@@ -224,7 +231,8 @@ export default function Home() {
                 accurate
               </span>
               . For any language or dialect, no matter the clarity of the audio.
-              Just choose your file, press Transcribe, and its complete.
+              Just choose your file, upload it, and the transcription starts
+              automatically.
             </p>
           </div>
         </div>
@@ -276,26 +284,31 @@ export default function Home() {
                 <p>
                   <span className="font-bold underline">Student</span>__{" "}
                   <span className=" text-[10px] md:text-[14px] text-gray-600">
-                    Convert audio/video in PDF and you can use in other AI tools
-                    like chatPDF.
+                    Convert audio/video in PDF and you can use it in other AI
+                    tools like chatPDF.
                   </span>{" "}
                 </p>
                 <p>
                   <span className="font-bold underline">Journalist</span>__{" "}
                   <span className=" text-[10px] md:text-[14px] text-gray-600">
-                    Transcribe Interviews.
+                    Quickly transcribe interviews with high accuracy, making it
+                    easy to review, quote, and organize important details from
+                    conversations.
                   </span>{" "}
                 </p>
                 <p>
                   <span className="font-bold underline">Researsher</span>__{" "}
                   <span className=" text-[10px] md:text-[14px] text-gray-600">
-                    Search keyword in audio/video.
+                    Search and locate specific keywords within audio or video
+                    files, saving time and enhancing the ability to analyze data
+                    and retrieve relevant information effortlessly.
                   </span>{" "}
                 </p>
                 <p>
-                  <span className="font-bold underline">Videast</span>__{" "}
+                  <span className="font-bold underline">Videographer</span>__{" "}
                   <span className=" text-[10px] md:text-[14px] text-gray-600">
-                    Export accurate transcription in SRT file.
+                    Export highly accurate transcriptions as SRT files for
+                    captions or subtitles.
                   </span>
                 </p>
               </div>
@@ -454,9 +467,9 @@ export default function Home() {
           Simple and Easy to use cloud based AI software.
         </p>
         <p className="text-gray-400 my-5 text-center lg:text-xl">
-          no installation needed,acces on{" "}
+          No installation needed,access on{" "}
           <span className="text-amber-700 underline font-bold">
-            any device.
+            Any device.
           </span>
         </p>
         <div className="flex items-center gap-5 md:gap-10 my-10">
@@ -682,7 +695,7 @@ export default function Home() {
                     <AiOutlineTranslation className="text-violet-500 size-[40px]" />
                   </div>
                   <p className="text-center text-2xl font-bold">
-                    Transcribe in over 70 Languages.
+                    Transcribe in over 100 Languages.
                   </p>
                   <p className="text-center  ">
                     Transcribe in any language you need.
@@ -765,7 +778,7 @@ export default function Home() {
         <div className="grid lg:grid-cols-2  gap-5 lg:gap-10 ">
           <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
             <div className="flex justify-between my-3 ">
-              <p className=" text-xl font-semibold">love this.</p>
+              <p className=" text-xl font-semibold">Good.</p>
               <div className="flex items-center gap-2">
                 {" "}
                 <StarFilledIcon className="text-yellow-600" />
@@ -777,15 +790,13 @@ export default function Home() {
             </div>
 
             <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
-              aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
-              perferendis modi repellat! Nobis odio enim adipisci voluptate
-              obcaecati incidunt ipsam illo!
+              Good services. No ads and transcripts are accurate than other app
+              like this .Also i like the fact there is no subscription.
             </p>
           </div>
           <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
             <div className="flex justify-between my-3 ">
-              <p className=" text-xl font-semibold">Great.</p>
+              <p className=" text-xl font-semibold">Indispensable.</p>
               <div className="flex items-center gap-2">
                 {" "}
                 <StarFilledIcon className="text-yellow-600" />
@@ -795,7 +806,13 @@ export default function Home() {
                 <StarFilledIcon className="text-yellow-600" />
               </div>
             </div>
-            <p>This transcription service is great!</p>
+            <p>
+              I use this SaaS to transcribe my meetings, and it has saved me so
+              much time. The accuracy of the transcriptions is impressive, even
+              with different accents. In just a few minutes, I have an accurate
+              text I can use for meeting notes. A must-have for anyone looking
+              to optimize their productivity!
+            </p>
           </div>{" "}
           <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
             <div className="flex justify-between my-3 ">
@@ -814,7 +831,7 @@ export default function Home() {
           </div>{" "}
           <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
             <div className="flex justify-between my-3 ">
-              <p className=" text-xl font-semibold">Best app.</p>
+              <p className=" text-xl font-semibold">Simple.</p>
               <div className="flex items-center gap-2">
                 {" "}
                 <StarFilledIcon className="text-yellow-600" />
@@ -825,17 +842,19 @@ export default function Home() {
               </div>
             </div>
             <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
-              aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
-              perferendis modi repellat! Nobis odio enim adipisci voluptate
-              obcaecati incidunt ipsam illo!
+              The platform is incredibly easy to use. I just upload my file, and
+              within minutes, I have an accurate transcription. It has allowed
+              me to get my transcriptions done in no time, and it&apos;s worth
+              every penny! Very satisfied with this service.
             </p>
           </div>{" "}
         </div>
-        <p className="text-center my-10 text-5xl font-bold">FAQ</p>
-        <Accordion type="single" collapsible className="w-full">
+        <p className="text-center my-10 text-3xl lg:text-5xl font-bold lg:mt-[100px]">
+          FAQ
+        </p>
+        <Accordion type="single" collapsible className="w-full mb-[100px]">
           <AccordionItem value="item-1">
-            <AccordionTrigger>Who can use AudiScribe?</AccordionTrigger>
+            <AccordionTrigger>What is AudiScribe?</AccordionTrigger>
             <AccordionContent>
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
               aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
@@ -844,7 +863,9 @@ export default function Home() {
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="item-2">
-            <AccordionTrigger>Who can use AudiScribe?</AccordionTrigger>
+            <AccordionTrigger>
+              How much file size can i upload?
+            </AccordionTrigger>
             <AccordionContent>
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
               aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
@@ -852,33 +873,36 @@ export default function Home() {
               obcaecati incidunt ipsam illo!
             </AccordionContent>
           </AccordionItem>
+          <AccordionItem value="item-3">
+            <AccordionTrigger>
+              Which audio / video formats do you support?
+            </AccordionTrigger>
+            <AccordionContent>
+              AudiScribe supports the vast majority of common audio and video
+              formats, including MP3, M4A, MP4, MOV, AAC, WAV, OGG, OPUS and
+              MPEG
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="item-4">
+            <AccordionTrigger>Is AudiScribe secure?</AccordionTrigger>
+            <AccordionContent>
+              Yes. Your transcripts, uploaded files, and account information are
+              encrypted and only you can access them. You can delete them at any
+              time. We use Stripe to securely process payments and we don&apos;t
+              store your credit card number.
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="item-5">
+            <AccordionTrigger>
+              What about accents, background noise, and poor audio quality?
+            </AccordionTrigger>
+            <AccordionContent>
+              While clean and clear audio produces the best results, AudiScribe
+              generally does well with accents, background noise, and lower
+              audio quality.{" "}
+            </AccordionContent>
+          </AccordionItem>
         </Accordion>
-        <p className="text-3xl text-center font-bold my-10" id="blog">
-          Blog
-        </p>
-        <div className="grid gap-3 sm:p-5">
-          <Button
-            variant="link"
-            className="text-blue-500"
-            onClick={() => {
-              router.push(
-                "/blog/deux-outils-indispensable-pour-les-etudiants-en-2024"
-              );
-            }}
-          >
-            outils indispensable pour les etudiants .
-          </Button>
-          <Button variant="link" className="text-blue-500">
-            comment mieux reviser/optimiser ses etudes?
-          </Button>
-          <Button variant="link" className="text-blue-500">
-            Pourquoi les etudiants
-          </Button>
-          <Button variant="link" className="text-blue-500">
-            Pourquoi les etudiants
-          </Button>
-        </div>
-        <Separator className="my-10" />
       </div>{" "}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full p-10 bg-slate-800">
         <div className="grid gap-3">
