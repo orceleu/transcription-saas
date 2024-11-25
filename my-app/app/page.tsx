@@ -139,7 +139,11 @@ export default function Home() {
     <main>
       <div className="fixed top-0  w-full flex justify-between p-5 bg-gray-50 ">
         <div className="flex items-center gap-3">
-          <Image src={logo} alt="logo" className="size-[40px] rounded-full" />
+          <Image
+            src={logo}
+            alt="logo"
+            className="size-[40px] md:size-[50px] rounded-full"
+          />
 
           <p className="text-xl font-semibold">AudiScribe</p>
         </div>

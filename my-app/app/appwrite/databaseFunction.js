@@ -22,7 +22,15 @@ const addUserAccount = async (documentId) => {
       Permission.delete(Role.any()),
     ]
   );
-
+  /*
+ {
+      
+      
+      usedTime: 3,
+     
+      
+    },
+*/
   promise.then(
     function (response) {
       console.log(response);
