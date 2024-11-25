@@ -13,11 +13,12 @@ const stripe = new Stripe(
 //2024-04-10
 export async function POST(req) {
   // Create or update subscription
-  const { price_Id, user_Id, customer_Email } = await req.json();
+  const { price_Id, user_Id, customer_Email, credits } = await req.json();
 
   console.log(price_Id);
   console.log(user_Id);
   console.log(customer_Email);
+  console.log(credits);
   /* const subscription = await stripe.subscriptions.create({
     customer: "cus_QARIKwkbeUgpGB",
     items: [{ price: "price_1PFdXUHMq3uIqhfsb82b423Q" }],
@@ -59,6 +60,7 @@ export async function POST(req) {
     ],
     metadata: {
       userId: `${user_Id}`,
+      credits: credits,
     },
     mode: "payment",
     success_url: "https://natural-voice.vercel.app/checkout/success",

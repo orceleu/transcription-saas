@@ -243,6 +243,7 @@ interface UserDataHistoric {
   type: string;
   size: string;
 }
+
 export default function Dashboard() {
   const [uploadedFile, setUploadedFile] = useState<any>(null);
   const [isAudioUrlDispo, setAudioUrlDispo] = useState(false);
@@ -314,6 +315,7 @@ export default function Dashboard() {
   const size = useRef("");
   const falRequestId = useRef("");
   const [userData, setUserData] = useState<UserDataHistoric[]>([]);
+
   const deleteItemUserHistoric = (id: string) => {
     const deletedTable = userData.filter((value) => value.$id !== id);
     setUserData(deletedTable);
@@ -386,29 +388,6 @@ export default function Dashboard() {
     return `${index + 1}\n${startTime} --> ${endTime}\n${text}\n`;
   };
 
-  const cancelSubscription = async () => {
-    await axios
-      .post("/api/cancelsub", {
-        subscriptionId: priceId,
-      })
-      .then((res) => {
-        const { data } = res.data;
-        console.log(data);
-        toast({
-          variant: "default",
-          title: "update",
-          description: `${data}`,
-        });
-      })
-      .catch((error) => {
-        console.log(error);
-        toast({
-          variant: "destructive",
-          title: "Uh oh! Something went wrong.",
-          description: `${error}`,
-        });
-      });
-  };
   const convertSubtitlesToString = (
     subtitles: Subtitle[],
     includeTimestamps: boolean,
@@ -594,11 +573,6 @@ export default function Dashboard() {
       });
     }
   };
-  const returnSliceChar = (text: string) => {
-    const result = text.slice(0, 20);
-
-    return `${result}...`;
-  };
   const downloadWordFile = async (text: string) => {
     if (text) {
       // Diviser le texte en paragraphes (chaque nouvelle ligne dans un nouveau paragraphe)
@@ -660,7 +634,7 @@ export default function Dashboard() {
   };
   const creatPDF = (text: string) => {
     if (text) {
-      const finalText = ` GENERATED WITH AudiSribe AI \n---Upgrade your plan to remove this text\n\n ${text}  `;
+      const finalText = ` GENERATED WITH AudiSribe AI \n ${text}  `;
       const doc = new jsPDF();
       const pageHeight = doc.internal.pageSize.height; // Hauteur d'une page
       const marginTop = 10; // Marge en haut de la page
@@ -682,7 +656,7 @@ export default function Dashboard() {
 
         yPosition += lineHeight; // Incrémenter la position verticale pour la ligne suivante
       });
-      doc.setFontSize(10);
+      doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
       // Télécharger le fichier PDF
       doc.save("audiScribe_.pdf");
@@ -697,7 +671,7 @@ export default function Dashboard() {
     const result = convertSubtitlesToString(subtitles, false, false);
     if (result) {
       try {
-        await navigator.clipboard.writeText(texte);
+        await navigator.clipboard.writeText(result);
         alert("Copied to clipboard!");
       } catch (err) {
         console.error("Error : ", err);
@@ -733,11 +707,9 @@ export default function Dashboard() {
 
   const handleActiveButton = () => {
     firstcheck.current += 1;
-    //console.log(firstcheck.current);
     if (firstcheck.current < 3) {
-      //console.log("not locked");
-
       if (youtubeUrl.slice(0, 13) === "https://youtu") {
+        //check if long youtube video
         convertYoutubeMp3();
       } else {
         toast({
@@ -750,7 +722,8 @@ export default function Dashboard() {
   async function selectPlan(
     price_id: string,
     stripeCustomerEmail: string,
-    userId: string
+    userId: string,
+    credits: number
   ) {
     console.log(price_id);
     await axios
@@ -758,10 +731,10 @@ export default function Dashboard() {
         price_Id: price_id,
         user_Id: userId,
         customer_Email: stripeCustomerEmail,
+        credits: credits,
       })
       .then((res) => {
-        console.log(res.data);
-
+        //console.log(res.data);
         router.push(`${res.data.session}`);
       })
       .catch((error) => {
@@ -837,7 +810,7 @@ export default function Dashboard() {
                 if (xhr.status >= 200 && xhr.status < 300) {
                   console.log("Fichier uploadé avec succès", xhr.response);
                   audioUrl.current = getFileUrl(fileId.current);
-                  // transcriptionResultInSrt.current = "";
+                  transcriptionResultInSrt.current = "data"; //pour ajouter les donnees userdata
 
                   submitSpeech();
                   setAudioUrlDispo(true);
@@ -1079,7 +1052,7 @@ export default function Dashboard() {
   useEffect(() => {
     const parsedSubtitles = parseSRT(transcriptionResultInSrt.current);
     setSubtitles(parsedSubtitles);
-    /*if (fileId.current) {
+    if (fileId.current) {
       addUserData(
         fileId.current,
         userId,
@@ -1091,7 +1064,7 @@ export default function Dashboard() {
       );
     } else {
       console.log("No fileId found!");
-    }*/
+    }
   }, [transcriptionResultInSrt.current]);
 
   useEffect(() => {
@@ -1228,9 +1201,10 @@ export default function Dashboard() {
         },*/
         // webhookUrl: "",
       });
-      console.log(`Id de la requete: ${requestId}`);
+
       falRequestId.current = requestId;
-      if (falRequestId.current && fileId.current) {
+
+      /*if (falRequestId.current && fileId.current) {
         addUserData(
           fileId.current,
           userId,
@@ -1242,15 +1216,28 @@ export default function Dashboard() {
         );
       } else {
         console.log("error: if (requestId && fileId.current) 1212");
-      }
+      }*/
       if (data) {
-        dataReturnedProcess(data);
+        setLoading(false);
+        setText(data.text as string);
+        setUsedTextLengh.current = data.text.length;
+        setTextLanguageDetected(`${data.inferred_languages}`);
+        for (let i = 0; i < data.chunks.length; i++) {
+          speakerArray.current.push(`(${data.chunks[i].speaker})`);
+          addSpeaker(`(${data.chunks[i].speaker})`);
+          let resultInSrt = convertToSRT(
+            i,
+            `(${data.chunks[i].timestamp})`,
+            `${data.chunks[i].text}`
+          );
+          handleAddConvertedSrtInText(resultInSrt);
+        }
         setSubmitted(false);
         setUserData([]);
         //attend avant de liste les donnees historique de l'user
         setTimeout(() => {
           listUserDATA();
-        }, 3000);
+        }, 5000);
 
         toast({
           variant: "default",
@@ -1261,6 +1248,13 @@ export default function Dashboard() {
     } catch (error) {
       console.log(error);
       setSubmitted(false);
+      console.log("userdata reset! ");
+      setUserData([]);
+      //attend avant de liste les donnees historique de l'user
+      setTimeout(() => {
+        console.log("userdata refresh");
+        listUserDATA();
+      }, 5000);
     }
   };
   //"5111ca19-1af7-48b6-a2a9-fcd6da066eb9"
@@ -1277,37 +1271,6 @@ export default function Dashboard() {
     if (result) {
       deleteItemUserHistoric(id);
       console.log(result);
-    }
-  };
-  const addPlan = async (
-    stripe_subscription_id: string,
-    stripe_customer_id: string,
-    userId: string
-  ) => {
-    try {
-      await setDoc(doc(db, "usersPlan", userId), {
-        is_pro: true,
-        subscription_id: stripe_subscription_id,
-        customer_id: stripe_customer_id,
-        time_used: 40000,
-      });
-      console.log("inserted to userPlan! .");
-    } catch (e) {
-      console.error("Error:", e);
-    }
-  };
-
-  const fetchPost = async () => {
-    const docRef = doc(db, "usersPlan", userId);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      //setHavingPlan(true);
-      // cus_Id.current = docSnap.data().having_plan
-      //getCustomerAlldata(userId);
-    } else {
-      // docSnap.data() will be undefined in this case
-      console.log("no plan found!");
-      //setHavingPlan(false);
     }
   };
 
@@ -1350,17 +1313,17 @@ export default function Dashboard() {
         <ScrollArea className="h-[700px] w-1/5 p-1">
           <div className="flex justify-center mt-8">
             <div className="grid gap-1 w-[200px] p-3">
-              <p className="text-center">3 transciptions left</p>
-              <Progress />
+              <p className="text-center">20 mn left</p>
+
               <Button
                 onClick={() => {
                   if (userEmail !== null && userEmail !== "") {
-                    selectPlan(priceId, userEmail, userId);
+                    selectPlan(priceId, userEmail, userId, 1200);
                   }
                 }}
               >
                 <Infinity />
-                Go Pro
+                Go Pro(1200 min)
               </Button>
             </div>
           </div>
@@ -1661,8 +1624,10 @@ export default function Dashboard() {
                         //setTextLanguageDetected("fr");
                         audioUrl.current = getFileUrl(data.$id);
                         setAudioUrlDispo(true);
+
+                        setIsVideo(data.type.startsWith("video/"));
                         setfileNameSelected(data.associedFileName);
-                        retrieveRequestResult(data.requestId);
+                        // retrieveRequestResult(data.requestId);
 
                         // language,name ,type(mp3),size to added
                       }}
@@ -1728,29 +1693,6 @@ export default function Dashboard() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="w-56">
                         <DropdownMenuLabel>{userEmail}</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                          <DropdownMenuItem>
-                            Profile
-                            <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              router.push("/billing");
-                            }}
-                          >
-                            Billing
-                            <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              cancelSubscription();
-                            }}
-                          >
-                            Cancel subscription
-                            <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-                          </DropdownMenuItem>
-                        </DropdownMenuGroup>
                         <DropdownMenuSeparator />
 
                         <DropdownMenuItem>Support</DropdownMenuItem>
@@ -1983,37 +1925,35 @@ export default function Dashboard() {
                   </Button>
                 )}
 
-                <div className="flex justify-center">
-                  {isAudioUrlDispo && isVideo && !youtubePlayerUrl && (
-                    <div className=" w-4/5  p-1  rounded-t-md bg-slate-50">
-                      <div className="flex justify-center m-3">
-                        {" "}
-                        <ReactPlayer
-                          ref={videoPlayerRef}
-                          width="100%"
-                          height="100%"
-                          playing={videoIsplaying}
-                          light={false}
-                          url="https://firebasestorage.googleapis.com/v0/b/audiscribe-942e8.appspot.com/o/users%2FqwhrQtz0c4bBGcYfxAMHlnokihb2%2Fdata%2FaudioToTranscribe%7D?alt=media&token=742bd824-5898-48ac-b745-1425b0084146"
-                          onDuration={(e) => console.log(`duration:${e}`)}
-                          onSeek={(e) => console.log("onSeek", e)}
-                          onProgress={handleProgressDesktop}
-                        />
-                      </div>
-
-                      <div className="flex justify-center m-2">
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            setVideoPlaying(!videoIsplaying);
-                          }}
-                        >
-                          {videoIsplaying ? <PauseIcon /> : <PlayIcon />}
-                        </Button>
-                      </div>
+                {isAudioUrlDispo && isVideo && !youtubePlayerUrl && (
+                  <div className=" w-[400px]  p-1  rounded-t-md bg-slate-100 lg:fixed bottom-1 end-1">
+                    <div className="flex justify-center ">
+                      {" "}
+                      <ReactPlayer
+                        ref={videoPlayerRef}
+                        width="100%"
+                        height="100%"
+                        playing={videoIsplaying}
+                        light={true}
+                        url="https://cloud.appwrite.io/v1/storage/buckets/67225954001822e6e440/files/6731f03b00094db55151/view?project=67224b080010c36860d8&project=67224b080010c36860d8&mode=admin"
+                        onDuration={(e) => console.log(`duration:${e}`)}
+                        onSeek={(e) => console.log("onSeek", e)}
+                        onProgress={handleProgressDesktop}
+                      />
                     </div>
-                  )}
-                </div>
+
+                    <div className="flex justify-center m-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setVideoPlaying(!videoIsplaying);
+                        }}
+                      >
+                        {videoIsplaying ? <PauseIcon /> : <PlayIcon />}
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="flex justify-center">
                 {isAudioUrlDispo && isVideo && youtubePlayerUrl && (
@@ -2096,29 +2036,6 @@ export default function Dashboard() {
             <DropdownMenuContent className="w-56">
               <DropdownMenuLabel>{userEmail}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem>
-                  Profile
-                  <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    router.push("/billing");
-                  }}
-                >
-                  Billing
-                  <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    cancelSubscription();
-                  }}
-                >
-                  Cancel subscription
-                  <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
 
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuItem disabled>API</DropdownMenuItem>
@@ -2137,7 +2054,7 @@ export default function Dashboard() {
             <Button
               onClick={() => {
                 if (userEmail) {
-                  selectPlan(priceId, userEmail, userId);
+                  selectPlan(priceId, userEmail, userId, 1200);
                 }
               }}
             >
@@ -2532,8 +2449,9 @@ export default function Dashboard() {
                                     setSubtitles(parsedSubtitles);
                                     setTextLanguageDetected("fr");
                                     audioUrl.current = getFileUrl(data.$id);
-                                    alert(getFileUrl(data.$id));
+
                                     setAudioUrlDispo(true);
+                                    setIsVideo(data.type.startsWith("video/"));
                                     setfileNameSelected(data.associedFileName);
 
                                     // language,name ,type(mp3),size to added

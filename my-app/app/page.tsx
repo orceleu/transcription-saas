@@ -78,6 +78,7 @@ import {
   LightningBoltIcon,
   StarFilledIcon,
 } from "@radix-ui/react-icons";
+
 import { loginWithGoogle } from "./login/auth";
 import { FaStamp, FaToolbox } from "react-icons/fa6";
 import { account, ID } from "./appwrite/appwrite";
@@ -88,6 +89,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import logo from "../public/logo.jpg";
 export default function Home() {
   const router = useRouter();
   const { toast } = useToast();
@@ -137,9 +139,7 @@ export default function Home() {
     <main>
       <div className="fixed top-0  w-full flex justify-between p-5 bg-gray-50 ">
         <div className="flex items-center gap-3">
-          <div className="p-1 rounded-full bg-slate-100">
-            <TimerIcon className="text-amber-300 " size={20} />
-          </div>
+          <Image src={logo} alt="logo" className="size-[40px] rounded-full" />
 
           <p className="text-xl font-semibold">AudiScribe</p>
         </div>
@@ -241,7 +241,7 @@ export default function Home() {
             <span className="text-2xl">🎯</span> Accuracy 98%
           </p>
           <p className="text-center">
-            <span className="text-2xl">🌍</span>100+ language
+            <span className="text-2xl">🌍</span>100+ languages
           </p>
           <p className="text-center">
             <span className="text-2xl">🤯</span>upload 10hours
@@ -397,7 +397,7 @@ export default function Home() {
         </p>
         <div className="grid gap-5 md:gap-10 my-[80px]">
           <div className="grid gap-2">
-            <p className="text-3xl text-center">
+            <p className="text-3xl lg:text-5xl font-bold text-center">
               Online Transcription Made Easy.
             </p>
             <p className="text-gray-600 text-center">
@@ -412,7 +412,7 @@ export default function Home() {
             </div>
             <p className="text-2xl text-center">100+ Languages.</p>
             <p className="text-gray-600 text-center">
-              Supporting many languages with the option to translante .
+              Supporting many languages with the option to translante.
             </p>
           </div>
           <div className="grid gap-2">
@@ -484,10 +484,11 @@ export default function Home() {
           sizes="500"
           className="rounded-md shadow-md shadow-amber-300"
         />
+        <Separator className="my-[100px]" />
         <div className="grid gap-5 grid-cols-1 lg:grid-cols-2">
           <div>
             <p
-              className="text-center text-3xl lg:text-5xl font-bold  mt-[200px]"
+              className="text-center text-3xl lg:text-5xl font-bold  "
               id="pricing"
             >
               Simple and affordable pricing
@@ -807,11 +808,11 @@ export default function Home() {
               </div>
             </div>
             <p>
-              I use this SaaS to transcribe my meetings, and it has saved me so
-              much time. The accuracy of the transcriptions is impressive, even
-              with different accents. In just a few minutes, I have an accurate
-              text I can use for meeting notes. A must-have for anyone looking
-              to optimize their productivity!
+              I use this platform to transcribe my meetings, and it has saved me
+              so much time. The accuracy of the transcriptions is impressive,
+              even with different accents. In just a few minutes, I have an
+              accurate text I can use for meeting notes. A must-have for anyone
+              looking to optimize their productivity!
             </p>
           </div>{" "}
           <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
@@ -854,38 +855,40 @@ export default function Home() {
         </p>
         <Accordion type="single" collapsible className="w-full mb-[100px]">
           <AccordionItem value="item-1">
-            <AccordionTrigger>What is AudiScribe?</AccordionTrigger>
-            <AccordionContent>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
-              aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
-              perferendis modi repellat! Nobis odio enim adipisci voluptate
-              obcaecati incidunt ipsam illo!
+            <AccordionTrigger className=" lg:text-3xl">
+              What is AudiScribe?
+            </AccordionTrigger>
+            <AccordionContent className=" lg:text-xl text-gray-600">
+              Audiscribe is an audio-to-text transcription platform designed to
+              automatically convert audio or video files into text. Using
+              advanced speech recognition algorithms, Audiscribe enables users
+              to easily turn interviews, lectures, meetings, podcasts, and more
+              into written documents.
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="item-2">
-            <AccordionTrigger>
+            <AccordionTrigger className=" lg:text-3xl">
               How much file size can i upload?
             </AccordionTrigger>
-            <AccordionContent>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
-              aliquam enim soluta dolor nam, consequatur illum nobis, asperiores
-              perferendis modi repellat! Nobis odio enim adipisci voluptate
-              obcaecati incidunt ipsam illo!
+            <AccordionContent className="3 lg:text-xl text-gray-600">
+              You can upload at most 5GB .
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="item-3">
-            <AccordionTrigger>
+            <AccordionTrigger className=" lg:text-3xl">
               Which audio / video formats do you support?
             </AccordionTrigger>
-            <AccordionContent>
+            <AccordionContent className="lg:text-xl text-gray-600">
               AudiScribe supports the vast majority of common audio and video
               formats, including MP3, M4A, MP4, MOV, AAC, WAV, OGG, OPUS and
               MPEG
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="item-4">
-            <AccordionTrigger>Is AudiScribe secure?</AccordionTrigger>
-            <AccordionContent>
+            <AccordionTrigger className=" lg:text-3xl">
+              Is AudiScribe secure?
+            </AccordionTrigger>
+            <AccordionContent className=" lg:text-xl text-gray-600">
               Yes. Your transcripts, uploaded files, and account information are
               encrypted and only you can access them. You can delete them at any
               time. We use Stripe to securely process payments and we don&apos;t
@@ -893,10 +896,10 @@ export default function Home() {
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="item-5">
-            <AccordionTrigger>
+            <AccordionTrigger className=" lg:text-3xl">
               What about accents, background noise, and poor audio quality?
             </AccordionTrigger>
-            <AccordionContent>
+            <AccordionContent className=" lg:text-xl text-gray-600">
               While clean and clear audio produces the best results, AudiScribe
               generally does well with accents, background noise, and lower
               audio quality.{" "}
