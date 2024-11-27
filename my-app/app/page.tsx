@@ -96,6 +96,7 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [repassword, setRePassword] = useState("");
   const [name, setName] = useState("");
   const [isLoginLoading, setIsLoginLoading] = useState(false);
 
@@ -115,11 +116,13 @@ export default function Home() {
     }
   };
   const register = async (email: string, password: string, name: string) => {
+    let uid = ID.unique();
     try {
-      const result = await account.create(ID.unique(), email, password, name);
+      const result = await account.create(uid, email, password, name);
       console.log(result.$createdAt);
 
       //add userAccount detail
+      //addUserAccount(uid);
       await login(email, password);
     } catch (error) {
       setIsLoginLoading(false);
@@ -131,8 +134,15 @@ export default function Home() {
   };
   const handleSubmitRegister = (e: any) => {
     e.preventDefault();
-    setIsLoginLoading(true);
-    register(email, password, name);
+    if (password == repassword) {
+      setIsLoginLoading(true);
+      register(email, password, ID.unique());
+    } else {
+      toast({
+        variant: "destructive",
+        title: "password must be identique",
+      });
+    }
   };
 
   return (
@@ -156,7 +166,12 @@ export default function Home() {
           <a href="#blog" className="hover:underline">
             Blog
           </a>
-          <Button onClick={loginWithGoogle}>Login</Button>
+          <Button
+            onClick={loginWithGoogle}
+            className="bg-amber-700 hover:bg-amber-600"
+          >
+            Login
+          </Button>
           <Button
             variant="outline"
             onClick={() => {
@@ -326,7 +341,7 @@ export default function Home() {
         </div>
         <Button
           size="lg"
-          className="w-full my-5 md:mt-[100px]"
+          className="w-full my-5 md:mt-[100px] bg-amber-700 hover:bg-amber-600"
           onClick={loginWithGoogle}
         >
           <FcGoogle className="mx-3 " />
@@ -350,17 +365,6 @@ export default function Home() {
             <form className=" space-y-4" onSubmit={handleSubmitRegister}>
               {" "}
               <div className="p-2">
-                <label className="block text-sm font-medium mb-1">Name</label>
-                <Input
-                  type="text"
-                  placeholder="Name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full"
-                  required
-                />
-              </div>
-              <div className="p-2">
                 <label className="block text-sm font-medium mb-1">Email</label>
                 <Input
                   type="email"
@@ -373,13 +377,26 @@ export default function Home() {
               </div>
               <div className="p-2">
                 <label className="block text-sm font-medium mb-1">
-                  Mot de passe
+                  Password
                 </label>
                 <Input
                   type="password"
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className="w-full"
+                  required
+                />
+              </div>
+              <div className="p-2">
+                <label className="block text-sm font-medium mb-1">
+                  Re-type Password
+                </label>
+                <Input
+                  type="password"
+                  placeholder="Re-type your password"
+                  value={repassword}
+                  onChange={(e) => setRePassword(e.target.value)}
                   className="w-full"
                   required
                 />
@@ -599,19 +616,6 @@ export default function Home() {
                             {" "}
                             <div className="p-2">
                               <label className="block text-sm font-medium mb-1">
-                                Name
-                              </label>
-                              <Input
-                                type="text"
-                                placeholder="Name"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                className="w-full"
-                                required
-                              />
-                            </div>
-                            <div className="p-2">
-                              <label className="block text-sm font-medium mb-1">
                                 Email
                               </label>
                               <Input
@@ -632,6 +636,19 @@ export default function Home() {
                                 placeholder="Enter your password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
+                                className="w-full"
+                                required
+                              />
+                            </div>
+                            <div className="p-2">
+                              <label className="block text-sm font-medium mb-1">
+                                Re-type Password
+                              </label>
+                              <Input
+                                type="password"
+                                placeholder="Re-type your password"
+                                value={repassword}
+                                onChange={(e) => setRePassword(e.target.value)}
                                 className="w-full"
                                 required
                               />

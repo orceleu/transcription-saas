@@ -42,4 +42,18 @@ const addAudioElement = (blob: any) => {
   document.body.appendChild(audio);
 };
 
-export { returnIconSpeaker, addAudioElement };
+const convertirDuree = (dureeEnsecondes: number): string => {
+  const dureeEnMinutes = dureeEnsecondes / 60;
+  if (dureeEnMinutes < 1) {
+    return `${Math.round(dureeEnsecondes)} sec 
+    `;
+  } else if (dureeEnMinutes < 60) {
+    return `${Math.round(dureeEnMinutes)} min`;
+  } else {
+    const heures = Math.floor(dureeEnMinutes / 60);
+    const minute = Math.round(dureeEnMinutes % 60);
+    return `${heures} hours  ${minute} min 
+    `;
+  }
+};
+export { returnIconSpeaker, addAudioElement, convertirDuree };

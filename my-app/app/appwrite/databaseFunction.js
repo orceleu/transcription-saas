@@ -9,11 +9,7 @@ const addUserAccount = async (documentId) => {
     USER_ACCOUNT_COLLECTION_ID,
     documentId,
     {
-      isPro: false,
-      usedProTime: 0,
-      usedFreeTime: 3,
-      stripeSubscriptionId: "",
-      stripeCustomerId: "",
+      Time: 1200,
     },
     [
       Permission.write(Role.any()),
@@ -22,15 +18,7 @@ const addUserAccount = async (documentId) => {
       Permission.delete(Role.any()),
     ]
   );
-  /*
- {
-      
-      
-      usedTime: 3,
-     
-      
-    },
-*/
+
   promise.then(
     function (response) {
       console.log(response);
@@ -40,25 +28,27 @@ const addUserAccount = async (documentId) => {
     }
   );
 };
+const getDocument = async (documentId) => {
+  try {
+    const result = await databases.getDocument(
+      DATABASE_ID, // databaseId
+      USER_ACCOUNT_COLLECTION_ID, // collectionId
+      documentId // documentId
+    );
 
-const updateUserAccountFree = async (documentId, usedFreeTime) => {
-  const result = await databases.updateDocument(
-    DATABASE_ID, // databaseId
-    USER_ACCOUNT_COLLECTION_ID, // collectionId
-    documentId, // documentId
-    {
-      usedFreeTime: usedFreeTime,
-    }
-  );
-  console.log(result);
+    return result.Time;
+  } catch (error) {
+    return "error";
+  }
 };
-const updateuserAccountPro = async (documentId, usedProTime) => {
+
+const updateUsedTime = async (documentId, usedTime) => {
   const result = await databases.updateDocument(
     DATABASE_ID, // databaseId
     USER_ACCOUNT_COLLECTION_ID, // collectionId
     documentId, // documentId
     {
-      usedProTime: usedProTime,
+      Time: usedTime,
     }
   );
   console.log(result);
@@ -123,10 +113,10 @@ const listUserData = async (userId) => {
 export {
   addUserAccount,
   addUserData,
-  updateUserAccountFree,
-  updateuserAccountPro,
+  updateUsedTime,
   listUserData,
   deleteItemUserData,
+  getDocument,
 };
 /*
 

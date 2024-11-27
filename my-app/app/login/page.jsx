@@ -18,6 +18,7 @@ import { FcGoogle } from "react-icons/fc";
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [repassword, setRePassword] = useState("");
   const [name, setName] = useState("");
   const router = useRouter();
   const [isLoginLoading, setIsLoginLoading] = useState(false);
@@ -63,13 +64,21 @@ const LoginPage = () => {
   };
   const handleSubmitLogin = (e) => {
     e.preventDefault();
+
     setIsLoginLoading(true);
     login(email, password);
   };
   const handleSubmitRegister = (e) => {
     e.preventDefault();
-    setIsLoginLoading(true);
-    register(email, password, name);
+    if (password == repassword) {
+      setIsLoginLoading(true);
+      register(email, password, ID.unique());
+    } else {
+      toast({
+        variant: "destructive",
+        title: "password must be identique!",
+      });
+    }
   };
   return (
     <div className="bg-gray-100">
@@ -132,7 +141,7 @@ const LoginPage = () => {
                       </div>
                       <div className="p-2">
                         <label className="block text-sm font-medium mb-1">
-                          Mot de passe
+                          Password
                         </label>
                         <Input
                           type="password"
@@ -197,19 +206,6 @@ const LoginPage = () => {
                       {" "}
                       <div className="p-2">
                         <label className="block text-sm font-medium mb-1">
-                          Name
-                        </label>
-                        <Input
-                          type="text"
-                          placeholder="Name"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          className="w-full"
-                          required
-                        />
-                      </div>
-                      <div className="p-2">
-                        <label className="block text-sm font-medium mb-1">
                           Email
                         </label>
                         <Input
@@ -223,13 +219,26 @@ const LoginPage = () => {
                       </div>
                       <div className="p-2">
                         <label className="block text-sm font-medium mb-1">
-                          Mot de passe
+                          Password
                         </label>
                         <Input
                           type="password"
                           placeholder="Enter your password"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
+                          className="w-full"
+                          required
+                        />
+                      </div>
+                      <div className="p-2">
+                        <label className="block text-sm font-medium mb-1">
+                          Re-type password
+                        </label>
+                        <Input
+                          type="password"
+                          placeholder="Enter your password"
+                          value={repassword}
+                          onChange={(e) => setRePassword(e.target.value)}
                           className="w-full"
                           required
                         />

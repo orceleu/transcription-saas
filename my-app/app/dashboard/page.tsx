@@ -35,6 +35,7 @@ import {
   ChevronDownIcon,
   ChevronsUpDown,
   CopyIcon,
+  CreditCard,
   DeleteIcon,
   DownloadIcon,
   Edit2Icon,
@@ -141,14 +142,22 @@ import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import YouTubePlayer from "react-player/youtube";
-import { addAudioElement, returnIconSpeaker } from "./returnFunction";
+import {
+  addAudioElement,
+  convertirDuree,
+  returnIconSpeaker,
+} from "./returnFunction";
 import { deleteFileItem, getFileUrl } from "../appwrite/storageFonction";
 import { account, ID } from "../appwrite/appwrite";
 import {
+  addUserAccount,
   addUserData,
   deleteItemUserData,
+  getDocument,
   listUserData,
+  updateUsedTime,
 } from "../appwrite/databaseFunction";
+import { FcAddImage } from "react-icons/fc";
 interface Item {
   name: string;
   path: string;
@@ -243,7 +252,11 @@ interface UserDataHistoric {
   type: string;
   size: string;
 }
-
+interface Plan {
+  id: string;
+  credits: number;
+  price: string;
+}
 export default function Dashboard() {
   const [uploadedFile, setUploadedFile] = useState<any>(null);
   const [isAudioUrlDispo, setAudioUrlDispo] = useState(false);
@@ -259,6 +272,11 @@ export default function Dashboard() {
   const [openForMobileExport, setOpenForMobileExport] = useState(false);
   const [openLanguage, setOpenLanguage] = useState(false);
   const [openLanguageMobile, setOpenLanguageMobile] = useState(false);
+  const [openDesktopDialogAddCredits, setOpenDesktopDialogAddCredits] =
+    useState(false);
+  const [openMobileDialogAddCredits, setOpenMobileDialogAddCredits] =
+    useState(false);
+
   const [openDesktopDialogYoutubemp3, setOpenDesktopDialogYoutubemp3] =
     useState(false);
   const [openMobileDialogYoutubemp3, setOpenMobileDialogYoutubemp3] =
@@ -315,7 +333,7 @@ export default function Dashboard() {
   const size = useRef("");
   const falRequestId = useRef("");
   const [userData, setUserData] = useState<UserDataHistoric[]>([]);
-
+  const [remainingTime, setRemainingTime] = useState("");
   const deleteItemUserHistoric = (id: string) => {
     const deletedTable = userData.filter((value) => value.$id !== id);
     setUserData(deletedTable);
@@ -323,6 +341,7 @@ export default function Dashboard() {
   const priceId = "price_1QHrUJHMq3uIqhfs2SDnMlJW";
   const durationAllowedToUpload = 200; //60sec
   const fileSizeAllowedToUpload = 500000000; //500MB
+  const durationUploaded = useRef(0);
   const [fileNameSelected, setfileNameSelected] = useState("");
   const addUserHistoricData = (
     userId: string,
@@ -348,6 +367,32 @@ export default function Dashboard() {
       },
     ]);
   };
+  // Liste des options disponibles
+  const plans: Plan[] = [
+    { id: "price_1QHrUJHMq3uIqhfs2SDnMlJW", credits: 7200, price: "5$" },
+    { id: "plan2", credits: 20, price: "10$" },
+    { id: "plan3", credits: 30, price: "10$" },
+    { id: "plan4", credits: 40, price: "10$" },
+    { id: "plan5", credits: 50, price: "10$" },
+    { id: "plan6", credits: 60, price: "10$" },
+  ];
+
+  // useRef pour stocker les valeurs du plan sélectionné
+  const selectedPlanId = useRef("");
+  const selectedCredits = useRef(0);
+  const [selectedPlan, setSelectedPlan] = useState<Plan>({
+    id: "",
+    credits: 0,
+    price: "",
+  });
+
+  // Fonction pour gérer le changement de sélection
+  const handleSelection = (plan: Plan) => {
+    setSelectedPlan(plan);
+    selectedPlanId.current = plan.id;
+    selectedCredits.current = plan.credits;
+  };
+
   const addSpeaker = (newItem: string) => {
     setSpeakerArrayShow((prevItems) => [...prevItems, newItem]);
   };
@@ -725,7 +770,7 @@ export default function Dashboard() {
     userId: string,
     credits: number
   ) {
-    console.log(price_id);
+    console.log(`selcted plan :${price_id}`);
     await axios
       .post("/api/checkout", {
         price_Id: price_id,
@@ -776,6 +821,7 @@ export default function Dashboard() {
           media.src = URL.createObjectURL(file);
           media.onloadedmetadata = () => {
             if (media.duration < durationAllowedToUpload) {
+              durationUploaded.current = media.duration;
               setUploadLoaded(true);
               // Créez un nouvel XMLHttpRequest
               const xhr = new XMLHttpRequest();
@@ -893,6 +939,19 @@ export default function Dashboard() {
       } else {
         setUserEmail(result.email);
         setUserid(result.$id);
+
+        //ajoute 20 min si le doc est inexistant cela veut dire que le compte vient d'etre cree
+        const res = await getDocument(result.$id);
+        if (res !== "error") {
+          setRemainingTime(res);
+          console.log(res);
+        } else {
+          //add doc
+          await addUserAccount(result.$id);
+
+          const res1 = await getDocument(result.$id);
+          setRemainingTime(res1);
+        }
       }
     } catch (error) {
       router.push("/login");
@@ -1244,8 +1303,41 @@ export default function Dashboard() {
           title: "Note.",
           description: "Process finished... ",
         });
+        //actualise puis update
+        const res1Value = parseInt(remainingTime, 10); // Convertit res1 en entier
+        const durationValue = Math.round(durationUploaded.current); // Garantit un entier pour durationUploaded
+
+        if (!isNaN(res1Value) && !isNaN(durationValue)) {
+          const timeToUpdate = res1Value - durationValue;
+
+          // Assurez-vous que la valeur est un entier
+          const validTime = Math.round(timeToUpdate); // Utilisez Math.floor ou Math.ceil si nécessaire
+
+          updateUsedTime(userId, validTime);
+          const res1: string = await getDocument(userId);
+          setRemainingTime(res1);
+        } else {
+          console.log("erreur de conversion string to Int");
+        }
       }
     } catch (error) {
+      //actualise puis update
+
+      const res1Value = parseInt(remainingTime, 10); // Convertit res1 en entier
+      const durationValue = Math.round(durationUploaded.current); // Garantit un entier pour durationUploaded
+
+      if (!isNaN(res1Value) && !isNaN(durationValue)) {
+        const timeToUpdate = res1Value - durationValue;
+
+        // Assurez-vous que la valeur est un entier
+        const validTime = Math.round(timeToUpdate); // Utilisez Math.floor ou Math.ceil si nécessaire
+
+        updateUsedTime(userId, validTime);
+        const res1: string = await getDocument(userId);
+        setRemainingTime(res1);
+      } else {
+        console.log("erreur de conversion string to Int");
+      }
       console.log(error);
       setSubmitted(false);
       console.log("userdata reset! ");
@@ -1313,18 +1405,80 @@ export default function Dashboard() {
         <ScrollArea className="h-[700px] w-1/5 p-1">
           <div className="flex justify-center mt-8">
             <div className="grid gap-1 w-[200px] p-3">
-              <p className="text-center">20 mn left</p>
+              <p className="text-center">
+                remaining:{" "}
+                <span>{convertirDuree(parseInt(remainingTime, 10))}</span>
+              </p>
 
-              <Button
-                onClick={() => {
-                  if (userEmail !== null && userEmail !== "") {
-                    selectPlan(priceId, userEmail, userId, 1200);
-                  }
-                }}
+              <Dialog
+                open={openDesktopDialogAddCredits}
+                onOpenChange={setOpenDesktopDialogAddCredits}
               >
-                <Infinity />
-                Go Pro(1200 min)
-              </Button>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    {" "}
+                    <Infinity />
+                    add credits
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Add Credits.</DialogTitle>
+                    <DialogDescription>
+                      add:{" "}
+                      <span className="text-green-600">
+                        {convertirDuree(selectedPlan.credits)}
+                      </span>{" "}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid grid-cols-2 gap-4">
+                    {plans.map((plan) => (
+                      <button
+                        key={plan.id}
+                        className="px-4 py-2 border rounded hover:bg-blue-100"
+                        onClick={() => {
+                          handleSelection(plan);
+                        }}
+                      >
+                        <div className="grid gap-2">
+                          <p className="text-green-600">
+                            add:{convertirDuree(plan.credits)}
+                          </p>
+                          <p className="font-bold">{plan.price}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <Button
+                    onClick={() => {
+                      if (userEmail !== null && userEmail !== "") {
+                        selectPlan(
+                          selectedPlanId.current,
+                          userEmail,
+                          userId,
+                          selectedCredits.current
+                        );
+                      } else {
+                        console.log("no session!");
+                      }
+                      console.log(`${selectedPlanId.current}`);
+                    }}
+                  >
+                    {isyoutubeMp3Submitted ? (
+                      <ReloadIcon className="animate-spin size-5" />
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        <CreditCard />
+                        add:{" "}
+                        <span className="text-green-600">
+                          {selectedPlan.credits}
+                        </span>{" "}
+                        credits.
+                      </div>
+                    )}
+                  </Button>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
           <Tabs defaultValue="account" className="w-full">
@@ -2049,17 +2203,79 @@ export default function Dashboard() {
         </div>
         <div className="flex justify-center my-5 bg-slate-100 rounded-md p-4">
           <div className="grid gap-3">
-            <p className="text-amber-500 text-center">3 transcriptions left</p>
-            <Progress />
-            <Button
-              onClick={() => {
-                if (userEmail) {
-                  selectPlan(priceId, userEmail, userId, 1200);
-                }
-              }}
+            <p className="text-center">
+              remaining:{" "}
+              <span>{convertirDuree(parseInt(remainingTime, 10))}</span>
+            </p>
+            <Dialog
+              open={openMobileDialogAddCredits}
+              onOpenChange={setOpenMobileDialogAddCredits}
             >
-              <FaChessKing className="mx-2" /> Go pro
-            </Button>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  {" "}
+                  <Infinity />
+                  add credits
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Add Credits.</DialogTitle>
+                  <DialogDescription>
+                    add:{" "}
+                    <span className="text-green-600">
+                      {convertirDuree(selectedPlan.credits)}
+                    </span>{" "}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid grid-cols-2 gap-4">
+                  {plans.map((plan) => (
+                    <button
+                      key={plan.id}
+                      className="px-4 py-2 border rounded hover:bg-blue-100"
+                      onClick={() => {
+                        handleSelection(plan);
+                      }}
+                    >
+                      <div className="grid gap-2">
+                        <p className="text-green-600">
+                          add:{convertirDuree(plan.credits)}
+                        </p>
+                        <p className="font-bold">{plan.price}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                <Button
+                  onClick={() => {
+                    if (userEmail !== null && userEmail !== "") {
+                      selectPlan(
+                        selectedPlanId.current,
+                        userEmail,
+                        userId,
+                        selectedCredits.current
+                      );
+                    } else {
+                      console.log("no session!");
+                    }
+                    console.log(`${selectedPlanId.current}`);
+                  }}
+                >
+                  {isyoutubeMp3Submitted ? (
+                    <ReloadIcon className="animate-spin size-5" />
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <CreditCard />
+                      add:{" "}
+                      <span className="text-green-600">
+                        {selectedPlan.credits}
+                      </span>{" "}
+                      credits.
+                    </div>
+                  )}
+                </Button>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
