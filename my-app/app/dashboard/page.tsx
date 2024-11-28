@@ -3010,7 +3010,7 @@ export default function Dashboard() {
                 )}
               </Button>
             )}
-            <div className="flex justify-center">
+            <div className="flex justify-center fixed bottom-1">
               {isAudioUrlDispo && isVideo && !youtubePlayerUrl && (
                 <div className=" w-4/5  p-1  rounded-t-md bg-slate-50">
                   <div className="flex justify-center m-3">
