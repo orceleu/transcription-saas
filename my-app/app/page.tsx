@@ -153,6 +153,7 @@ export default function Home() {
           <Image
             src={logo}
             alt="logo"
+            title="Logo"
             className="size-[40px] md:size-[50px] rounded-full"
           />
 
@@ -235,10 +236,10 @@ export default function Home() {
               <br />
               <br />
               <br />
-              <p className="text-4xl md:text-6xl text-center font-bold">
+              <h1 className="text-4xl md:text-6xl text-center font-bold">
                 <span className="text-amber-700">Audio & video</span> to text
                 converter
-              </p>
+              </h1>
 
               <div className="flex justify-center">
                 <p className="text-center lg:text-xl text-gray-600 max-w-[700px] my-10">
@@ -310,7 +311,21 @@ export default function Home() {
                       <span className="font-bold underline">Student</span>__{" "}
                       <span className=" text-[10px] md:text-[14px] text-gray-600">
                         Convert audio/video in PDF and you can use it in other
-                        AI tools like chatPDF.
+                        AI tools like{" "}
+                        <a
+                          href="https://www.chatpdf.com"
+                          className="text-violet-700 underline"
+                        >
+                          chatPDF
+                        </a>{" "}
+                        or
+                        <a
+                          href="https://www.docuask.ai"
+                          className="text-violet-700 underline"
+                        >
+                          docuAsk
+                        </a>
+                        .
                       </span>{" "}
                     </p>
                     <p>
@@ -341,6 +356,7 @@ export default function Home() {
                   </div>
                   <Image
                     alt="for who is ..."
+                    title="Perfect for..."
                     src={detailAnalysis}
                     className="size-[130px] md:size-[250px]"
                   />
@@ -517,6 +533,7 @@ export default function Home() {
             </div>{" "}
             <Image
               alt="capture"
+              title="User-friendly interface."
               src={capturetranscriptionapp}
               sizes="500"
               className="rounded-md shadow-md shadow-amber-300"

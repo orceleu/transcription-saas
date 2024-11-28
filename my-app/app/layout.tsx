@@ -6,11 +6,13 @@ import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "#1,High precision Audio & Video transcription software.",
+  title: "AudiScribe - #1,High precision Audio & Video transcription software.",
+  description:
+    "transcribe any audio or video with 98% accuracy in text in few second,upload your audio/video & transcription start automatically.",
   openGraph: {
     description:
       "transcribe any audio or video with 98% accuracy in text in few second,upload your audio/video & transcription start automatically.",
-    siteName: "Audiscribe AI",
+    siteName: "AudiScribe ",
     type: "website",
     images: [
       {
