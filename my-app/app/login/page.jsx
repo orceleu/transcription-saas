@@ -15,6 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 import { LoaderIcon, TrashIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { FcGoogle } from "react-icons/fc";
+import logo from "../../public/logo.jpg";
+import Image from "next/image";
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -85,7 +87,19 @@ const LoginPage = () => {
       {" "}
       <br />
       <br />
-      <p className="text-2xl text-amber-500 text-center ">Audiscribe AI</p>
+      <div className="flex justify-center">
+        <div className="grid gap-3">
+          <div className="flex justify-center">
+            <Image
+              src={logo}
+              alt="logo"
+              className="size-[40px] md:size-[50px] rounded-full"
+            />{" "}
+          </div>
+
+          <p className="text-2xl text-amber-500 text-center ">Audiscribe AI</p>
+        </div>
+      </div>
       <div className="flex items-center justify-center min-h-screen  p-5">
         <div className="w-full max-w-md p-6 space-y-4 bg-white shadow-md rounded-lg">
           <Tabs defaultValue="login" className="w-full">

@@ -144,6 +144,7 @@ import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import YouTubePlayer from "react-player/youtube";
 import {
   addAudioElement,
+  bytesToMB,
   convertirDuree,
   returnIconSpeaker,
 } from "./returnFunction";
@@ -339,8 +340,7 @@ export default function Dashboard() {
     setUserData(deletedTable);
   };
   const priceId = "price_1QHrUJHMq3uIqhfs2SDnMlJW";
-  const durationAllowedToUpload = 200; //60sec
-  const fileSizeAllowedToUpload = 500000000; //500MB
+  const fileSizeAllowedToUpload = 5000000000; //5000MB
   const durationUploaded = useRef(0);
   const [fileNameSelected, setfileNameSelected] = useState("");
   const addUserHistoricData = (
@@ -820,7 +820,8 @@ export default function Dashboard() {
           );
           media.src = URL.createObjectURL(file);
           media.onloadedmetadata = () => {
-            if (media.duration < durationAllowedToUpload) {
+            const durationAllowed = parseInt(remainingTime, 10);
+            if (media.duration < durationAllowed) {
               durationUploaded.current = media.duration;
               setUploadLoaded(true);
               // Créez un nouvel XMLHttpRequest
@@ -846,7 +847,7 @@ export default function Dashboard() {
                   setProgresspercent(Number(percentComplete));
                   if (progresspercent == 100) {
                     setChange(!changed);
-                    console.log("upload finished");
+                    console.log("upload completed");
                   }
                 }
               });
@@ -882,7 +883,8 @@ export default function Dashboard() {
             } else {
               toast({
                 variant: "destructive",
-                title: "Too much time uploaded!",
+                title:
+                  "Your credit balance is insufficient. Please add credits to continue.",
               });
             }
           };
@@ -897,39 +899,6 @@ export default function Dashboard() {
     }
   };
 
-  const uploadRecordedToFirebaseInBlob = (blob: Blob) => {
-    setUploadLoaded(true);
-    const storageRef = ref(
-      storage,
-      `users/${user?.uid}/data/audioToTranscribe`
-    );
-    const uploadTask = uploadBytesResumable(storageRef, blob);
-
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const progress = Math.round(
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-        );
-        setProgresspercent(progress);
-        if (progresspercent == 100) {
-          setChange(!changed);
-          console.log("upload finished");
-        }
-      },
-      (error) => {
-        alert(error);
-      },
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          transcriptionResultInSrt.current = "";
-          audioUrl.current = downloadURL;
-          submitSpeech();
-          setAudioUrlDispo(true);
-        });
-      }
-    );
-  };
   const checkLogin = async () => {
     try {
       const result = await account.get();
@@ -1314,8 +1283,10 @@ export default function Dashboard() {
           const validTime = Math.round(timeToUpdate); // Utilisez Math.floor ou Math.ceil si nécessaire
 
           updateUsedTime(userId, validTime);
-          const res1: string = await getDocument(userId);
-          setRemainingTime(res1);
+          setTimeout(async () => {
+            const res1: string = await getDocument(userId);
+            setRemainingTime(res1);
+          }, 3000);
         } else {
           console.log("erreur de conversion string to Int");
         }
@@ -1333,8 +1304,10 @@ export default function Dashboard() {
         const validTime = Math.round(timeToUpdate); // Utilisez Math.floor ou Math.ceil si nécessaire
 
         updateUsedTime(userId, validTime);
-        const res1: string = await getDocument(userId);
-        setRemainingTime(res1);
+        setTimeout(async () => {
+          const res1: string = await getDocument(userId);
+          setRemainingTime(res1);
+        }, 3000);
       } else {
         console.log("erreur de conversion string to Int");
       }
@@ -1450,6 +1423,7 @@ export default function Dashboard() {
                     ))}
                   </div>
                   <Button
+                    variant="outline"
                     onClick={() => {
                       if (userEmail !== null && userEmail !== "") {
                         selectPlan(
@@ -1481,7 +1455,7 @@ export default function Dashboard() {
               </Dialog>
             </div>
           </div>
-          <Tabs defaultValue="account" className="w-full">
+          <Tabs defaultValue="password" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="account">
                 <SettingsIcon />
@@ -1792,10 +1766,11 @@ export default function Dashboard() {
 
                       <div className="grid gap-1" key={index + 2}>
                         <p className="text-[11px]" key={index + 3}>
-                          Size:{data.size} KB
+                          <span className="font-bold">Size:</span>{" "}
+                          {bytesToMB(Number(data.size))}
                         </p>
                         <p className="text-[11px]" key={index + 4}>
-                          Type:{data.type}
+                          <span className="font-bold">Type:</span> {data.type}
                         </p>
                       </div>
 
@@ -1927,18 +1902,6 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex justify-center my-2">
-                    <AudioRecorder
-                      onRecordingComplete={uploadRecordedToFirebaseInBlob}
-                      audioTrackConstraints={{
-                        noiseSuppression: true,
-                        echoCancellation: true,
-                      }}
-                      downloadOnSavePress={false}
-                      downloadFileExtension="webm"
-                      showVisualizer={true}
-                    />
-                  </div>
                 </div>
 
                 {textLanguageDetected ? (
@@ -2057,6 +2020,7 @@ export default function Dashboard() {
 
                 {textLanguageDetected && (
                   <Button
+                    variant="outline"
                     className="m-4"
                     onClick={() => {
                       if (uploadedFile) {
@@ -2089,7 +2053,7 @@ export default function Dashboard() {
                         height="100%"
                         playing={videoIsplaying}
                         light={true}
-                        url="https://cloud.appwrite.io/v1/storage/buckets/67225954001822e6e440/files/6731f03b00094db55151/view?project=67224b080010c36860d8&project=67224b080010c36860d8&mode=admin"
+                        url={audioUrl.current}
                         onDuration={(e) => console.log(`duration:${e}`)}
                         onSeek={(e) => console.log("onSeek", e)}
                         onProgress={handleProgressDesktop}
@@ -2247,6 +2211,7 @@ export default function Dashboard() {
                   ))}
                 </div>
                 <Button
+                  variant="outline"
                   onClick={() => {
                     if (userEmail !== null && userEmail !== "") {
                       selectPlan(
@@ -2264,7 +2229,7 @@ export default function Dashboard() {
                   {isyoutubeMp3Submitted ? (
                     <ReloadIcon className="animate-spin size-5" />
                   ) : (
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1">
                       <CreditCard />
                       add:{" "}
                       <span className="text-green-600">
@@ -2682,10 +2647,12 @@ export default function Dashboard() {
 
                                   <div className="grid gap-1" key={index + 2}>
                                     <p className="text-[11px]" key={index + 3}>
-                                      Size:{data.size} KB
+                                      <span className="font-bold">Size:</span>{" "}
+                                      {bytesToMB(Number(data.size))}
                                     </p>
                                     <p className="text-[11px]" key={index + 4}>
-                                      Type:{data.type}
+                                      <span className="font-bold">Type:</span>
+                                      {data.type}
                                     </p>
                                   </div>
 
@@ -2792,19 +2759,6 @@ export default function Dashboard() {
                       )}
                     </div>
                   </div>
-                </div>
-
-                <div className="flex justify-center my-2">
-                  <AudioRecorder
-                    onRecordingComplete={uploadRecordedToFirebaseInBlob}
-                    audioTrackConstraints={{
-                      noiseSuppression: true,
-                      echoCancellation: true,
-                    }}
-                    downloadOnSavePress={false}
-                    downloadFileExtension="mp3"
-                    showVisualizer={true}
-                  />
                 </div>
               </div>
             </div>
@@ -3035,6 +2989,7 @@ export default function Dashboard() {
             )}
             {textLanguageDetected && (
               <Button
+                variant="outline"
                 onClick={() => {
                   if (uploadedFile) {
                     //handleSubmit(uploadedFile);

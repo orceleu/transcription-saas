@@ -52,8 +52,20 @@ const convertirDuree = (dureeEnsecondes: number): string => {
   } else {
     const heures = Math.floor(dureeEnMinutes / 60);
     const minute = Math.round(dureeEnMinutes % 60);
-    return `${heures} hours  ${minute} min 
+    if (!isNaN(heures) && !isNaN(minute)) {
+      return `${heures} hours  ${minute} min 
     `;
+    } else {
+      return "...";
+    }
   }
 };
-export { returnIconSpeaker, addAudioElement, convertirDuree };
+function bytesToMB(bytes: number, decimals: number = 2): string {
+  if (bytes < 0) {
+    throw new Error("La valeur des octets doit être positive.");
+  }
+  const mb = bytes / (1024 * 1024);
+  return `${mb.toFixed(decimals)} MB`;
+}
+
+export { returnIconSpeaker, addAudioElement, convertirDuree, bytesToMB };
