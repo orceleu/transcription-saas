@@ -61,6 +61,7 @@ export async function POST(req) {
     metadata: {
       userId: `${user_Id}`,
       credits: credits,
+      email: `${customer_Email}`,
     },
     mode: "payment",
     success_url: "https://natural-voice.vercel.app/checkout/success",
