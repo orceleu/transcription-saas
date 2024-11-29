@@ -1,5 +1,7 @@
+import { FileAudioIcon } from "lucide-react";
 import React from "react";
 import { MdAccountCircle } from "react-icons/md";
+import { TbFileUnknown } from "react-icons/tb";
 
 const returnIconSpeaker = (speaker: string) => {
   switch (speaker) {
@@ -32,6 +34,22 @@ const returnIconSpeaker = (speaker: string) => {
       break;
   }
   return <MdAccountCircle className="text-emerald-400" />;
+};
+
+const returnTypeIcon = (type: string) => {
+  switch (type) {
+    case "audio/mpeg":
+      return <FileAudioIcon className="text-emerald-400" />;
+    case "audio/ogg":
+      return <FileAudioIcon className="text-blue-400" />;
+    case "audio/mp3":
+      return <FileAudioIcon className="text-yellow-400" />;
+
+    default:
+      <TbFileUnknown className="text-gray-400" />;
+      break;
+  }
+  return <TbFileUnknown className="text-gray-400" />;
 };
 const addAudioElement = (blob: any) => {
   const url = URL.createObjectURL(blob);
@@ -68,4 +86,10 @@ function bytesToMB(bytes: number, decimals: number = 2): string {
   return `${mb.toFixed(decimals)} MB`;
 }
 
-export { returnIconSpeaker, addAudioElement, convertirDuree, bytesToMB };
+export {
+  returnIconSpeaker,
+  addAudioElement,
+  convertirDuree,
+  bytesToMB,
+  returnTypeIcon,
+};

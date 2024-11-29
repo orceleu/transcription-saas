@@ -14,7 +14,7 @@ import {
   FaToolbox,
 } from "react-icons/fa6";
 import { TbFileTypeDocx } from "react-icons/tb";
-import { GrDocumentTxt, GrEmptyCircle } from "react-icons/gr";
+import { GrAddCircle, GrDocumentTxt, GrEmptyCircle } from "react-icons/gr";
 import { useDropzone } from "react-dropzone";
 import { signOut, onAuthStateChanged, User } from "firebase/auth";
 import { auth, db } from "@/app/firebase/config";
@@ -46,6 +46,7 @@ import {
   PauseIcon,
   PlayIcon,
   PlusCircleIcon,
+  PlusIcon,
   SaveIcon,
   SearchIcon,
   Settings,
@@ -147,6 +148,7 @@ import {
   bytesToMB,
   convertirDuree,
   returnIconSpeaker,
+  returnTypeIcon,
 } from "./returnFunction";
 import { deleteFileItem, getFileUrl } from "../appwrite/storageFonction";
 import { account, ID } from "../appwrite/appwrite";
@@ -1743,7 +1745,7 @@ export default function Dashboard() {
                   {userData.map((data, index) => (
                     <div
                       key={index}
-                      className="grid gap-3 shadow-md rounded-md p-3 bg-gray-50 hover:bg-slate-100 my-2"
+                      className="grid gap-1 shadow-md rounded-md p-3 bg-gray-50 hover:bg-slate-100 my-2"
                       onClick={() => {
                         //transcriptionResultInSrt.current = data.historic;
                         const parsedSubtitles = parseSRT(data.historic);
@@ -1760,22 +1762,21 @@ export default function Dashboard() {
                         // language,name ,type(mp3),size to added
                       }}
                     >
-                      <strong className="text-amber-600" key={index + 1}>
-                        {data.associedFileName}
-                      </strong>
-
-                      <div className="grid gap-1" key={index + 2}>
-                        <p className="text-[11px]" key={index + 3}>
-                          <span className="font-bold">Size:</span>{" "}
-                          {bytesToMB(Number(data.size))}
-                        </p>
-                        <p className="text-[11px]" key={index + 4}>
-                          <span className="font-bold">Type:</span> {data.type}
-                        </p>
+                      <div className="flex items-center gap-2">
+                        <strong className="text-amber-600" key={index + 1}>
+                          {data.associedFileName}
+                        </strong>
+                        {returnTypeIcon(data.type)}
                       </div>
 
-                      <div className="flex items-center gap-2" key={index + 5}>
+                      <p className="text-[11px]" key={index + 3}>
+                        <span className="font-bold">Size:</span>{" "}
+                        {bytesToMB(Number(data.size))}
+                      </p>
+
+                      <div className="flex items-center" key={index + 5}>
                         <p className="w-3/4 text-[11px]" key={index + 6}>
+                          <span className="font-bold">Created at :</span>
                           {data.$createdAt}
                         </p>
                         <Button
@@ -2250,7 +2251,9 @@ export default function Dashboard() {
               <div className="mb-4 mt-1 ">
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="item-1">
-                    <AccordionTrigger>More...</AccordionTrigger>
+                    <AccordionTrigger>
+                      <GrAddCircle />
+                    </AccordionTrigger>
                     <AccordionContent>
                       <Tabs defaultValue="setting" className="w-full">
                         <TabsList className="grid w-full grid-cols-2">
@@ -2616,83 +2619,87 @@ export default function Dashboard() {
                           </div>
                         </TabsContent>
                         <TabsContent value="historic">
-                          {userData.length !== 0 ? (
-                            <div className="p-2">
-                              {userData.map((data, index) => (
-                                <div
-                                  key={index}
-                                  className="grid gap-3 shadow-md rounded-md p-3 bg-gray-50 hover:bg-slate-100 my-2"
-                                  onClick={() => {
-                                    //transcriptionResultInSrt.current = data.historic;
-                                    const parsedSubtitles = parseSRT(
-                                      data.historic
-                                    );
-                                    setSubtitles(parsedSubtitles);
-                                    setTextLanguageDetected("fr");
-                                    audioUrl.current = getFileUrl(data.$id);
+                          <ScrollArea className="h-[400px]">
+                            {userData.length !== 0 ? (
+                              <div className="p-2">
+                                {userData.map((data, index) => (
+                                  <div
+                                    key={index}
+                                    className="grid gap-1 shadow-md rounded-md p-3 bg-gray-50 hover:bg-slate-100 my-2"
+                                    onClick={() => {
+                                      //transcriptionResultInSrt.current = data.historic;
+                                      const parsedSubtitles = parseSRT(
+                                        data.historic
+                                      );
+                                      setSubtitles(parsedSubtitles);
+                                      setTextLanguageDetected("fr");
+                                      audioUrl.current = getFileUrl(data.$id);
 
-                                    setAudioUrlDispo(true);
-                                    setIsVideo(data.type.startsWith("video/"));
-                                    setfileNameSelected(data.associedFileName);
+                                      setAudioUrlDispo(true);
+                                      setIsVideo(
+                                        data.type.startsWith("video/")
+                                      );
+                                      setfileNameSelected(
+                                        data.associedFileName
+                                      );
 
-                                    // language,name ,type(mp3),size to added
-                                  }}
-                                >
-                                  <strong
-                                    className="text-amber-600"
-                                    key={index + 1}
+                                      // language,name ,type(mp3),size to added
+                                    }}
                                   >
-                                    {data.associedFileName}
-                                  </strong>
-
-                                  <div className="grid gap-1" key={index + 2}>
+                                    <div className="flex justify-between gap-1">
+                                      <strong
+                                        className="text-amber-600"
+                                        key={index + 1}
+                                      >
+                                        {data.associedFileName}
+                                      </strong>
+                                      {returnTypeIcon(data.type)}
+                                    </div>
                                     <p className="text-[11px]" key={index + 3}>
                                       <span className="font-bold">Size:</span>{" "}
                                       {bytesToMB(Number(data.size))}
                                     </p>
-                                    <p className="text-[11px]" key={index + 4}>
-                                      <span className="font-bold">Type:</span>
-                                      {data.type}
-                                    </p>
-                                  </div>
-
-                                  <div
-                                    className="flex items-center gap-2"
-                                    key={index + 5}
-                                  >
-                                    <p
-                                      className="w-3/4 text-[11px]"
-                                      key={index + 6}
+                                    <div
+                                      className="flex items-center gap-2"
+                                      key={index + 5}
                                     >
-                                      {data.$createdAt}
-                                    </p>
-                                    <Button
-                                      key={index + 7}
-                                      className="w-1/4"
-                                      variant="ghost"
-                                      onClick={() => {
-                                        deleteItemUser_data(data.$id);
-                                      }}
-                                    >
-                                      <TrashIcon className="text-red-400" />
-                                    </Button>
+                                      <p
+                                        className="w-3/4 text-[11px]"
+                                        key={index + 6}
+                                      >
+                                        <span className="font-bold">
+                                          Created at:
+                                        </span>
+                                        {data.$createdAt}
+                                      </p>
+                                      <Button
+                                        key={index + 7}
+                                        className="w-1/4 hover:bg-red-300"
+                                        variant="ghost"
+                                        onClick={() => {
+                                          deleteItemUser_data(data.$id);
+                                        }}
+                                      >
+                                        <TrashIcon className="text-red-400" />
+                                      </Button>
+                                    </div>
                                   </div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="flex justify-center">
-                              <div className="grid gap-2">
-                                <ImFilesEmpty
-                                  className="mt-10 text-amber-300"
-                                  size={60}
-                                />
-                                <p className="text-gray-500 text-center">
-                                  No file found
-                                </p>
+                                ))}
                               </div>
-                            </div>
-                          )}
+                            ) : (
+                              <div className="flex justify-center">
+                                <div className="grid gap-2">
+                                  <ImFilesEmpty
+                                    className="mt-10 text-amber-300"
+                                    size={60}
+                                  />
+                                  <p className="text-gray-500 text-center">
+                                    No file found
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </ScrollArea>
                         </TabsContent>
                       </Tabs>
                     </AccordionContent>
@@ -2989,7 +2996,6 @@ export default function Dashboard() {
             )}
             {textLanguageDetected && (
               <Button
-                variant="outline"
                 onClick={() => {
                   if (uploadedFile) {
                     //handleSubmit(uploadedFile);
