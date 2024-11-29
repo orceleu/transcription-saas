@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "https://cloud.appwrite.io/v1/storage/buckets/67225954001822e6e440/files/6748e76d0009ecc19f44/view?project=67224b080010c36860d8&project=67224b080010c36860d8&mode=admin",
+        url: "https://cloud.appwrite.io/v1/storage/buckets/67225954001822e6e440/files/6749426c000d887d8013/view?project=67224b080010c36860d8&project=67224b080010c36860d8&mode=admin",
       },
     ],
   },
