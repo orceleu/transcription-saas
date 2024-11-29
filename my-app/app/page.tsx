@@ -237,12 +237,18 @@ export default function Home() {
               <br />
               <br />
               <h1 className="text-4xl md:text-6xl text-center font-bold">
-                <span className="text-amber-700">Audio & video</span> to text
-                converter
+                <span className="text-amber-700">Audio & video</span>{" "}
+                <a
+                  href="https://platform.openai.com/docs/guides/speech-to-text"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  to text converter
+                </a>
               </h1>
 
               <div className="flex justify-center">
-                <p className="text-center lg:text-xl text-gray-600 max-w-[700px] my-10">
+                <h2 className="text-center lg:text-xl text-gray-600 max-w-[700px] my-10">
                   <span className="text-violet-900 font-bold mx-2 underline">
                     Fast
                   </span>
@@ -255,9 +261,17 @@ export default function Home() {
                     accurate
                   </span>
                   . For any language or dialect, no matter the clarity of the
-                  audio. Just choose your file, upload it, and the transcription
+                  audio. Just choose your file, upload it, and the{" "}
+                  <a
+                    href="https://en.wikipedia.org/wiki/Transcription"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    transcription
+                  </a>
+                  <br />
                   starts automatically.
-                </p>
+                </h2>
               </div>
             </div>
             <div className=" grid gap-5 md:grid-cols-2 w-full  my-10 p-5 max-w-[900px] bg-gray-50 rounded-md">
@@ -314,6 +328,8 @@ export default function Home() {
                         AI tools like{" "}
                         <a
                           href="https://www.chatpdf.com"
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="text-violet-700 underline"
                         >
                           chatPDF
@@ -321,6 +337,8 @@ export default function Home() {
                         or
                         <a
                           href="https://www.docuask.ai"
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="text-violet-700 underline"
                         >
                           docuAsk
@@ -925,11 +943,19 @@ export default function Home() {
                   What is AudiScribe?
                 </AccordionTrigger>
                 <AccordionContent className=" lg:text-xl text-gray-600">
-                  Audiscribe is an audio-to-text transcription platform designed
-                  to automatically convert audio or video files into text. Using
-                  advanced speech recognition algorithms, Audiscribe enables
-                  users to easily turn interviews, lectures, meetings, podcasts,
-                  and more into written documents.
+                  Audiscribe is an{" "}
+                  <a
+                    href="https://en.wikipedia.org/wiki/Transcription_(linguistics)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    audio-to-text transcription
+                  </a>{" "}
+                  platform designed to automatically convert audio or video
+                  files into text. Using advanced speech recognition algorithms,
+                  Audiscribe enables users to easily turn interviews, lectures,
+                  meetings, podcasts, and more into written documents.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-1">
