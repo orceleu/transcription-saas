@@ -126,7 +126,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
+import logo from "../../public/logo.jpg";
 import { Input } from "@/components/ui/input";
 import {
   FileTextIcon,
@@ -147,6 +147,7 @@ import {
   addAudioElement,
   bytesToMB,
   convertirDuree,
+  formatDate,
   returnIconSpeaker,
   returnTypeIcon,
 } from "./returnFunction";
@@ -345,6 +346,7 @@ export default function Dashboard() {
   const fileSizeAllowedToUpload = 5000000000; //5000MB
   const durationUploaded = useRef(0);
   const [fileNameSelected, setfileNameSelected] = useState("");
+  const [addButtonPlan, setAddButtonPlan] = useState(false);
   const addUserHistoricData = (
     userId: string,
     historic: string,
@@ -383,9 +385,9 @@ export default function Dashboard() {
   const selectedPlanId = useRef("");
   const selectedCredits = useRef(0);
   const [selectedPlan, setSelectedPlan] = useState<Plan>({
-    id: "",
-    credits: 0,
-    price: "",
+    id: plans[0].id,
+    credits: plans[0].credits,
+    price: plans[0].price,
   });
 
   // Fonction pour gérer le changement de sélection
@@ -751,13 +753,45 @@ export default function Dashboard() {
     );
     setCurrentSubtitleDesktop(currentSub || null);
   };
+  const checkVideoYoutube = async (url: string, remainingTime: number) => {
+    const data = url.slice(17, 28);
+    console.log(data);
 
+    const options = {
+      method: "GET",
+      url: "https://youtube-media-downloader.p.rapidapi.com/v2/video/details",
+      params: {
+        videoId: data,
+      },
+      headers: {
+        "x-rapidapi-key": "ea3eb66b12mshb3815582d59c0fcp1ef05fjsnc501524b1af5",
+        "x-rapidapi-host": "youtube-media-downloader.p.rapidapi.com",
+      },
+    };
+
+    try {
+      const response = await axios.request(options);
+      console.log(response.data);
+
+      if (response.data.lengthSeconds < remainingTime) {
+        durationUploaded.current = response.data.lengthSeconds;
+        convertYoutubeMp3();
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Youtube video too long,please add credit.",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
   const handleActiveButton = () => {
     firstcheck.current += 1;
     if (firstcheck.current < 3) {
       if (youtubeUrl.slice(0, 13) === "https://youtu") {
         //check if long youtube video
-        convertYoutubeMp3();
+        checkVideoYoutube(youtubeUrl, Number(remainingTime));
       } else {
         toast({
           variant: "destructive",
@@ -1381,7 +1415,7 @@ export default function Dashboard() {
           <div className="flex justify-center mt-8">
             <div className="grid gap-1 w-[200px] p-3">
               <p className="text-center">
-                remaining:{" "}
+                <span className="text-slate-400"> remaining:</span>
                 <span>{convertirDuree(parseInt(remainingTime, 10))}</span>
               </p>
 
@@ -1425,9 +1459,9 @@ export default function Dashboard() {
                     ))}
                   </div>
                   <Button
-                    variant="outline"
                     onClick={() => {
                       if (userEmail !== null && userEmail !== "") {
+                        setAddButtonPlan(true);
                         selectPlan(
                           selectedPlanId.current,
                           userEmail,
@@ -1440,8 +1474,8 @@ export default function Dashboard() {
                       console.log(`${selectedPlanId.current}`);
                     }}
                   >
-                    {isyoutubeMp3Submitted ? (
-                      <ReloadIcon className="animate-spin size-5" />
+                    {addButtonPlan ? (
+                      <LoaderIcon className="animate-spin size-5" />
                     ) : (
                       <div className="flex items-center gap-3">
                         <CreditCard />
@@ -1762,7 +1796,7 @@ export default function Dashboard() {
                         // language,name ,type(mp3),size to added
                       }}
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex justify-between gap-2">
                         <strong className="text-amber-600" key={index + 1}>
                           {data.associedFileName}
                         </strong>
@@ -1777,7 +1811,7 @@ export default function Dashboard() {
                       <div className="flex items-center" key={index + 5}>
                         <p className="w-3/4 text-[11px]" key={index + 6}>
                           <span className="font-bold">Created at :</span>
-                          {data.$createdAt}
+                          {formatDate(data.$createdAt)}
                         </p>
                         <Button
                           key={index + 7}
@@ -1795,10 +1829,7 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="flex justify-center">
-                  <div className="grid gap-2">
-                    <ImFilesEmpty className="mt-10 text-amber-300" size={60} />
-                    <p className="text-gray-500 text-center">No file found</p>
-                  </div>
+                  <ImFilesEmpty className="mt-10 text-amber-300" size={60} />
                 </div>
               )}
             </TabsContent>
@@ -2143,9 +2174,7 @@ export default function Dashboard() {
     return (
       <div className="lg:hidden p-3 bg-gray-50">
         <div className="flex justify-between  top-2 end-2 m-2">
-          <p className="text-xl font-bold underline text-amber-500  text-center">
-            AudiScribe
-          </p>
+          <Image src={logo} alt="logo" className="size-[40px]" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost">
@@ -2169,7 +2198,7 @@ export default function Dashboard() {
         <div className="flex justify-center my-5 bg-slate-100 rounded-md p-4">
           <div className="grid gap-3">
             <p className="text-center">
-              remaining:{" "}
+              <span className="text-slate-400"> remaining:</span>
               <span>{convertirDuree(parseInt(remainingTime, 10))}</span>
             </p>
             <Dialog
@@ -2212,9 +2241,9 @@ export default function Dashboard() {
                   ))}
                 </div>
                 <Button
-                  variant="outline"
                   onClick={() => {
                     if (userEmail !== null && userEmail !== "") {
+                      setAddButtonPlan(true);
                       selectPlan(
                         selectedPlanId.current,
                         userEmail,
@@ -2227,8 +2256,8 @@ export default function Dashboard() {
                     console.log(`${selectedPlanId.current}`);
                   }}
                 >
-                  {isyoutubeMp3Submitted ? (
-                    <ReloadIcon className="animate-spin size-5" />
+                  {addButtonPlan ? (
+                    <LoaderIcon className="animate-spin size-5" />
                   ) : (
                     <div className="flex items-center gap-1">
                       <CreditCard />
@@ -2248,6 +2277,68 @@ export default function Dashboard() {
         <div className="w-full  mt-5">
           <div className="grid gap-5">
             <div className="grid gap-1">
+              <div className="bg-white p-5 rounded-md">
+                <div className="flex justify-center my-1">
+                  {uploadIsLoaded ? (
+                    <Progress value={progresspercent} className="w-[60%]" />
+                  ) : null}
+                </div>
+                <div className="flex justify-center">
+                  <div {...getRootProps({ style })} className=" max-w-[400px]">
+                    <input {...getInputProps()} />
+                    {uploadedFile ? (
+                      <div>
+                        <h4 className="text-center">Uploaded file:</h4>
+                        <p className="text-center">{uploadedFile.name}</p>
+                      </div>
+                    ) : (
+                      <div className="grid gap-2">
+                        <div className="flex justify-center">
+                          <UploadCloud />
+                        </div>
+                        <p className="text-center">
+                          Drag and drop audio/video files here,or click to
+                          select files
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <p className="text-center text-gray-300">-----Or-----</p>
+                <div className="flex justify-center w-full">
+                  <div className="grid gap-3 w-full max-w-[400px]">
+                    <div className="flex items-center  gap-2 bg-gray-100 p-3 rounded-lg">
+                      <Input
+                        className="w-full "
+                        placeholder="Paste youtube link Here..."
+                        value={youtubeUrl}
+                        onChange={(e) => {
+                          setYoutubeUrl(e.target.value);
+                        }}
+                      />
+
+                      {checkingUrl ? (
+                        <>
+                          <LoaderIcon className="animate-spin size-5" />
+                        </>
+                      ) : (
+                        <>
+                          <Button
+                            className="bg-white hover:bg-amber-100"
+                            variant="ghost"
+                            onClick={() => {
+                              setYoutubeUrl("");
+                              firstcheck.current = 0;
+                            }}
+                          >
+                            <DeleteIcon />
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>{" "}
               <div className="mb-4 mt-1 ">
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="item-1">
@@ -2255,7 +2346,7 @@ export default function Dashboard() {
                       <GrAddCircle />
                     </AccordionTrigger>
                     <AccordionContent>
-                      <Tabs defaultValue="setting" className="w-full">
+                      <Tabs defaultValue="historic" className="w-full">
                         <TabsList className="grid w-full grid-cols-2">
                           <TabsTrigger value="setting">
                             <SettingsIcon />
@@ -2670,7 +2761,8 @@ export default function Dashboard() {
                                         <span className="font-bold">
                                           Created at:
                                         </span>
-                                        {data.$createdAt}
+
+                                        {formatDate(data.$createdAt)}
                                       </p>
                                       <Button
                                         key={index + 7}
@@ -2688,15 +2780,10 @@ export default function Dashboard() {
                               </div>
                             ) : (
                               <div className="flex justify-center">
-                                <div className="grid gap-2">
-                                  <ImFilesEmpty
-                                    className="mt-10 text-amber-300"
-                                    size={60}
-                                  />
-                                  <p className="text-gray-500 text-center">
-                                    No file found
-                                  </p>
-                                </div>
+                                <ImFilesEmpty
+                                  className="mt-10 text-amber-300"
+                                  size={60}
+                                />
                               </div>
                             )}
                           </ScrollArea>
@@ -2705,68 +2792,6 @@ export default function Dashboard() {
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
-              </div>
-              <div className="bg-white p-5 rounded-md">
-                <div className="flex justify-center my-1">
-                  {uploadIsLoaded ? (
-                    <Progress value={progresspercent} className="w-[60%]" />
-                  ) : null}
-                </div>
-                <div className="flex justify-center">
-                  <div {...getRootProps({ style })} className=" max-w-[400px]">
-                    <input {...getInputProps()} />
-                    {uploadedFile ? (
-                      <div>
-                        <h4 className="text-center">Uploaded file:</h4>
-                        <p className="text-center">{uploadedFile.name}</p>
-                      </div>
-                    ) : (
-                      <div className="grid gap-2">
-                        <div className="flex justify-center">
-                          <UploadCloud />
-                        </div>
-                        <p className="text-center">
-                          Drag and drop audio/video files here,or click to
-                          select files
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <p className="text-center text-gray-300">-----Or-----</p>
-                <div className="flex justify-center w-full">
-                  <div className="grid gap-3 w-full max-w-[400px]">
-                    <div className="flex items-center  gap-2 bg-gray-100 p-3 rounded-lg">
-                      <Input
-                        className="w-full "
-                        placeholder="Paste youtube link Here..."
-                        value={youtubeUrl}
-                        onChange={(e) => {
-                          setYoutubeUrl(e.target.value);
-                        }}
-                      />
-
-                      {checkingUrl ? (
-                        <>
-                          <LoaderIcon className="animate-spin size-5" />
-                        </>
-                      ) : (
-                        <>
-                          <Button
-                            className="bg-white hover:bg-amber-100"
-                            variant="ghost"
-                            onClick={() => {
-                              setYoutubeUrl("");
-                              firstcheck.current = 0;
-                            }}
-                          >
-                            <DeleteIcon />
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
             {textLanguageDetected ? (

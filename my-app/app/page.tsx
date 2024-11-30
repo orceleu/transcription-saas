@@ -445,11 +445,7 @@ export default function Home() {
                       required
                     />
                   </div>
-                  <Button
-                    type="submit"
-                    variant="outline"
-                    className="w-full mt-4"
-                  >
+                  <Button type="submit" className="w-full mt-4">
                     {isLoginLoading ? (
                       <>
                         <LoaderIcon className="animate-spin" />
@@ -504,7 +500,7 @@ export default function Home() {
                 <p className="text-2xl text-center">Upload any format.</p>
                 <p className="text-gray-600 text-center">
                   Upload files in all popular formats, including MP3, MP4, M4A,
-                  MOV, AAC, WAV, OGG, OPUS, MPEG, WMA, YouTube, and more.
+                  MOV, AAC, WAV, OGG, OPUS, MPEG, YouTube, and more.
                 </p>
               </div>
               <div className="grid gap-2">
@@ -708,11 +704,7 @@ export default function Home() {
                                     required
                                   />
                                 </div>
-                                <Button
-                                  type="submit"
-                                  variant="outline"
-                                  className="w-full mt-4"
-                                >
+                                <Button type="submit" className="w-full mt-4">
                                   {isLoginLoading ? (
                                     <>
                                       <LoaderIcon className="animate-spin" />

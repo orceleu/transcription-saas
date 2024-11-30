@@ -1,8 +1,8 @@
-import { FileAudioIcon } from "lucide-react";
+import { FileAudioIcon, FileVideo } from "lucide-react";
 import React from "react";
 import { MdAccountCircle } from "react-icons/md";
 import { TbFileUnknown } from "react-icons/tb";
-
+import axios from "axios";
 const returnIconSpeaker = (speaker: string) => {
   switch (speaker) {
     case "(SPEAKER_00)":
@@ -44,6 +44,8 @@ const returnTypeIcon = (type: string) => {
       return <FileAudioIcon className="text-blue-400" />;
     case "audio/mp3":
       return <FileAudioIcon className="text-yellow-400" />;
+    case "video/mp4":
+      return <FileVideo className="text-violet-400" />;
 
     default:
       <TbFileUnknown className="text-gray-400" />;
@@ -85,6 +87,10 @@ function bytesToMB(bytes: number, decimals: number = 2): string {
   const mb = bytes / (1024 * 1024);
   return `${mb.toFixed(decimals)} MB`;
 }
+const formatDate = (date: string): string => {
+  const result = date.slice(0, 10);
+  return result;
+};
 
 export {
   returnIconSpeaker,
@@ -92,4 +98,5 @@ export {
   convertirDuree,
   bytesToMB,
   returnTypeIcon,
+  formatDate,
 };
