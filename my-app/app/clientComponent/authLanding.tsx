@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import React from "react";
 import { useState } from "react";
-export default function authLanding() {
+export default function AuthLanding() {
   const [count, setCount] = useState(0);
 
   return (

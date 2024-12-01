@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { loginWithGoogle } from "../login/auth";
 import logo from "../../public/logo.jpg";
-export default function navBar() {
+export default function NavBar() {
   const router = useRouter();
   return (
     <div className="fixed top-0  w-full flex justify-between p-5 bg-gray-50 ">

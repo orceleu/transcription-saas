@@ -24,7 +24,7 @@ interface ChildProps {
   text: string;
   textColor: string;
 }
-const authButton: React.FC<ChildProps> = ({ buttonColor, text, textColor }) => {
+const AuthButton: React.FC<ChildProps> = ({ buttonColor, text, textColor }) => {
   const router = useRouter();
   const { toast } = useToast();
   const [email, setEmail] = useState("");
@@ -154,4 +154,4 @@ const authButton: React.FC<ChildProps> = ({ buttonColor, text, textColor }) => {
     </div>
   );
 };
-export default authButton;
+export default AuthButton;
