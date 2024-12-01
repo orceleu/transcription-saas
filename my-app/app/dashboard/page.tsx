@@ -2207,7 +2207,6 @@ export default function Dashboard() {
             >
               <DialogTrigger asChild>
                 <Button variant="outline">
-                  {" "}
                   <Infinity />
                   add credits
                 </Button>

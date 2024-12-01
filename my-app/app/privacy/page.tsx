@@ -1,5 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
+import dynamic from "next/dynamic";
+import { LoaderIcon } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Privacy",
@@ -13,6 +15,19 @@ export const metadata: Metadata = {
     ],
   },
 };
+const ClientComponent = dynamic(
+  () => import("../clientComponent/authLanding"),
+  {
+    ssr: false,
+    loading: () => <LoaderIcon className="animate-spin" />,
+  }
+);
 export default function Privacy() {
-  return <div>privacy</div>;
+  return (
+    <>
+      <p>privacy</p>
+      <br />
+      <ClientComponent />
+    </>
+  );
 }

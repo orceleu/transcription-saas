@@ -1,27 +1,13 @@
-"use client";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import capturetranscriptionapp from "../public/capture1.jpg";
-import {
-  createUserWithEmailAndPassword,
-  GoogleAuthProvider,
-  signInWithPopup,
-  signOut,
-  onAuthStateChanged,
-  User,
-} from "firebase/auth";
 import {
   FcGoogle,
   FcNegativeDynamic,
   FcSoundRecordingCopyright,
 } from "react-icons/fc";
-import { auth } from "@/app/firebase/config";
-import { useEffect, useState } from "react";
 import { IoCloudUpload } from "react-icons/io5";
-import { AiOutlineSelect, AiOutlineTranslation } from "react-icons/ai";
-import { SiConvertio, SiQuicktime } from "react-icons/si";
-import { MdDoNotDisturb } from "react-icons/md";
+import { AiOutlineTranslation } from "react-icons/ai";
 import {
   Dialog,
   DialogContent,
@@ -58,20 +44,6 @@ import { SelectIcon } from "@radix-ui/react-select";
 
 import { Cloud, CreditCard } from "lucide-react";
 import detailAnalysis from "../public/undraw_detailed_analysis_re_tk6j.svg";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import {
@@ -79,11 +51,6 @@ import {
   LightningBoltIcon,
   StarFilledIcon,
 } from "@radix-ui/react-icons";
-
-import { loginWithGoogle } from "./login/auth";
-import { FaStamp, FaToolbox } from "react-icons/fa6";
-import { account, ID } from "./appwrite/appwrite";
-import { useToast } from "@/hooks/use-toast";
 import {
   Accordion,
   AccordionContent,
@@ -91,144 +58,19 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import logo from "../public/logo.jpg";
+import dynamic from "next/dynamic";
 export default function Home() {
-  const router = useRouter();
-  const { toast } = useToast();
-  const [user, setUser] = useState<User | null>(null);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [repassword, setRePassword] = useState("");
-  const [name, setName] = useState("");
-  const [isLoginLoading, setIsLoginLoading] = useState(false);
-
-  const login = async (email: string, password: string) => {
-    try {
-      const session = await account.createEmailPasswordSession(email, password);
-      console.log(session);
-      if (session.providerUid) {
-        router.push("/dashboard");
-      }
-    } catch (error) {
-      setIsLoginLoading(false);
-      toast({
-        variant: "destructive",
-        title: `${error}`,
-      });
-    }
-  };
-  const register = async (email: string, password: string, name: string) => {
-    let uid = ID.unique();
-    try {
-      const result = await account.create(uid, email, password, name);
-      console.log(result.$createdAt);
-
-      //add userAccount detail
-      //addUserAccount(uid);
-      await login(email, password);
-    } catch (error) {
-      setIsLoginLoading(false);
-      toast({
-        variant: "destructive",
-        title: `${error}`,
-      });
-    }
-  };
-  const handleSubmitRegister = (e: any) => {
-    e.preventDefault();
-    if (password == repassword) {
-      setIsLoginLoading(true);
-      register(email, password, ID.unique());
-    } else {
-      toast({
-        variant: "destructive",
-        title: "password must be identique",
-      });
-    }
-  };
+  const NavBar = dynamic(() => import("./clientComponent/navBar"), {
+    ssr: false,
+  });
+  const AuthButton = dynamic(() => import("./clientComponent/authButton"), {
+    ssr: false,
+    loading: () => <LoaderIcon className="animate-spin" />,
+  });
 
   return (
     <main>
-      <div className="fixed top-0  w-full flex justify-between p-5 bg-gray-50 ">
-        <div className="flex items-center gap-3">
-          <Image
-            src={logo}
-            alt="logo"
-            title="Logo"
-            className="size-[40px] md:size-[50px] rounded-full"
-          />
-
-          <p className="text-xl font-semibold">AudiScribe</p>
-        </div>
-
-        <div className="hidden lg:flex items-center gap-5">
-          <Button variant="link">Home</Button>
-          <a href="#pricing" className="hover:underline">
-            Pricing
-          </a>
-          <a href="#blog" className="hover:underline">
-            Blog
-          </a>
-          <Button
-            onClick={loginWithGoogle}
-            className="bg-amber-700 hover:bg-amber-600"
-          >
-            Login
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => {
-              router.push("/login");
-            }}
-          >
-            Sign up
-          </Button>
-        </div>
-        <div className="lg:hidden flex items-center gap-5">
-          <Button
-            className="bg-amber-700 hover:bg-amber-600"
-            onClick={() => {
-              router.push("/login");
-            }}
-          >
-            Login
-          </Button>{" "}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="text-3xl ">
-                <MoreHorizontal />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>More</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem
-                  onClick={() => {
-                    router.push("/login");
-                  }}
-                >
-                  <UserIcon className="mr-2 h-4 w-4" />
-                  <span>Sign up</span>
-                  <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <CreditCard className="mr-2 h-4 w-4" />
-                  <a href="#pricing" className="hover:underline">
-                    Pricing
-                  </a>
-                  <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <TextIcon className="mr-2 h-4 w-4" />
-                  <span>Blog</span>
-                  <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
+      <NavBar />
       <div className="flex justify-center">
         <div className=" max-w-[1400px]">
           <div className=" flex min-h-screen flex-col items-center justify-between p-5 md:p-24">
@@ -381,83 +223,12 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <Button
-              size="lg"
-              className="w-full my-5 md:mt-[100px] bg-amber-700 hover:bg-amber-600"
-              onClick={loginWithGoogle}
-            >
-              <FcGoogle className="mx-3 " />
-              start transcribing for free
-            </Button>
-            <p className="text-center text-gray-400">___Or___</p>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="link" className="text-gray-600 font-bold">
-                  Start with email and password
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Get started </DialogTitle>
-                  <DialogDescription>
-                    Get started with email and password
-                  </DialogDescription>
-                </DialogHeader>
-
-                <form className=" space-y-4" onSubmit={handleSubmitRegister}>
-                  {" "}
-                  <div className="p-2">
-                    <label className="block text-sm font-medium mb-1">
-                      Email
-                    </label>
-                    <Input
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full"
-                      required
-                    />
-                  </div>
-                  <div className="p-2">
-                    <label className="block text-sm font-medium mb-1">
-                      Password
-                    </label>
-                    <Input
-                      type="password"
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full"
-                      required
-                    />
-                  </div>
-                  <div className="p-2">
-                    <label className="block text-sm font-medium mb-1">
-                      Re-type Password
-                    </label>
-                    <Input
-                      type="password"
-                      placeholder="Re-type your password"
-                      value={repassword}
-                      onChange={(e) => setRePassword(e.target.value)}
-                      className="w-full"
-                      required
-                    />
-                  </div>
-                  <Button type="submit" className="w-full mt-4">
-                    {isLoginLoading ? (
-                      <>
-                        <LoaderIcon className="animate-spin" />
-                      </>
-                    ) : (
-                      <p>Register</p>
-                    )}
-                  </Button>
-                </form>
-              </DialogContent>
-            </Dialog>
-            <p className="my-2 text-center text-gray-400">
+            <AuthButton
+              buttonColor="#b45309"
+              text="Start transcribing for free."
+              textColor="#ffffff"
+            />
+            <p className="my-2 text-center text-gray-500">
               20mn transcription for free --- No CreditCard required
             </p>
             <div className="grid gap-5 md:gap-10 my-[80px]">
@@ -630,92 +401,11 @@ export default function Home() {
                     <div className="grid gap-2 ">
                       <div className="flex justify-center mt-10">
                         <div className="grid gap-2">
-                          <Button
-                            variant="outline"
-                            size="lg"
-                            className="font-bold"
-                            onClick={loginWithGoogle}
-                          >
-                            <FcGoogle className="mx-3 " /> Get started
-                          </Button>
-                          <p className="text-center text-gray-200">___Or___</p>
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button
-                                variant="link"
-                                className="text-gray-200 font-bold"
-                              >
-                                Start with email and password
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-[425px]">
-                              <DialogHeader>
-                                <DialogTitle>Get started </DialogTitle>
-                                <DialogDescription>
-                                  Get started with email and password
-                                </DialogDescription>
-                              </DialogHeader>
-
-                              <form
-                                className=" space-y-4"
-                                onSubmit={handleSubmitRegister}
-                              >
-                                {" "}
-                                <div className="p-2">
-                                  <label className="block text-sm font-medium mb-1">
-                                    Email
-                                  </label>
-                                  <Input
-                                    type="email"
-                                    placeholder="Enter your email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full"
-                                    required
-                                  />
-                                </div>
-                                <div className="p-2">
-                                  <label className="block text-sm font-medium mb-1">
-                                    Mot de passe
-                                  </label>
-                                  <Input
-                                    type="password"
-                                    placeholder="Enter your password"
-                                    value={password}
-                                    onChange={(e) =>
-                                      setPassword(e.target.value)
-                                    }
-                                    className="w-full"
-                                    required
-                                  />
-                                </div>
-                                <div className="p-2">
-                                  <label className="block text-sm font-medium mb-1">
-                                    Re-type Password
-                                  </label>
-                                  <Input
-                                    type="password"
-                                    placeholder="Re-type your password"
-                                    value={repassword}
-                                    onChange={(e) =>
-                                      setRePassword(e.target.value)
-                                    }
-                                    className="w-full"
-                                    required
-                                  />
-                                </div>
-                                <Button type="submit" className="w-full mt-4">
-                                  {isLoginLoading ? (
-                                    <>
-                                      <LoaderIcon className="animate-spin" />
-                                    </>
-                                  ) : (
-                                    <p>Register</p>
-                                  )}
-                                </Button>
-                              </form>
-                            </DialogContent>
-                          </Dialog>
+                          <AuthButton
+                            buttonColor="#ffffff"
+                            text="Start with Google."
+                            textColor="#000000"
+                          />
                         </div>
                       </div>
                     </div>
