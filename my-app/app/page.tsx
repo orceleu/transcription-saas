@@ -46,6 +46,7 @@ import {
 } from "@/components/ui/accordion";
 import logo from "../public/logo.jpg";
 import dynamic from "next/dynamic";
+import { EMAIL_ADDRESS } from "./constKey/key";
 export default function Home() {
   const NavBar = dynamic(() => import("./clientComponent/navBar"), {
     ssr: false,
@@ -701,61 +702,64 @@ export default function Home() {
         <div className="grid gap-3">
           <p className="text-center text-white text-2xl font-bold">Tools</p>
           <Separator className="my-5" />
-          <Button variant="link" className="text-white">
+          <a
+            title=" Audio & video to text converter"
+            href="/"
+            className="text-white text-center"
+          >
             {" "}
-            Audio to text converter
-          </Button>
-          <Button variant="link" className="text-white">
-            {" "}
-            Video to text converter
-          </Button>
-          <Button variant="link" className="text-white">
-            {" "}
-            Speech to text converter
-          </Button>
-          <Button variant="link" className="text-white">
+            Audio & video to text converter
+          </a>
+
+          <a title="Ai translation" href="/" className="text-white text-center">
             Ai translation
-          </Button>
-          <Button variant="link" className="text-white">
+          </a>
+          <a
+            title="Audio to PDF converter"
+            href="/"
+            className="text-white text-center"
+          >
             {" "}
             Audio to PDF converter
-          </Button>
+          </a>
         </div>
         <div className="grid gap-3">
           <p className="text-center text-white text-2xl font-bold ">Company</p>
           <Separator className="my-5" />
 
-          <Button variant="link" className="text-white">
+          <a title="about" href="/about" className="text-white text-center">
             about
-          </Button>
-          <Button variant="link" className="text-white">
-            Blog
-          </Button>
-          <Button variant="link" className="text-white">
-            review
-          </Button>
-          <Button variant="link" className="text-white">
+          </a>
+
+          <a
+            title="contact"
+            href={`mailto:${EMAIL_ADDRESS}`}
+            className="text-white text-center"
+          >
             contact
-          </Button>
-          <Button variant="link" className="text-white">
-            terms
-          </Button>
+          </a>
+
+          <a
+            title="privacy policy"
+            className="text-white text-center"
+            href="/privacy"
+          >
+            privacy
+          </a>
         </div>
         <div className="grid gap-3">
           <p className="text-center text-white text-2xl font-bold ">Product</p>
           <Separator className="my-5" />
-          <Button variant="link" className="text-white">
+          <a title="Feature" href="/" className="text-white text-center">
             Feature
-          </Button>
-          <Button variant="link" className="text-white">
-            pricing
-          </Button>
-          <Button variant="link" className="text-white">
+          </a>
+
+          <a title="Accuracy" href="/" className="text-white text-center">
             accuracy
-          </Button>
-          <Button variant="link" className="text-white">
+          </a>
+          <a title="Language" href="/" className="text-white text-center">
             Language
-          </Button>
+          </a>
         </div>
       </div>
     </main>
