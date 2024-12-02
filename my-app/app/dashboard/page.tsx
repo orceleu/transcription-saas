@@ -1459,6 +1459,7 @@ export default function Dashboard() {
                     ))}
                   </div>
                   <Button
+                    className="bg-blue-600 hover:bg-blue-500"
                     onClick={() => {
                       if (userEmail !== null && userEmail !== "") {
                         setAddButtonPlan(true);
@@ -1797,7 +1798,7 @@ export default function Dashboard() {
                       }}
                     >
                       <div className="flex justify-between gap-2">
-                        <strong className="text-amber-600" key={index + 1}>
+                        <strong className="text-blue-600" key={index + 1}>
                           {data.associedFileName}
                         </strong>
                         {returnTypeIcon(data.type)}
@@ -1829,7 +1830,7 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="flex justify-center">
-                  <ImFilesEmpty className="mt-10 text-amber-300" size={60} />
+                  <ImFilesEmpty className="mt-10 text-blue-300" size={60} />
                 </div>
               )}
             </TabsContent>
@@ -1842,7 +1843,7 @@ export default function Dashboard() {
             <div className="w-full mx-3 mt-5">
               <div className="grid gap-5">
                 <div className="flex justify-between p-12">
-                  <p className="text-3xl font-bold underline  text-amber-500 text-center ">
+                  <p className="text-3xl font-bold underline  text-blue-600 text-center ">
                     AudiScribe
                   </p>
                   <div>
@@ -1919,7 +1920,7 @@ export default function Dashboard() {
                           ) : (
                             <>
                               <Button
-                                className="bg-white hover:bg-amber-100"
+                                className="bg-white hover:bg-blue-100"
                                 variant="ghost"
                                 onClick={() => {
                                   setYoutubeUrl("");
@@ -1940,7 +1941,7 @@ export default function Dashboard() {
                   <div className="m-4">
                     <p className=" ml-4  text-gray-600">
                       Language:(
-                      <span className="text-amber-500">
+                      <span className="text-blue-600">
                         {textLanguageDetected}
                       </span>
                       )
@@ -1960,7 +1961,7 @@ export default function Dashboard() {
                       </div>
                       <div className="flex items-center gap-5 ">
                         <Button variant="outline" onClick={handleCopy}>
-                          <CopyIcon className="text-amber-500" />
+                          <CopyIcon className="text-blue-600" />
                         </Button>
 
                         <Input
@@ -2240,6 +2241,7 @@ export default function Dashboard() {
                   ))}
                 </div>
                 <Button
+                  className="bg-blue-600 hover:bg-blue-500"
                   onClick={() => {
                     if (userEmail !== null && userEmail !== "") {
                       setAddButtonPlan(true);
@@ -2323,7 +2325,7 @@ export default function Dashboard() {
                       ) : (
                         <>
                           <Button
-                            className="bg-white hover:bg-amber-100"
+                            className="bg-white hover:bg-blue-100"
                             variant="ghost"
                             onClick={() => {
                               setYoutubeUrl("");
@@ -2585,7 +2587,7 @@ export default function Dashboard() {
                               >
                                 <DrawerTrigger asChild>
                                   <Button variant="outline">
-                                    <FaFileExport className="text-amber-500" />
+                                    <FaFileExport className="text-blue-600" />
                                   </Button>
                                 </DrawerTrigger>
                                 <DrawerContent>
@@ -2738,7 +2740,7 @@ export default function Dashboard() {
                                   >
                                     <div className="flex justify-between gap-1">
                                       <strong
-                                        className="text-amber-600"
+                                        className="text-blue-600"
                                         key={index + 1}
                                       >
                                         {data.associedFileName}
@@ -2780,7 +2782,7 @@ export default function Dashboard() {
                             ) : (
                               <div className="flex justify-center">
                                 <ImFilesEmpty
-                                  className="mt-10 text-amber-300"
+                                  className="mt-10 text-blue-300"
                                   size={60}
                                 />
                               </div>
@@ -2797,8 +2799,7 @@ export default function Dashboard() {
               <div className="m-1">
                 <p className="text-[10px] mb-3 text-gray-600">
                   Language:(
-                  <span className="text-amber-500">{textLanguageDetected}</span>
-                  )
+                  <span className="text-blue-600">{textLanguageDetected}</span>)
                 </p>
                 <div>
                   <div className="mb-4">
@@ -2815,7 +2816,7 @@ export default function Dashboard() {
 
                   <div className="flex items-center gap-5 ">
                     <Button variant="outline" onClick={handleCopy}>
-                      <CopyIcon className="text-amber-500" />
+                      <CopyIcon className="text-bluer-600" />
                     </Button>
 
                     <Input
@@ -2829,7 +2830,7 @@ export default function Dashboard() {
                     >
                       <DrawerTrigger asChild>
                         <Button variant="outline">
-                          <FaFileExport className="text-amber-500" />
+                          <FaFileExport className="text-blue-600" />
                         </Button>
                       </DrawerTrigger>
                       <DrawerContent>
@@ -2974,7 +2975,7 @@ export default function Dashboard() {
                               <p
                                 className={`cursor-pointer ${
                                   currentSubtitle === sub
-                                    ? "bg-amber-100 rounded-xl "
+                                    ? "bg-blue-100 rounded-xl "
                                     : ""
                                 }`}
                                 onClick={() => handleSubtitleClick(sub.start)}

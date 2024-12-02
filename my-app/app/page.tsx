@@ -105,25 +105,27 @@ export default function Home() {
                 </h2>
               </div>
             </div>
-            <div className=" grid gap-5 md:grid-cols-2 w-full  my-10 p-5 max-w-[900px] bg-gray-50 rounded-md">
-              <p className="text-center">
-                <span className="text-2xl">🎯</span> Accuracy 98%
-              </p>
-              <p className="text-center">
-                <span className="text-2xl">🌍</span>100+ languages
-              </p>
-              <p className="text-center">
-                <span className="text-2xl">🤯</span>upload 10hours
-              </p>
-              <p className="text-center">
-                <span className="text-2xl">👥</span>speaker recognition
-              </p>
-              <p className="text-center">
-                <span className="text-2xl">🔒</span> private and secure
-              </p>
-              <p className="text-center">
-                <span className="text-2xl">📝</span> edit and export
-              </p>
+            <div className="relative w-full p-1 my-10 rounded-lg bg-gradient-to-r from-purple-500 via-purple-300 to-transparent">
+              <div className=" grid gap-5 md:grid-cols-2 w-full   p-5 max-w-[900px] bg-gray-50 rounded-md">
+                <p className="text-center">
+                  <span className="text-2xl">🎯</span> Accuracy 98%
+                </p>
+                <p className="text-center">
+                  <span className="text-2xl">🌍</span>100+ languages
+                </p>
+                <p className="text-center">
+                  <span className="text-2xl">🤯</span>upload 10hours
+                </p>
+                <p className="text-center">
+                  <span className="text-2xl">👥</span>speaker recognition
+                </p>
+                <p className="text-center">
+                  <span className="text-2xl">🔒</span> private and secure
+                </p>
+                <p className="text-center">
+                  <span className="text-2xl">📝</span> edit and export
+                </p>
+              </div>
             </div>
             <div className="relative z-[-1] flex place-items-center before:absolute before:h-[500px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-violet-100 after:via-blue-300 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-blue-900 after:dark:via-[#6201ff] after:dark:opacity-40 sm:before:w-[580px] sm:after:w-[340px] before:lg:h-[460px]"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 md:mt-[40px] gap-3">

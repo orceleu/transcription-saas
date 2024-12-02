@@ -145,7 +145,10 @@ const AuthButton: React.FC<ChildProps> = ({
                 required
               />
             </div>
-            <Button type="submit" className="w-full mt-4">
+            <Button
+              type="submit"
+              className="w-full mt-4 bg-blue-600 hover:bg-blue-500"
+            >
               {isLoginLoading ? (
                 <>
                   <LoaderIcon className="animate-spin" />
