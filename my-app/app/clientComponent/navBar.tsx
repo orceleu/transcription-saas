@@ -45,7 +45,7 @@ export default function NavBar() {
         </a>
         <Button
           onClick={loginWithGoogle}
-          className="bg-amber-700 hover:bg-amber-600"
+          className="bg-blue-600 hover:bg-blue-500"
         >
           Login
         </Button>
@@ -60,7 +60,7 @@ export default function NavBar() {
       </div>
       <div className="lg:hidden flex items-center gap-5">
         <Button
-          className="bg-amber-700 hover:bg-amber-600"
+          className="bg-blue-600 hover:bg-blue-500"
           onClick={() => {
             router.push("/login");
           }}

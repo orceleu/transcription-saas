@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     "transcribe any audio or video with 98% accuracy to text in few second,upload your audio/video & transcription start automatically.",
   openGraph: {
     description:
-      "transcribe any audio or video with 98% accuracy in text in few second,upload your audio/video & transcription start automatically.",
+      "transcribe any audio or video with 98% accuracy to text in few second,upload your audio/video & transcription start automatically.",
     siteName: "AudiScribe ",
     type: "website",
     images: [

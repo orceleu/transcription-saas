@@ -67,7 +67,7 @@ export default function Home() {
               <br />
               <br />
               <h1 className="text-4xl md:text-6xl text-center font-bold">
-                <span className="text-amber-700">Audio & video</span>{" "}
+                <span className="text-blue-600">Audio & video</span>{" "}
                 <a
                   title="go to openAI speech-to-text."
                   href="https://platform.openai.com/docs/guides/speech-to-text"
@@ -80,15 +80,15 @@ export default function Home() {
 
               <div className="flex justify-center">
                 <h2 className="text-center lg:text-xl text-gray-600 max-w-[700px] my-10">
-                  <span className="text-violet-900 font-bold mx-2 underline">
+                  <span className="text-violet-600 font-bold mx-2 underline">
                     Fast
                   </span>
                   ,
-                  <span className="text-violet-900 font-bold mx-2 underline">
+                  <span className="text-violet-600 font-bold mx-2 underline">
                     safe
                   </span>
                   ,and
-                  <span className="text-violet-900 font-bold mx-2 underline">
+                  <span className="text-violet-600 font-bold mx-2 underline">
                     accurate
                   </span>
                   . For any language or dialect, no matter the clarity of the
@@ -125,9 +125,9 @@ export default function Home() {
                 <span className="text-2xl">📝</span> edit and export
               </p>
             </div>
-            <div className="relative z-[-1] flex place-items-center before:absolute before:h-[500px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-amber-100 after:via-amber-300 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-amber-700 before:dark:opacity-10 after:dark:from-amber-900 after:dark:via-[#ffaf01] after:dark:opacity-40 sm:before:w-[580px] sm:after:w-[340px] before:lg:h-[460px]"></div>
+            <div className="relative z-[-1] flex place-items-center before:absolute before:h-[500px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-violet-100 after:via-blue-300 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-blue-900 after:dark:via-[#6201ff] after:dark:opacity-40 sm:before:w-[580px] sm:after:w-[340px] before:lg:h-[460px]"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 md:mt-[40px] gap-3">
-              <div className="w-full md:w-[500px]  shadow-md shadow-amber-200 rounded-md p-2">
+              <div className="w-full md:w-[500px]  shadow-md shadow-blue-200 rounded-md p-2">
                 <div className="grid gap-2 my-10 p-5 rounded-md border-black border-[1px]">
                   <p className="text-center my-4">
                     Upload file to transcribe them
@@ -147,7 +147,7 @@ export default function Home() {
 
               <div className="grid gap-2 ">
                 <p className="text-center text-3xl mt-16 md:mt-0  font-bold ">
-                  Perfect <span className="text-amber-700">for</span>
+                  Perfect <span className="text-blue-600">for</span>
                 </p>
 
                 <div className="flex items-center gap-3">
@@ -162,7 +162,7 @@ export default function Home() {
                           href="https://www.chatpdf.com"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-violet-700 underline"
+                          className="text-violet-600 underline"
                         >
                           chatPDF
                         </a>{" "}
@@ -172,7 +172,7 @@ export default function Home() {
                           href="https://www.docuask.ai"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-violet-700 underline mx-1"
+                          className="text-violet-600 underline mx-1"
                         >
                           docuAsk
                         </a>
@@ -215,7 +215,7 @@ export default function Home() {
               </div>
             </div>
             <AuthButton
-              buttonColor="#b45309"
+              buttonColor="#3b82f6"
               text="Start transcribing for free."
               textColor="#ffffff"
               textColor2="#4b5563"
@@ -298,7 +298,7 @@ export default function Home() {
             </p>
             <p className="text-gray-400 my-5 text-center lg:text-xl">
               No installation needed,access on{" "}
-              <span className="text-amber-700 underline font-bold">
+              <span className="text-blue-600 underline font-bold">
                 Any device.
               </span>
             </p>
@@ -313,7 +313,7 @@ export default function Home() {
               title="User-friendly interface."
               src={capturetranscriptionapp}
               sizes="500"
-              className="rounded-md shadow-md shadow-amber-300"
+              className="rounded-md shadow-md shadow-blue-300"
             />
             <Separator className="my-[100px]" />
             <div className="grid gap-5 grid-cols-1 lg:grid-cols-2">
@@ -332,7 +332,7 @@ export default function Home() {
                 </p>{" "}
                 <div className="flex justify-center w-full  h-[150px]">
                   <div className="grid grid-cols-3 gap-2 w-full">
-                    <div className="w-full lg:w-[150px] hover:bg-gray-200 h-[80px] bg-gray-100 rounded-lg border-amber-600 border-[2px]">
+                    <div className="w-full lg:w-[150px] hover:bg-gray-200 h-[80px] bg-gray-100 rounded-lg border-violet-600 border-[2px]">
                       <div className="flex justify-center p-2">
                         <div className="grid gap-1">
                           <strong>Free</strong>
@@ -396,7 +396,7 @@ export default function Home() {
                 </div>
               </div>
               <div className="grid gap-3 lg:mt-[300px]">
-                <div className="w-full p-10 my-[100px]  md:mt-[60px]  max-w-[700px] bg-amber-700 rounded-md">
+                <div className="w-full p-10 my-[100px]  md:mt-[60px]  max-w-[700px] bg-violet-700 rounded-md">
                   <p className="text-center text-3xl text-white my-2">
                     Try Audiscribe Free
                   </p>
@@ -548,7 +548,7 @@ export default function Home() {
             </p>
             <Separator className="my-10" />
             <div className="grid lg:grid-cols-2  gap-5 lg:gap-10 ">
-              <div className="bg-white border-[2px] border-gray-100 rounded-md w-full p-5 md:p-10">
+              <div className="bg-white border-[2px] border-blue-100 rounded-md w-full p-5 md:p-10">
                 <div className="flex justify-between my-3 ">
                   <p className=" text-xl font-semibold">Good.</p>
                   <div className="flex items-center gap-2">
@@ -566,7 +566,7 @@ export default function Home() {
                   app like this .Also i like the fact there is no subscription.
                 </p>
               </div>
-              <div className="bg-white border-[2px] border-gray-100 rounded-md w-full p-5 md:p-10">
+              <div className="bg-white border-[2px] border-blue-100 rounded-md w-full p-5 md:p-10">
                 <div className="flex justify-between my-3 ">
                   <p className=" text-xl font-semibold">Indispensable.</p>
                   <div className="flex items-center gap-2">
@@ -586,7 +586,7 @@ export default function Home() {
                   A must-have for anyone looking to optimize their productivity!
                 </p>
               </div>{" "}
-              <div className="bg-white border-[2px] border-gray-100 rounded-md w-full p-5 md:p-10">
+              <div className="bg-white border-[2px] border-blue-100 rounded-md w-full p-5 md:p-10">
                 <div className="flex justify-between my-3 ">
                   <p className=" text-xl font-semibold">Great.</p>
                   <div className="flex items-center gap-2">
@@ -601,7 +601,7 @@ export default function Home() {
 
                 <p>GREAT. FAST ACCURATE REASONABLE PRICE</p>
               </div>{" "}
-              <div className="bg-white border-[2px] border-gray-100 rounded-md w-full p-5 md:p-10">
+              <div className="bg-white border-[2px] border-blue-100 rounded-md w-full p-5 md:p-10">
                 <div className="flex justify-between my-3 ">
                   <p className=" text-xl font-semibold">Simple.</p>
                   <div className="flex items-center gap-2">
