@@ -1,21 +1,8 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import capturetranscriptionapp from "../public/capture1.jpg";
-import {
-  FcGoogle,
-  FcNegativeDynamic,
-  FcSoundRecordingCopyright,
-} from "react-icons/fc";
 import { IoCloudUpload } from "react-icons/io5";
 import { AiOutlineTranslation } from "react-icons/ai";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import {
   ArrowBigDown,
   ArrowDownNarrowWide,
@@ -81,6 +68,7 @@ export default function Home() {
               <h1 className="text-4xl md:text-6xl text-center font-bold">
                 <span className="text-amber-700">Audio & video</span>{" "}
                 <a
+                  title="go to openAI speech-to-text."
                   href="https://platform.openai.com/docs/guides/speech-to-text"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -169,6 +157,7 @@ export default function Home() {
                         Convert audio/video in PDF and you can use it in other
                         AI tools like{" "}
                         <a
+                          title="go to chatPdf."
                           href="https://www.chatpdf.com"
                           target="_blank"
                           rel="noopener noreferrer"
@@ -178,10 +167,11 @@ export default function Home() {
                         </a>{" "}
                         or
                         <a
+                          title="go to docuAsk AI."
                           href="https://www.docuask.ai"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-violet-700 underline"
+                          className="text-violet-700 underline mx-1"
                         >
                           docuAsk
                         </a>
@@ -227,6 +217,7 @@ export default function Home() {
               buttonColor="#b45309"
               text="Start transcribing for free."
               textColor="#ffffff"
+              textColor2="#4b5563"
             />
             <p className="my-2 text-center text-gray-500">
               20mn transcription for free --- No CreditCard required
@@ -356,7 +347,10 @@ export default function Home() {
                         </div>
                       </div>
                     </div>
-                    <div className="w-full lg:w-[150px] h-[80px] bg-gray-100 hover:bg-gray-200 rounded-lg border-gray-400 border-[2px]">
+                    <div className=" relative w-full lg:w-[150px] h-[80px] bg-gray-100 hover:bg-gray-200 rounded-lg border-gray-400 border-[2px]">
+                      <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md">
+                        -10%
+                      </div>
                       <div className="flex justify-center p-2">
                         <div className="grid gap-1">
                           <strong>10$</strong>
@@ -364,7 +358,10 @@ export default function Home() {
                         </div>
                       </div>
                     </div>{" "}
-                    <div className="w-full lg:w-[150px] h-[80px] bg-gray-100 hover:bg-gray-200 rounded-lg border-gray-400 border-[2px]">
+                    <div className="relative w-full lg:w-[150px] h-[80px] bg-gray-100 hover:bg-gray-200 rounded-lg border-gray-400 border-[2px]">
+                      <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md">
+                        -20%
+                      </div>
                       <div className="flex justify-center p-2">
                         <div className="grid gap-1">
                           <strong>15$</strong>
@@ -372,7 +369,10 @@ export default function Home() {
                         </div>
                       </div>
                     </div>{" "}
-                    <div className="w-full lg:w-[150px] h-[80px] bg-gray-100 hover:bg-gray-200 rounded-lg border-gray-400 border-[2px]">
+                    <div className="relative w-full lg:w-[150px] h-[80px] bg-gray-100 hover:bg-gray-200 rounded-lg border-gray-400 border-[2px]">
+                      <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md">
+                        -25%
+                      </div>
                       <div className="flex justify-center p-2">
                         <div className="grid gap-1">
                           <strong>25$</strong>
@@ -380,7 +380,10 @@ export default function Home() {
                         </div>
                       </div>
                     </div>{" "}
-                    <div className="w-full lg:w-[150px] h-[80px] bg-gray-100 hover:bg-gray-200 rounded-lg border-gray-400 border-[2px]">
+                    <div className="relative w-full lg:w-[150px] h-[80px] bg-gray-100 hover:bg-gray-200 rounded-lg border-gray-400 border-[2px]">
+                      <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md">
+                        -30%
+                      </div>
                       <div className="flex justify-center p-2">
                         <div className="grid gap-1">
                           <strong>35$</strong>
@@ -405,6 +408,7 @@ export default function Home() {
                             buttonColor="#ffffff"
                             text="Start with Google."
                             textColor="#000000"
+                            textColor2="#e5e7eb"
                           />
                         </div>
                       </div>
@@ -543,7 +547,7 @@ export default function Home() {
             </p>
             <Separator className="my-10" />
             <div className="grid lg:grid-cols-2  gap-5 lg:gap-10 ">
-              <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
+              <div className="bg-white border-[2px] border-gray-100 rounded-md w-full p-5 md:p-10">
                 <div className="flex justify-between my-3 ">
                   <p className=" text-xl font-semibold">Good.</p>
                   <div className="flex items-center gap-2">
@@ -561,7 +565,7 @@ export default function Home() {
                   app like this .Also i like the fact there is no subscription.
                 </p>
               </div>
-              <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
+              <div className="bg-white border-[2px] border-gray-100 rounded-md w-full p-5 md:p-10">
                 <div className="flex justify-between my-3 ">
                   <p className=" text-xl font-semibold">Indispensable.</p>
                   <div className="flex items-center gap-2">
@@ -581,7 +585,7 @@ export default function Home() {
                   A must-have for anyone looking to optimize their productivity!
                 </p>
               </div>{" "}
-              <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
+              <div className="bg-white border-[2px] border-gray-100 rounded-md w-full p-5 md:p-10">
                 <div className="flex justify-between my-3 ">
                   <p className=" text-xl font-semibold">Great.</p>
                   <div className="flex items-center gap-2">
@@ -596,7 +600,7 @@ export default function Home() {
 
                 <p>GREAT. FAST ACCURATE REASONABLE PRICE</p>
               </div>{" "}
-              <div className="bg-white shadow-md rounded-md w-full p-5 md:p-10">
+              <div className="bg-white border-[2px] border-gray-100 rounded-md w-full p-5 md:p-10">
                 <div className="flex justify-between my-3 ">
                   <p className=" text-xl font-semibold">Simple.</p>
                   <div className="flex items-center gap-2">
@@ -627,13 +631,14 @@ export default function Home() {
                 <AccordionContent className=" lg:text-xl text-gray-600">
                   Audiscribe is an{" "}
                   <a
+                    title="go to wikipedia."
                     href="https://en.wikipedia.org/wiki/Transcription_(linguistics)"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="underline"
+                    className="underline mx-2"
                   >
                     audio-to-text transcription
-                  </a>{" "}
+                  </a>
                   platform designed to automatically convert audio or video
                   files into text. Using advanced speech recognition algorithms,
                   Audiscribe enables users to easily turn interviews, lectures,

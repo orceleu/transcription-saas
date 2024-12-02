@@ -23,7 +23,7 @@ import logo from "../../public/logo.jpg";
 export default function NavBar() {
   const router = useRouter();
   return (
-    <div className="fixed top-0  w-full flex justify-between p-5 bg-gray-50 ">
+    <div className="fixed top-0 shadow-sm  w-full flex justify-between p-5 bg-gray-50 z-50">
       <div className="flex items-center gap-3">
         <Image
           src={logo}

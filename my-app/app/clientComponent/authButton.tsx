@@ -23,8 +23,14 @@ interface ChildProps {
   buttonColor: string;
   text: string;
   textColor: string;
+  textColor2: string;
 }
-const AuthButton: React.FC<ChildProps> = ({ buttonColor, text, textColor }) => {
+const AuthButton: React.FC<ChildProps> = ({
+  buttonColor,
+  text,
+  textColor,
+  textColor2,
+}) => {
   const router = useRouter();
   const { toast } = useToast();
   const [email, setEmail] = useState("");
@@ -80,7 +86,7 @@ const AuthButton: React.FC<ChildProps> = ({ buttonColor, text, textColor }) => {
       {" "}
       <Button
         size="lg"
-        className="w-full my-5 md:mt-[100px]  hover:bg-amber-500"
+        className="w-full my-5 md:mt-[100px]"
         onClick={loginWithGoogle}
         style={{ background: buttonColor }}
       >
@@ -91,7 +97,7 @@ const AuthButton: React.FC<ChildProps> = ({ buttonColor, text, textColor }) => {
       <Dialog>
         <DialogTrigger asChild>
           <Button variant="link" className="text-gray-600 font-bold">
-            Start with email and password
+            <p style={{ color: textColor2 }}> Start with email and password</p>
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
