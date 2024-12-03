@@ -97,7 +97,7 @@ const LoginPage = () => {
             />{" "}
           </div>
 
-          <p className="text-2xl text-amber-500 text-center ">Audiscribe AI</p>
+          <p className="text-2xl text-gray-500 text-center ">Audiscribe AI</p>
         </div>
       </div>
       <div className="flex items-center justify-center min-h-screen  p-5">

@@ -51,6 +51,7 @@ import {
   SearchIcon,
   Settings,
   SettingsIcon,
+  SidebarClose,
   TrashIcon,
   UploadCloud,
   UploadIcon,
@@ -1424,8 +1425,15 @@ export default function Dashboard() {
     return (
       <div className="hidden h-screen lg:flex justify-center">
         <ScrollArea className="h-screen w-1/5 p-1">
+          <br />
+          <br />
+          <br />
           <div className="flex justify-center mt-8">
             <div className="grid gap-1 w-[200px] p-3">
+              <div className="flex items-start h-[70px] w-1/5 bg-white fixed top-0 start-0">
+                <SidebarClose className="text-gray-500 size-[35px] ml-3 mt-5 " />
+              </div>
+
               <p className="text-center">
                 <span className="text-slate-400"> remaining:</span>
                 <span>{convertirDuree(parseInt(remainingTime, 10))}</span>
@@ -1663,7 +1671,7 @@ export default function Dashboard() {
                     <Separator />
                     <Button
                       variant="outline"
-                      className="hover:bg-green-100"
+                      className="hover:bg-violet-100"
                       onClick={() => {
                         const result = convertSubtitlesToString(
                           subtitles,
@@ -1678,7 +1686,7 @@ export default function Dashboard() {
                     </Button>
                     <Button
                       variant="outline"
-                      className="hover:bg-green-100"
+                      className="hover:bg-violet-100"
                       onClick={() => {
                         const result = convertSubtitlesToString(
                           subtitles,
@@ -1693,7 +1701,7 @@ export default function Dashboard() {
                     </Button>
                     <Button
                       variant="outline"
-                      className="hover:bg-green-100"
+                      className="hover:bg-violet-100"
                       onClick={() => {
                         const result = convertSubtitlesToString(
                           subtitles,
@@ -1709,7 +1717,7 @@ export default function Dashboard() {
                     </Button>
                     <Button
                       variant="outline"
-                      className="hover:bg-green-100"
+                      className="hover:bg-violet-100"
                       onClick={() => {
                         const result = convertSubtitlesToSRT(subtitles);
                         handleDownloadSrt(result, "srtfile.srt");
@@ -1792,7 +1800,7 @@ export default function Dashboard() {
                   {userData.map((data, index) => (
                     <div
                       key={index}
-                      className="grid gap-1 shadow-md rounded-md p-3 bg-gray-50 hover:bg-slate-100 my-2"
+                      className="grid gap-1  rounded-md p-3 bg-gray-50 hover:bg-slate-100 my-2"
                       onClick={() => {
                         //transcriptionResultInSrt.current = data.historic;
                         const parsedSubtitles = parseSRT(data.historic);
@@ -1852,13 +1860,17 @@ export default function Dashboard() {
         <div className="flex justify-center w-4/5 bg-gray-50">
           <Separator orientation="vertical" />
           <ScrollArea className="h-screen w-full">
-            <div className="w-full mx-3 mt-5">
+            <br />
+            <br />
+            <br />
+            <br />
+            <div className="w-full ">
               <div className="grid gap-5">
-                <div className="flex justify-between p-12">
-                  <p className="text-3xl font-bold underline   text-center ">
+                <div className="flex justify-between  h-[70px] w-4/5 bg-white fixed top-0 ">
+                  <p className="text-3xl font-bold ml-10 mt-5 text-gray-500 underline   text-center ">
                     AudiScribe
                   </p>
-                  <div>
+                  <div className="mr-10 mt-5">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="outline">
@@ -1881,7 +1893,7 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="grid gap-1 bg-white p-10 rounded-lg">
+                <div className="grid gap-1 bg-white mx-10 p-10 rounded-lg">
                   <div>
                     <div className="flex justify-center my-2">
                       {uploadIsLoaded ? (
@@ -2668,7 +2680,7 @@ export default function Dashboard() {
                                         <Separator />
                                         <Button
                                           variant="outline"
-                                          className="hover:bg-green-100"
+                                          className="hover:bg-violet-100"
                                           onClick={() => {
                                             const result =
                                               convertSubtitlesToString(
@@ -2684,7 +2696,7 @@ export default function Dashboard() {
                                         </Button>
                                         <Button
                                           variant="outline"
-                                          className="hover:bg-green-100"
+                                          className="hover:bg-violet-100"
                                           onClick={() => {
                                             const result =
                                               convertSubtitlesToString(
@@ -2700,7 +2712,7 @@ export default function Dashboard() {
                                         </Button>
                                         <Button
                                           variant="outline"
-                                          className="hover:bg-green-100"
+                                          className="hover:bg-violet-100"
                                           onClick={() => {
                                             const result =
                                               convertSubtitlesToString(
@@ -2716,7 +2728,7 @@ export default function Dashboard() {
                                         </Button>
                                         <Button
                                           variant="outline"
-                                          className="hover:bg-green-100"
+                                          className="hover:bg-violet-100"
                                           onClick={() => {
                                             const result =
                                               convertSubtitlesToSRT(subtitles);
@@ -2777,7 +2789,7 @@ export default function Dashboard() {
                                 {userData.map((data, index) => (
                                   <div
                                     key={index}
-                                    className="grid gap-1 shadow-md rounded-md p-3 bg-gray-50 hover:bg-slate-100 my-2"
+                                    className="grid gap-1 rounded-md p-3 bg-white hover:bg-slate-100 my-2"
                                     onClick={() => {
                                       //transcriptionResultInSrt.current = data.historic;
                                       const parsedSubtitles = parseSRT(
