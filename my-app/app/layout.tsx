@@ -9,11 +9,11 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "AudiScribe - #1,High precision Audio & Video transcription software.",
   description:
-    "transcribe any audio or video with 98% accuracy to text in few second,upload your audio/video & transcription start automatically.",
+    "transcribe any audio or video with 98% accuracy to text in few seconds,upload your audio/video and transcription starts automatically.",
   openGraph: {
     description:
-      "transcribe any audio or video with 98% accuracy to text in few second,upload your audio/video & transcription start automatically.",
-    siteName: "AudiScribe ",
+      "transcribe any audio or video  with 98% accuracy to text in few seconds,upload your audio/video and transcription starts automatically.",
+    siteName: "AudiScribe",
     type: "website",
     images: [
       {

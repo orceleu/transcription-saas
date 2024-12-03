@@ -55,6 +55,17 @@ import {
   UploadCloud,
   UploadIcon,
 } from "lucide-react";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+
 import { Document, Packer, Paragraph, TextRun, PageBreak } from "docx";
 import { saveAs } from "file-saver";
 import noData from "../../public/nodata2.svg";
@@ -73,6 +84,7 @@ import {
 } from "firebase/storage";
 import { storage } from "@/app/firebase/config";
 import { jsPDF } from "jspdf";
+import { RiChat1Line } from "react-icons/ri";
 import {
   Dialog,
   DialogContent,
@@ -1410,8 +1422,8 @@ export default function Dashboard() {
 
   function desktopScreen() {
     return (
-      <div className="hidden lg:flex justify-center">
-        <ScrollArea className="h-[700px] w-1/5 p-1">
+      <div className="hidden h-screen lg:flex justify-center">
+        <ScrollArea className="h-screen w-1/5 p-1">
           <div className="flex justify-center mt-8">
             <div className="grid gap-1 w-[200px] p-3">
               <p className="text-center">
@@ -1798,7 +1810,7 @@ export default function Dashboard() {
                       }}
                     >
                       <div className="flex justify-between gap-2">
-                        <strong className="text-blue-600" key={index + 1}>
+                        <strong className="text-gray-500" key={index + 1}>
                           {data.associedFileName}
                         </strong>
                         {returnTypeIcon(data.type)}
@@ -1816,7 +1828,7 @@ export default function Dashboard() {
                         </p>
                         <Button
                           key={index + 7}
-                          className="w-1/4"
+                          className="w-1/4 hover:bg-red-500"
                           variant="ghost"
                           onClick={() => {
                             deleteItemUser_data(data.$id);
@@ -1839,11 +1851,11 @@ export default function Dashboard() {
 
         <div className="flex justify-center w-4/5 bg-gray-50">
           <Separator orientation="vertical" />
-          <ScrollArea className="h-[700px] w-full">
+          <ScrollArea className="h-screen w-full">
             <div className="w-full mx-3 mt-5">
               <div className="grid gap-5">
                 <div className="flex justify-between p-12">
-                  <p className="text-3xl font-bold underline  text-blue-600 text-center ">
+                  <p className="text-3xl font-bold underline   text-center ">
                     AudiScribe
                   </p>
                   <div>
@@ -1941,7 +1953,7 @@ export default function Dashboard() {
                   <div className="m-4">
                     <p className=" ml-4  text-gray-600">
                       Language:(
-                      <span className="text-blue-600">
+                      <span className="text-blue-400">
                         {textLanguageDetected}
                       </span>
                       )
@@ -2154,19 +2166,67 @@ export default function Dashboard() {
               <br />
             </div>
           </ScrollArea>
-          {isAudioUrlDispo && !isVideo && (
-            <div className="grid gap-3 fixed bottom-0 w-4/5 bg-slate-200 p-3 rounded-t-md">
-              <strong className="text-center text-amber-600">
-                {fileNameSelected}
-              </strong>
-              <audio
-                ref={audioRef1}
-                src={audioUrl.current}
-                controls
-                className="w-full "
-              />
+          <div className="flex flex-col w-4/5 fixed bottom-0">
+            <div className="flex justify-end">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" className="mb-10 mr-10">
+                    <RiChat1Line className="text-violet-500 size-[60px]" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent>
+                  <SheetHeader>
+                    <SheetTitle>Edit profile</SheetTitle>
+                    <SheetDescription>
+                      Make changes to your profile here. Click save when you're
+                      done.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <label htmlFor="name" className="text-right">
+                        Name
+                      </label>
+                      <Input
+                        id="name"
+                        value="Pedro Duarte"
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <label htmlFor="username" className="text-right">
+                        Username
+                      </label>
+                      <Input
+                        id="username"
+                        value="@peduarte"
+                        className="col-span-3"
+                      />
+                    </div>
+                  </div>
+                  <SheetFooter>
+                    <SheetClose asChild>
+                      <Button type="submit">Save changes</Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
             </div>
-          )}
+
+            {isAudioUrlDispo && !isVideo && (
+              <div className="grid gap-3 w-full   bg-slate-200 p-3 rounded-t-md">
+                <strong className="text-center text-gray-500">
+                  {fileNameSelected}
+                </strong>
+                <audio
+                  ref={audioRef1}
+                  src={audioUrl.current}
+                  controls
+                  className="w-full "
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -2512,7 +2572,7 @@ export default function Dashboard() {
                               <Dialog>
                                 <DialogTrigger asChild>
                                   <Button variant="outline">
-                                    <FaToolbox className="text-amber-500" />
+                                    <FaToolbox className="text-blue-400" />
                                   </Button>
                                 </DialogTrigger>
                                 <DialogContent className="sm:max-w-[425px]">
@@ -2587,7 +2647,7 @@ export default function Dashboard() {
                               >
                                 <DrawerTrigger asChild>
                                   <Button variant="outline">
-                                    <FaFileExport className="text-blue-600" />
+                                    <FaFileExport className="text-blue-400" />
                                   </Button>
                                 </DrawerTrigger>
                                 <DrawerContent>
@@ -2740,7 +2800,7 @@ export default function Dashboard() {
                                   >
                                     <div className="flex justify-between gap-1">
                                       <strong
-                                        className="text-blue-600"
+                                        className="text-gray-500"
                                         key={index + 1}
                                       >
                                         {data.associedFileName}
@@ -2799,7 +2859,7 @@ export default function Dashboard() {
               <div className="m-1">
                 <p className="text-[10px] mb-3 text-gray-600">
                   Language:(
-                  <span className="text-blue-600">{textLanguageDetected}</span>)
+                  <span className="text-blue-400">{textLanguageDetected}</span>)
                 </p>
                 <div>
                   <div className="mb-4">
@@ -2816,7 +2876,7 @@ export default function Dashboard() {
 
                   <div className="flex items-center gap-5 ">
                     <Button variant="outline" onClick={handleCopy}>
-                      <CopyIcon className="text-bluer-600" />
+                      <CopyIcon className="text-blue-400" />
                     </Button>
 
                     <Input
@@ -2830,7 +2890,7 @@ export default function Dashboard() {
                     >
                       <DrawerTrigger asChild>
                         <Button variant="outline">
-                          <FaFileExport className="text-blue-600" />
+                          <FaFileExport className="text-blue-400" />
                         </Button>
                       </DrawerTrigger>
                       <DrawerContent>
@@ -3021,6 +3081,7 @@ export default function Dashboard() {
             )}
             {textLanguageDetected && (
               <Button
+                variant="outline"
                 onClick={() => {
                   if (uploadedFile) {
                     //handleSubmit(uploadedFile);
@@ -3041,6 +3102,69 @@ export default function Dashboard() {
                 )}
               </Button>
             )}
+
+            <div className="flex flex-col w-full fixed bottom-0">
+              <div className="flex justify-end">
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" className="mb-5 mr-5">
+                      <RiChat1Line className="text-violet-500 size-[40px]" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent>
+                    <SheetHeader>
+                      <SheetTitle>Edit profile</SheetTitle>
+                      <SheetDescription>
+                        Make changes to your profile here. Click save when
+                        you're done.
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="name" className="text-right">
+                          Name
+                        </label>
+                        <Input
+                          id="name"
+                          value="Pedro Duarte"
+                          className="col-span-3"
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <label htmlFor="username" className="text-right">
+                          Username
+                        </label>
+                        <Input
+                          id="username"
+                          value="@peduarte"
+                          className="col-span-3"
+                        />
+                      </div>
+                    </div>
+                    <SheetFooter>
+                      <SheetClose asChild>
+                        <Button type="submit">Save changes</Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+              </div>
+
+              {isAudioUrlDispo && !isVideo && (
+                <div className="grid gap-2 fixed bottom-0 w-full bg-slate-200 p-2 rounded-t-md">
+                  <p className="text-gray-500 text-center">
+                    {fileNameSelected}
+                  </p>
+                  <audio
+                    ref={audioRef}
+                    src={audioUrl.current}
+                    controls
+                    className="w-full "
+                  />
+                </div>
+              )}
+            </div>
+
             <div className="flex justify-center fixed bottom-1">
               {isAudioUrlDispo && isVideo && !youtubePlayerUrl && (
                 <div className=" w-4/5  p-1  rounded-t-md bg-slate-50">
@@ -3116,18 +3240,6 @@ export default function Dashboard() {
           <br />
           <br />
         </div>
-
-        {isAudioUrlDispo && !isVideo && (
-          <div className="grid gap-2 fixed bottom-0 w-full bg-slate-200 p-2 rounded-t-md">
-            <p className="text-amber-600 text-center">{fileNameSelected}</p>
-            <audio
-              ref={audioRef}
-              src={audioUrl.current}
-              controls
-              className="w-full "
-            />
-          </div>
-        )}
       </div>
     );
   }
