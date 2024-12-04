@@ -11,6 +11,8 @@ import {
   FaChessKing,
   FaFileExport,
   FaRegFilePdf,
+  FaRobot,
+  FaSpinner,
   FaToolbox,
 } from "react-icons/fa6";
 import { TbFileTypeDocx } from "react-icons/tb";
@@ -49,12 +51,14 @@ import {
   PlusIcon,
   SaveIcon,
   SearchIcon,
+  SendIcon,
   Settings,
   SettingsIcon,
   SidebarClose,
   TrashIcon,
   UploadCloud,
   UploadIcon,
+  UserIcon,
 } from "lucide-react";
 import {
   Sheet,
@@ -175,6 +179,8 @@ import {
   updateUsedTime,
 } from "../appwrite/databaseFunction";
 import { FcAddImage } from "react-icons/fc";
+import { useChat } from "ai/react";
+import FormattedText from "../clientComponent/formattedTextAi";
 interface Item {
   name: string;
   path: string;
@@ -275,6 +281,11 @@ interface Plan {
   price: string;
 }
 export default function Dashboard() {
+  const { messages, input, handleInputChange, handleSubmit, isLoading, stop } =
+    useChat({
+      api: "/api/aichat",
+      streamProtocol: "text",
+    });
   const [uploadedFile, setUploadedFile] = useState<any>(null);
   const [isAudioUrlDispo, setAudioUrlDispo] = useState(false);
   const router = useRouter();
@@ -843,7 +854,7 @@ export default function Dashboard() {
   }, [youtubeUrl]);
 
   //upload audio
-  const handleSubmit = (file: any) => {
+  const handleSubmitToUpload = (file: any) => {
     if (!file) {
       toast({
         variant: "destructive",
@@ -1397,7 +1408,7 @@ export default function Dashboard() {
   const onDrop = (acceptedFiles: any) => {
     // On prend le premier fichier s'il est accepté
     setUploadedFile(acceptedFiles[0]);
-    handleSubmit(acceptedFiles[0]);
+    handleSubmitToUpload(acceptedFiles[0]);
 
     transcriptionResultInSrt.current = "";
   };
@@ -2188,39 +2199,65 @@ export default function Dashboard() {
                 </SheetTrigger>
                 <SheetContent>
                   <SheetHeader>
-                    <SheetTitle>Edit profile</SheetTitle>
+                    <SheetTitle>Ai Query.</SheetTitle>
                     <SheetDescription>
-                      Make changes to your profile here. Click save when
-                      you&apos;re done.
+                      Ask AI about your selected audio
                     </SheetDescription>
                   </SheetHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="name" className="text-right">
-                        Name
-                      </label>
-                      <Input
-                        id="name"
-                        value="Pedro Duarte"
-                        className="col-span-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="username" className="text-right">
-                        Username
-                      </label>
-                      <Input
-                        id="username"
-                        value="@peduarte"
-                        className="col-span-3"
-                      />
-                    </div>
-                  </div>
-                  <SheetFooter>
-                    <SheetClose asChild>
-                      <Button type="submit">Save changes</Button>
-                    </SheetClose>
-                  </SheetFooter>
+                  <ScrollArea className="h-screen">
+                    <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
+                      {messages.map((m) => (
+                        <div key={m.id} className="whitespace-pre-wrap">
+                          {m.role == "user" ? (
+                            <div className="flex justify-end">
+                              <div className="flex items-center gap-3 mr-5">
+                                <div className="flex items-center p-3 mt-5 bg-blue-500 rounded-[40px] ">
+                                  {m.content}
+                                </div>
+                                <UserIcon className="size-[30px] text-blue-500" />
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-3">
+                              <FaRobot className="size-[30px] text-violet-500" />
+                              <div className="flex items-center p-3 mt-5 bg-gray-300 rounded-[40px]">
+                                <FormattedText text={m.content} />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {isLoading && (
+                        <div className="relative mx-auto mt-5">
+                          <div>
+                            <FaSpinner className="animate-spin" />
+                            <button type="button" onClick={() => stop()}>
+                              Stop
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      <form onSubmit={handleSubmit}>
+                        <div className="fixed bottom-5 end-10 flex items-center gap-2">
+                          <Input
+                            value={input}
+                            placeholder="Say something..."
+                            onChange={handleInputChange}
+                          />
+                          <Button variant="ghost" type="submit">
+                            <SendIcon className="text-violet-300" />
+                          </Button>
+                        </div>
+                      </form>
+                      <br />
+                      <br />
+                      <br />
+                      <br />
+                      <br />
+                      <br />
+                      <br />
+                    </div>{" "}
+                  </ScrollArea>
                 </SheetContent>
               </Sheet>
             </div>
@@ -3125,39 +3162,65 @@ export default function Dashboard() {
                   </SheetTrigger>
                   <SheetContent>
                     <SheetHeader>
-                      <SheetTitle>Edit profile</SheetTitle>
+                      <SheetTitle>Ai query</SheetTitle>
                       <SheetDescription>
-                        Make changes to your profile here. Click save when
-                        you&apos;re done.
+                        Ask ai about your selected audio.
                       </SheetDescription>
                     </SheetHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <label htmlFor="name" className="text-right">
-                          Name
-                        </label>
-                        <Input
-                          id="name"
-                          value="Pedro Duarte"
-                          className="col-span-3"
-                        />
+                    <ScrollArea className="h-screen">
+                      <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
+                        {messages.map((m) => (
+                          <div key={m.id} className="whitespace-pre-wrap">
+                            {m.role == "user" ? (
+                              <div className="flex justify-end">
+                                <div className="flex items-center gap-3 mr-5">
+                                  <div className="flex items-center p-3 mt-5 bg-blue-500 rounded-[40px] ">
+                                    <p className="text-sm">{m.content}</p>
+                                  </div>
+                                  <UserIcon className="size-[30px] text-blue-500" />
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-3">
+                                <FaRobot className="size-[30px] text-violet-500" />
+                                <div className="flex items-center p-3 mt-5 bg-gray-300 rounded-[40px]">
+                                  <FormattedText text={m.content} />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        {isLoading && (
+                          <div className="relative mx-auto mt-5">
+                            <div>
+                              <FaSpinner className="animate-spin" />
+                              <button type="button" onClick={() => stop()}>
+                                Stop
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        <form onSubmit={handleSubmit}>
+                          <div className="fixed bottom-5 end-10 flex items-center gap-2">
+                            <Input
+                              value={input}
+                              placeholder="Say something..."
+                              onChange={handleInputChange}
+                            />
+                            <Button variant="ghost" type="submit">
+                              <SendIcon className="text-violet-300" />
+                            </Button>
+                          </div>
+                        </form>
+                        <br />
+                        <br />
+                        <br />
+                        <br />
+                        <br />
+                        <br />
+                        <br />
                       </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <label htmlFor="username" className="text-right">
-                          Username
-                        </label>
-                        <Input
-                          id="username"
-                          value="@peduarte"
-                          className="col-span-3"
-                        />
-                      </div>
-                    </div>
-                    <SheetFooter>
-                      <SheetClose asChild>
-                        <Button type="submit">Save changes</Button>
-                      </SheetClose>
-                    </SheetFooter>
+                    </ScrollArea>
                   </SheetContent>
                 </Sheet>
               </div>
