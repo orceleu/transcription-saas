@@ -2204,20 +2204,18 @@ export default function Dashboard() {
               <Sheet>
                 <SheetTrigger asChild>
                   <Button variant="ghost" className="mb-10 mr-10">
-                    <RiChat1Line className="text-violet-500 size-[60px]" />
+                    <FaRobot className="text-violet-500 size-[60px]" />
                   </Button>
                 </SheetTrigger>
                 <SheetContent>
                   <SheetHeader>
                     <SheetTitle>Ai Query.</SheetTitle>
                     <SheetDescription>
-                      <p>
-                        Ask AI about your selected audio:
-                        <span className="text-violet-500 font-bold">
-                          {fileNameSelected}
-                        </span>
-                        .
-                      </p>
+                      Ask AI about your selected audio:
+                      <span className="text-violet-500 font-bold">
+                        {fileNameSelected}
+                      </span>
+                      .
                     </SheetDescription>
                   </SheetHeader>
                   <ScrollArea className="h-screen">
@@ -2230,14 +2228,14 @@ export default function Dashboard() {
                                 <div className="flex justify-end">
                                   <UserIcon className="size-[30px] text-blue-500" />
                                 </div>
-                                <div className="flex items-center p-3  bg-gray-200 rounded-[40px] ">
+                                <div className="flex items-center p-3  bg-gray-200 rounded-[30px] ">
                                   {m.content}
                                 </div>
                               </div>
                             </div>
                           ) : (
                             <div className="grid gap-1">
-                              <FaBahai className="size-[30px] text-violet-500" />
+                              <FaRobot className="size-[30px] text-violet-500" />
                               <div className="flex items-center p-3  ">
                                 <FormattedText text={m.content} />
                               </div>
@@ -2274,7 +2272,7 @@ export default function Dashboard() {
                         </>
                       )}
                       <form onSubmit={handleSubmit}>
-                        <div className="bg-violet-200 fixed bottom-5  rounded-lg p-2">
+                        <div className="bg-gray-200 fixed bottom-5  rounded-lg p-2">
                           <div className="end-10 flex items-center gap-2 ">
                             <Input
                               value={input}
@@ -3196,17 +3194,15 @@ export default function Dashboard() {
                 <Sheet>
                   <SheetTrigger asChild>
                     <Button variant="ghost" size="lg" className="mb-5 mr-5">
-                      <RiChat1Line className="text-violet-500 size-[40px]" />
+                      <FaRobot className="text-violet-500 size-[40px]" />
                     </Button>
                   </SheetTrigger>
                   <SheetContent>
                     <SheetHeader>
                       <SheetTitle>Ai query</SheetTitle>
                       <SheetDescription>
-                        <p>
-                          Ask ai about your selected audio:
-                          <span>{fileNameSelected}</span>.
-                        </p>
+                        Ask ai about your selected audio:
+                        <span>{fileNameSelected}</span>.
                       </SheetDescription>
                     </SheetHeader>
                     <ScrollArea className="h-screen">
@@ -3219,14 +3215,14 @@ export default function Dashboard() {
                                   <div className="flex justify-end">
                                     <UserIcon className="size-[30px] text-blue-500" />
                                   </div>
-                                  <div className="flex items-center p-3  bg-gray-200 rounded-[40px] ">
+                                  <div className="flex items-center p-3  bg-gray-200 rounded-[30px] ">
                                     <p className="text-sm">{m.content}</p>
                                   </div>
                                 </div>
                               </div>
                             ) : (
                               <div className="grid gap-1 mt-2">
-                                <FaBahai className="size-[30px] text-violet-500" />
+                                <FaRobot className="size-[30px] text-violet-500" />
 
                                 <div className="flex items-center  p-3  ">
                                   <FormattedText text={m.content} />
@@ -3264,7 +3260,7 @@ export default function Dashboard() {
                           </>
                         )}
                         <form onSubmit={handleSubmit}>
-                          <div className="bg-violet-200 fixed bottom-5  rounded-lg p-2">
+                          <div className="bg-gray-200 fixed bottom-5 mr-5 rounded-lg p-2">
                             <div className="end-10 flex items-center gap-2 ">
                               <Input
                                 value={input}
