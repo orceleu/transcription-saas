@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import axios from "axios";
 import {
+  FaBahai,
   FaChessKing,
   FaFileExport,
   FaRegFilePdf,
@@ -181,6 +182,7 @@ import {
 import { FcAddImage } from "react-icons/fc";
 import { useChat } from "ai/react";
 import FormattedText from "../clientComponent/formattedTextAi";
+import { AiFillCloseCircle } from "react-icons/ai";
 interface Item {
   name: string;
   path: string;
@@ -281,11 +283,19 @@ interface Plan {
   price: string;
 }
 export default function Dashboard() {
-  const { messages, input, handleInputChange, handleSubmit, isLoading, stop } =
-    useChat({
-      api: "/api/aichat",
-      streamProtocol: "text",
-    });
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    isLoading,
+    error,
+    reload,
+    stop,
+  } = useChat({
+    api: "/api/aichat",
+    streamProtocol: "text",
+  });
   const [uploadedFile, setUploadedFile] = useState<any>(null);
   const [isAudioUrlDispo, setAudioUrlDispo] = useState(false);
   const router = useRouter();
@@ -2201,7 +2211,13 @@ export default function Dashboard() {
                   <SheetHeader>
                     <SheetTitle>Ai Query.</SheetTitle>
                     <SheetDescription>
-                      Ask AI about your selected audio
+                      <p>
+                        Ask AI about your selected audio:
+                        <span className="text-violet-500 font-bold">
+                          {fileNameSelected}
+                        </span>
+                        .
+                      </p>
                     </SheetDescription>
                   </SheetHeader>
                   <ScrollArea className="h-screen">
@@ -2210,17 +2226,19 @@ export default function Dashboard() {
                         <div key={m.id} className="whitespace-pre-wrap">
                           {m.role == "user" ? (
                             <div className="flex justify-end">
-                              <div className="flex items-center gap-3 mr-5">
-                                <div className="flex items-center p-3 mt-5 bg-blue-500 rounded-[40px] ">
+                              <div className="grid gap-1 mr-5">
+                                <div className="flex justify-end">
+                                  <UserIcon className="size-[30px] text-blue-500" />
+                                </div>
+                                <div className="flex items-center p-3  bg-gray-200 rounded-[40px] ">
                                   {m.content}
                                 </div>
-                                <UserIcon className="size-[30px] text-blue-500" />
                               </div>
                             </div>
                           ) : (
-                            <div className="flex items-center gap-3">
-                              <FaRobot className="size-[30px] text-violet-500" />
-                              <div className="flex items-center p-3 mt-5 bg-gray-300 rounded-[40px]">
+                            <div className="grid gap-1">
+                              <FaBahai className="size-[30px] text-violet-500" />
+                              <div className="flex items-center p-3  ">
                                 <FormattedText text={m.content} />
                               </div>
                             </div>
@@ -2228,25 +2246,46 @@ export default function Dashboard() {
                         </div>
                       ))}
                       {isLoading && (
-                        <div className="relative mx-auto mt-5">
-                          <div>
+                        <div className="grid gap-1 mt-5">
+                          <div className="flex justify-center">
                             <FaSpinner className="animate-spin" />
-                            <button type="button" onClick={() => stop()}>
-                              Stop
-                            </button>
                           </div>
+                          <Button
+                            variant="ghost"
+                            type="button"
+                            onClick={() => stop()}
+                          >
+                            <AiFillCloseCircle />
+                          </Button>
                         </div>
                       )}
-                      <form onSubmit={handleSubmit}>
-                        <div className="fixed bottom-5 end-10 flex items-center gap-2">
-                          <Input
-                            value={input}
-                            placeholder="Say something..."
-                            onChange={handleInputChange}
-                          />
-                          <Button variant="ghost" type="submit">
-                            <SendIcon className="text-violet-300" />
+                      {error && (
+                        <>
+                          <p className="text-red-500 text-center">
+                            An error occurred.
+                          </p>
+                          <Button
+                            variant="ghost"
+                            type="button"
+                            onClick={() => reload()}
+                          >
+                            <ReloadIcon />
                           </Button>
+                        </>
+                      )}
+                      <form onSubmit={handleSubmit}>
+                        <div className="bg-violet-200 fixed bottom-5  rounded-lg p-2">
+                          <div className="end-10 flex items-center gap-2 ">
+                            <Input
+                              value={input}
+                              placeholder="ask AI something..."
+                              onChange={handleInputChange}
+                              disabled={isLoading}
+                            />
+                            <Button variant="ghost" type="submit">
+                              <SendIcon className="text-violet-500" />
+                            </Button>
+                          </div>
                         </div>
                       </form>
                       <br />
@@ -3156,7 +3195,7 @@ export default function Dashboard() {
               <div className="flex justify-end">
                 <Sheet>
                   <SheetTrigger asChild>
-                    <Button variant="ghost" className="mb-5 mr-5">
+                    <Button variant="ghost" size="lg" className="mb-5 mr-5">
                       <RiChat1Line className="text-violet-500 size-[40px]" />
                     </Button>
                   </SheetTrigger>
@@ -3164,7 +3203,10 @@ export default function Dashboard() {
                     <SheetHeader>
                       <SheetTitle>Ai query</SheetTitle>
                       <SheetDescription>
-                        Ask ai about your selected audio.
+                        <p>
+                          Ask ai about your selected audio:
+                          <span>{fileNameSelected}</span>.
+                        </p>
                       </SheetDescription>
                     </SheetHeader>
                     <ScrollArea className="h-screen">
@@ -3173,17 +3215,20 @@ export default function Dashboard() {
                           <div key={m.id} className="whitespace-pre-wrap">
                             {m.role == "user" ? (
                               <div className="flex justify-end">
-                                <div className="flex items-center gap-3 mr-5">
-                                  <div className="flex items-center p-3 mt-5 bg-blue-500 rounded-[40px] ">
+                                <div className="grid gap-1 mr-5">
+                                  <div className="flex justify-end">
+                                    <UserIcon className="size-[30px] text-blue-500" />
+                                  </div>
+                                  <div className="flex items-center p-3  bg-gray-200 rounded-[40px] ">
                                     <p className="text-sm">{m.content}</p>
                                   </div>
-                                  <UserIcon className="size-[30px] text-blue-500" />
                                 </div>
                               </div>
                             ) : (
-                              <div className="flex items-center gap-3">
-                                <FaRobot className="size-[30px] text-violet-500" />
-                                <div className="flex items-center p-3 mt-5 bg-gray-300 rounded-[40px]">
+                              <div className="grid gap-1 mt-2">
+                                <FaBahai className="size-[30px] text-violet-500" />
+
+                                <div className="flex items-center  p-3  ">
                                   <FormattedText text={m.content} />
                                 </div>
                               </div>
@@ -3191,25 +3236,46 @@ export default function Dashboard() {
                           </div>
                         ))}
                         {isLoading && (
-                          <div className="relative mx-auto mt-5">
-                            <div>
+                          <div className="grid gap-1 mt-5">
+                            <div className="flex justify-center">
                               <FaSpinner className="animate-spin" />
-                              <button type="button" onClick={() => stop()}>
-                                Stop
-                              </button>
                             </div>
+                            <Button
+                              variant="ghost"
+                              type="button"
+                              onClick={() => stop()}
+                            >
+                              <AiFillCloseCircle />
+                            </Button>
                           </div>
                         )}
-                        <form onSubmit={handleSubmit}>
-                          <div className="fixed bottom-5 end-10 flex items-center gap-2">
-                            <Input
-                              value={input}
-                              placeholder="Say something..."
-                              onChange={handleInputChange}
-                            />
-                            <Button variant="ghost" type="submit">
-                              <SendIcon className="text-violet-300" />
+                        {error && (
+                          <>
+                            <p className="text-red-500 text-center">
+                              An error occurred.
+                            </p>
+                            <Button
+                              variant="ghost"
+                              type="button"
+                              onClick={() => reload()}
+                            >
+                              <ReloadIcon />
                             </Button>
+                          </>
+                        )}
+                        <form onSubmit={handleSubmit}>
+                          <div className="bg-violet-200 fixed bottom-5  rounded-lg p-2">
+                            <div className="end-10 flex items-center gap-2 ">
+                              <Input
+                                value={input}
+                                placeholder="ask AI something..."
+                                onChange={handleInputChange}
+                                disabled={isLoading}
+                              />
+                              <Button variant="ghost" type="submit">
+                                <SendIcon className="text-violet-500" />
+                              </Button>
+                            </div>
                           </div>
                         </form>
                         <br />
@@ -3226,7 +3292,7 @@ export default function Dashboard() {
               </div>
 
               {isAudioUrlDispo && !isVideo && (
-                <div className="grid gap-2 fixed bottom-0 w-full bg-slate-200 p-2 rounded-t-md">
+                <div className="grid gap-2 w-full bg-slate-200 p-2 rounded-t-md">
                   <p className="text-gray-500 text-center">
                     {fileNameSelected}
                   </p>
