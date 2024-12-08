@@ -16,7 +16,8 @@ import {
   FaSpinner,
   FaToolbox,
 } from "react-icons/fa6";
-import { TbFileTypeDocx } from "react-icons/tb";
+import { TbFileTypeDocx, TbZodiacGemini } from "react-icons/tb";
+import { SiGooglegemini } from "react-icons/si";
 import { GrAddCircle, GrDocumentTxt, GrEmptyCircle } from "react-icons/gr";
 import { useDropzone } from "react-dropzone";
 import { signOut, onAuthStateChanged, User } from "firebase/auth";
@@ -90,7 +91,7 @@ import {
 } from "firebase/storage";
 import { storage } from "@/app/firebase/config";
 import { jsPDF } from "jspdf";
-import { RiChat1Line } from "react-icons/ri";
+import { RiChat1Line, RiRobot2Fill } from "react-icons/ri";
 import {
   Dialog,
   DialogContent,
@@ -147,6 +148,7 @@ import {
 import logo from "../../public/logo.jpg";
 import { Input } from "@/components/ui/input";
 import {
+  ChatBubbleIcon,
   FileTextIcon,
   LoopIcon,
   QuestionMarkCircledIcon,
@@ -381,6 +383,22 @@ export default function Dashboard() {
   const durationUploaded = useRef(0);
   const [fileNameSelected, setfileNameSelected] = useState("");
   const [addButtonPlan, setAddButtonPlan] = useState(false);
+  const customValue = `Objectif:comprendre le fontionnement des composants de base de l’électronique,réaliser des 
+montages et plus.
+ Preparé par : ORCEL EULER NO: 47656226 
+Definition :
+L'électronique est la branche de la physique appliquée qui étudie et exploite le comportement des 
+électrons et d'autres particules chargées dans des matériaux conducteurs et semi-conducteurs. En 
+termes simples, elle porte sur la conception, l'analyse et la mise en œuvre de dispositifs et de 
+systèmes basés sur le mouvement contrôlé des électrons.
+Les applications de l'électronique incluent :
+1. Les composants électroniques : tels que les diodes, les transistors et les circuits intégrés, 
+qui sont la base des dispositifs électroniques.
+2. Les systèmes de communication : comme les téléphones mobiles et le Wi-Fi, qui 
+utilisent des signaux électroniques pour transmettre des informations.
+3. Les dispositifs de traitement de l'information : comme les ordinateurs et les 
+microcontrôleurs, qui utilisent des circuits électroniques pour calculer et exécuter des 
+instructions.`;
   const addUserHistoricData = (
     userId: string,
     historic: string,
@@ -2204,12 +2222,17 @@ export default function Dashboard() {
               <Sheet>
                 <SheetTrigger asChild>
                   <Button variant="ghost" className="mb-10 mr-10">
-                    <FaRobot className="text-violet-500 size-[60px]" />
+                    <RiRobot2Fill className="text-violet-500 size-[60px] " />
                   </Button>
                 </SheetTrigger>
                 <SheetContent>
                   <SheetHeader>
-                    <SheetTitle>Ai Query.</SheetTitle>
+                    <SheetTitle>
+                      Ai Query.
+                      <span className="text-sm text-gray-400 ">
+                        (Powered by Gemini)
+                      </span>
+                    </SheetTitle>
                     <SheetDescription>
                       Ask AI about your selected audio:
                       <span className="text-violet-500 font-bold">
@@ -2235,7 +2258,7 @@ export default function Dashboard() {
                             </div>
                           ) : (
                             <div className="grid gap-1">
-                              <FaRobot className="size-[30px] text-violet-500" />
+                              <SiGooglegemini className="size-[30px] text-violet-500" />
                               <div className="flex items-center p-3  ">
                                 <FormattedText text={m.content} />
                               </div>
@@ -2271,7 +2294,15 @@ export default function Dashboard() {
                           </Button>
                         </>
                       )}
-                      <form onSubmit={handleSubmit}>
+                      <form
+                        onSubmit={(event) => {
+                          handleSubmit(event, {
+                            body: {
+                              customKey: customValue,
+                            },
+                          });
+                        }}
+                      >
                         <div className="bg-gray-200 fixed bottom-5  rounded-lg p-2">
                           <div className="end-10 flex items-center gap-2 ">
                             <Input
@@ -2280,7 +2311,11 @@ export default function Dashboard() {
                               onChange={handleInputChange}
                               disabled={isLoading}
                             />
-                            <Button variant="ghost" type="submit">
+                            <Button
+                              disabled={isLoading}
+                              variant="ghost"
+                              type="submit"
+                            >
                               <SendIcon className="text-violet-500" />
                             </Button>
                           </div>
@@ -2321,7 +2356,7 @@ export default function Dashboard() {
     return (
       <div className="lg:hidden p-3 bg-gray-50">
         <div className="flex justify-between  top-2 end-2 m-2">
-          <Image src={logo} alt="logo" className="size-[40px]" />
+          <Image src={logo} alt="logo" className="size-[40px] rounded-full" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost">
@@ -3194,15 +3229,23 @@ export default function Dashboard() {
                 <Sheet>
                   <SheetTrigger asChild>
                     <Button variant="ghost" size="lg" className="mb-5 mr-5">
-                      <FaRobot className="text-violet-500 size-[40px]" />
+                      <RiRobot2Fill className="text-violet-500 size-[40px]" />
                     </Button>
                   </SheetTrigger>
                   <SheetContent>
                     <SheetHeader>
-                      <SheetTitle>Ai query</SheetTitle>
+                      <SheetTitle>
+                        Ai query
+                        <span className="text-sm text-gray-400 ">
+                          (Powered by Gemini)
+                        </span>
+                      </SheetTitle>
                       <SheetDescription>
                         Ask ai about your selected audio:
-                        <span>{fileNameSelected}</span>.
+                        <span className="text-violet-500">
+                          {fileNameSelected}
+                        </span>
+                        .
                       </SheetDescription>
                     </SheetHeader>
                     <ScrollArea className="h-screen">
@@ -3222,7 +3265,7 @@ export default function Dashboard() {
                               </div>
                             ) : (
                               <div className="grid gap-1 mt-2">
-                                <FaRobot className="size-[30px] text-violet-500" />
+                                <SiGooglegemini className="size-[30px] text-violet-500" />
 
                                 <div className="flex items-center  p-3  ">
                                   <FormattedText text={m.content} />
@@ -3259,16 +3302,29 @@ export default function Dashboard() {
                             </Button>
                           </>
                         )}
-                        <form onSubmit={handleSubmit}>
+                        <form
+                          onSubmit={(event) => {
+                            handleSubmit(event, {
+                              body: {
+                                customKey: customValue,
+                              },
+                            });
+                          }}
+                        >
                           <div className="bg-gray-200 fixed bottom-5 mr-5 rounded-lg p-2">
                             <div className="end-10 flex items-center gap-2 ">
-                              <Input
+                              <Textarea
                                 value={input}
                                 placeholder="ask AI something..."
                                 onChange={handleInputChange}
                                 disabled={isLoading}
+                                className="h-[40px]"
                               />
-                              <Button variant="ghost" type="submit">
+                              <Button
+                                disabled={isLoading}
+                                variant="ghost"
+                                type="submit"
+                              >
                                 <SendIcon className="text-violet-500" />
                               </Button>
                             </div>
