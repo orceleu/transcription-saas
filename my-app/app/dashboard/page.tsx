@@ -294,10 +294,18 @@ export default function Dashboard() {
     error,
     reload,
     stop,
+    append,
   } = useChat({
     api: "/api/aichat",
     streamProtocol: "text",
   });
+  // Questions suggérées
+  const suggestedQuestions = [
+    "de quoi parle le doc?",
+    "Can you summarize the document?",
+    "What are the key points mentioned?",
+  ];
+
   const [uploadedFile, setUploadedFile] = useState<any>(null);
   const [isAudioUrlDispo, setAudioUrlDispo] = useState(false);
   const router = useRouter();
@@ -383,22 +391,14 @@ export default function Dashboard() {
   const durationUploaded = useRef(0);
   const [fileNameSelected, setfileNameSelected] = useState("");
   const [addButtonPlan, setAddButtonPlan] = useState(false);
-  const customValue = `Objectif:comprendre le fontionnement des composants de base de l’électronique,réaliser des 
-montages et plus.
- Preparé par : ORCEL EULER NO: 47656226 
-Definition :
-L'électronique est la branche de la physique appliquée qui étudie et exploite le comportement des 
-électrons et d'autres particules chargées dans des matériaux conducteurs et semi-conducteurs. En 
-termes simples, elle porte sur la conception, l'analyse et la mise en œuvre de dispositifs et de 
-systèmes basés sur le mouvement contrôlé des électrons.
-Les applications de l'électronique incluent :
-1. Les composants électroniques : tels que les diodes, les transistors et les circuits intégrés, 
-qui sont la base des dispositifs électroniques.
-2. Les systèmes de communication : comme les téléphones mobiles et le Wi-Fi, qui 
-utilisent des signaux électroniques pour transmettre des informations.
-3. Les dispositifs de traitement de l'information : comme les ordinateurs et les 
-microcontrôleurs, qui utilisent des circuits électroniques pour calculer et exécuter des 
-instructions.`;
+
+  // Fonction pour envoyer une question
+  /* const handleSendQuestion = (question: string) => {
+    append({ role: "user", content: question }); // Ajouter la question comme message utilisateur
+    handleSubmit(undefined, {
+      body: { customKey: customValue },
+    }); // Envoyer la question
+  };*/
   const addUserHistoricData = (
     userId: string,
     historic: string,
@@ -2258,7 +2258,7 @@ instructions.`;
                             </div>
                           ) : (
                             <div className="grid gap-1">
-                              <SiGooglegemini className="size-[30px] text-violet-500" />
+                              <RiRobot2Fill className="size-[30px] text-violet-500" />
                               <div className="flex items-center p-3  ">
                                 <FormattedText text={m.content} />
                               </div>
@@ -2294,11 +2294,16 @@ instructions.`;
                           </Button>
                         </>
                       )}
+
                       <form
                         onSubmit={(event) => {
                           handleSubmit(event, {
                             body: {
-                              customKey: customValue,
+                              customKey: convertSubtitlesToString(
+                                subtitles,
+                                true,
+                                true
+                              ),
                             },
                           });
                         }}
@@ -3265,7 +3270,7 @@ instructions.`;
                               </div>
                             ) : (
                               <div className="grid gap-1 mt-2">
-                                <SiGooglegemini className="size-[30px] text-violet-500" />
+                                <RiRobot2Fill className="size-[30px] text-violet-500" />
 
                                 <div className="flex items-center  p-3  ">
                                   <FormattedText text={m.content} />
@@ -3306,7 +3311,11 @@ instructions.`;
                           onSubmit={(event) => {
                             handleSubmit(event, {
                               body: {
-                                customKey: customValue,
+                                customKey: convertSubtitlesToString(
+                                  subtitles,
+                                  true,
+                                  true
+                                ),
                               },
                             });
                           }}
@@ -3437,3 +3446,19 @@ instructions.`;
     );
   }
 }
+
+/*
+ <div className="space-y-2">
+                        <p className="font-semibold">Choose a question:</p>
+                        {suggestedQuestions.map((question, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handleSendQuestion(question)} // Envoie automatique au clic
+                            className="block w-full p-2 rounded-md text-left border bg-gray-100 hover:bg-gray-200"
+                          >
+                            {question}
+                          </button>
+                        ))}
+                      </div>
+
+*/
