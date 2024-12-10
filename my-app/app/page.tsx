@@ -8,6 +8,7 @@ import {
   ArrowDownNarrowWide,
   ArrowLeftCircle,
   Check,
+  CheckIcon,
   DeleteIcon,
   EditIcon,
   FileIcon,
@@ -315,96 +316,81 @@ export default function Home() {
               title="User-friendly interface."
               src={capturetranscriptionapp}
               sizes="500"
-              className="rounded-md shadow-md shadow-blue-300"
+              className="rounded-md shadow-2xl "
             />
-            <Separator className="my-[100px]" />
+            <Separator className="my-[100px]" />{" "}
+            <p
+              className="text-center text-3xl lg:text-5xl font-bold  "
+              id="pricing"
+            >
+              Simple and affordable pricing
+            </p>
+            <p className="text-gray-600 text-center lg:text-xl my-5 md:my-10">
+              Our easy, pay-as-you-transcribe pricing allows you to top-up your
+              credit whenever you need it. The more transcription hours you
+              top-up on your account, the more you will save. No plans, no
+              packages, no commitments required.
+            </p>{" "}
             <div className="grid gap-5 grid-cols-1 lg:grid-cols-2">
               <div>
-                <p
-                  className="text-center text-3xl lg:text-5xl font-bold  "
-                  id="pricing"
-                >
-                  Simple and affordable pricing
-                </p>
-                <p className="text-gray-600 text-center lg:text-xl my-5 md:my-10">
-                  Our easy, pay-as-you-transcribe pricing allows you to top-up
-                  your credit whenever you need it. The more transcription hours
-                  you top-up on your account, the more you will save. No plans,
-                  no packages, no commitments required.
-                </p>{" "}
-                <div className="flex justify-center w-full  h-[150px]">
-                  <div className="grid grid-cols-3 gap-2 w-full">
-                    <div className="w-full lg:w-[150px] hover:bg-gray-200 h-[80px] bg-gray-100 rounded-lg border-violet-600 border-[2px]">
-                      <div className="flex justify-center p-2">
-                        <div className="grid gap-1">
-                          <strong>Free</strong>
-                          <p>20mn</p>
+                <div className="grid gap-3 ">
+                  <div className="w-full p-10   shadow-2xl  max-w-[700px] bg-slate-400 rounded-md">
+                    <p className="text-center text-3xl text-white my-2">
+                      Try Audiscribe Free
+                    </p>
+                    <Separator className="my-2" />
+                    <div className="flex justify-center">
+                      <div className="grid gap-2 ">
+                        <p>20mn /month</p>
+                        <div className="flex justify-center mt-10">
+                          <div className="grid gap-2">
+                            <AuthButton
+                              buttonColor="#ffffff"
+                              text="Start with Google."
+                              textColor="#000000"
+                              textColor2="#e5e7eb"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
-                    <div className="w-full lg:w-[150px] h-[80px] bg-gray-100 hover:bg-gray-200 rounded-lg border-gray-400 border-[2px]">
-                      <div className="flex justify-center p-2">
-                        <div className="grid gap-1">
-                          <strong>5$</strong>
-                          <p>2 Hours</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className=" relative w-full lg:w-[150px] h-[80px] bg-gray-100 hover:bg-gray-200 rounded-lg border-gray-400 border-[2px]">
-                      <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md">
-                        -10%
-                      </div>
-                      <div className="flex justify-center p-2">
-                        <div className="grid gap-1">
-                          <strong>10$</strong>
-                          <p>6 Hours</p>
-                        </div>
-                      </div>
-                    </div>{" "}
-                    <div className="relative w-full lg:w-[150px] h-[80px] bg-gray-100 hover:bg-gray-200 rounded-lg border-gray-400 border-[2px]">
-                      <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md">
-                        -20%
-                      </div>
-                      <div className="flex justify-center p-2">
-                        <div className="grid gap-1">
-                          <strong>15$</strong>
-                          <p>8 Hours</p>
-                        </div>
-                      </div>
-                    </div>{" "}
-                    <div className="relative w-full lg:w-[150px] h-[80px] bg-gray-100 hover:bg-gray-200 rounded-lg border-gray-400 border-[2px]">
-                      <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md">
-                        -25%
-                      </div>
-                      <div className="flex justify-center p-2">
-                        <div className="grid gap-1">
-                          <strong>25$</strong>
-                          <p>15 Hours</p>
-                        </div>
-                      </div>
-                    </div>{" "}
-                    <div className="relative w-full lg:w-[150px] h-[80px] bg-gray-100 hover:bg-gray-200 rounded-lg border-gray-400 border-[2px]">
-                      <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md">
-                        -30%
-                      </div>
-                      <div className="flex justify-center p-2">
-                        <div className="grid gap-1">
-                          <strong>35$</strong>
-                          <p>20 Hours</p>
-                        </div>
-                      </div>
-                    </div>{" "}
                   </div>
                 </div>
               </div>
-              <div className="grid gap-3 lg:mt-[300px]">
-                <div className="w-full p-10 my-[100px]  md:mt-[60px]  max-w-[700px] bg-violet-700 rounded-md">
+              <div className="grid gap-3 ">
+                <div className="w-full p-10 my-[100px]  md:mt-[50px] shadow-2xl  max-w-[700px] bg-violet-700 rounded-md">
                   <p className="text-center text-3xl text-white my-2">
-                    Try Audiscribe Free
+                    Audiscribe Pro
+                    <span className="text-amber-500 font-bold">10$/month</span>
                   </p>
                   <Separator className="my-2" />
                   <div className="flex justify-center">
-                    <div className="grid gap-2 ">
+                    <div className="grid gap-2  ">
+                      <div className="flex justify-center">
+                        <div className="flex items-center gap-2">
+                          <CheckIcon className="text-white" />
+                          <p className=" text-white">20Hours /month.</p>
+                        </div>
+                      </div>
+                      <div className="flex justify-center">
+                        <div className="flex items-center gap-2">
+                          <CheckIcon className="text-white" />
+                          <p className=" text-white">5GB upload.</p>
+                        </div>
+                      </div>
+                      <div className="flex justify-center">
+                        <div className="flex items-center gap-2">
+                          <CheckIcon className="text-white" />
+                          <p className=" text-white">AI Query.</p>
+                        </div>
+                      </div>
+                      <div className="flex justify-center">
+                        <div className="flex items-center gap-2">
+                          <CheckIcon className="text-white" />
+                          <p className=" text-white">AI Query.</p>
+                        </div>
+                      </div>
+
                       <div className="flex justify-center mt-10">
                         <div className="grid gap-2">
                           <AuthButton

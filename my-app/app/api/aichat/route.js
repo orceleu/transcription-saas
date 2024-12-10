@@ -3,7 +3,6 @@ import {
   HarmCategory,
   HarmBlockThreshold,
 } from "@google/generative-ai";
-import { NextRequest, NextResponse } from "next/server";
 
 const apiKey = "AIzaSyAzyIwCBstZ2THIErRE4_CTShzWsO6orB4";
 const genAI = new GoogleGenerativeAI(apiKey);
@@ -21,7 +20,7 @@ export async function POST(req) {
     document provided by the user,this document:"${customKey}". Your tone should be approachable and professional,
      making the user feel supported. Here are your guidelines:
 
-1-Begin each interaction warmly and in the user language.
+1-Begin each interaction warmly.
 2-Answer questions only based on the information in the document. If the answer is not available
  in the document, respond kindly and explain it.
 3-Avoid making assumptions or adding any external information beyond what the document contains.
@@ -37,7 +36,7 @@ Objective: Ensure your responses are accurate, helpful, and strictly
 
   const generationConfig = {
     temperature: 1,
-    topP: 0.99,
+    topP: 0.95,
     topK: 10,
     maxOutputTokens: 8192,
     responseMimeType: "text/plain",

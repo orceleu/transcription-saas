@@ -284,6 +284,12 @@ interface Plan {
   credits: number;
   price: string;
 }
+interface ModelUserData {
+  isPro: boolean;
+  Time: string;
+  stripeSubscriptionId: string;
+  stripeCustomerId: string;
+}
 export default function Dashboard() {
   const {
     messages,
@@ -299,12 +305,6 @@ export default function Dashboard() {
     api: "/api/aichat",
     streamProtocol: "text",
   });
-  // Questions suggérées
-  const suggestedQuestions = [
-    "de quoi parle le doc?",
-    "Can you summarize the document?",
-    "What are the key points mentioned?",
-  ];
 
   const [uploadedFile, setUploadedFile] = useState<any>(null);
   const [isAudioUrlDispo, setAudioUrlDispo] = useState(false);
@@ -381,7 +381,7 @@ export default function Dashboard() {
   const size = useRef("");
   const falRequestId = useRef("");
   const [userData, setUserData] = useState<UserDataHistoric[]>([]);
-  const [remainingTime, setRemainingTime] = useState("");
+  const [userAccountData, setUserAccountData] = useState<any>(null);
   const deleteItemUserHistoric = (id: string) => {
     const deletedTable = userData.filter((value) => value.$id !== id);
     setUserData(deletedTable);
@@ -392,13 +392,6 @@ export default function Dashboard() {
   const [fileNameSelected, setfileNameSelected] = useState("");
   const [addButtonPlan, setAddButtonPlan] = useState(false);
 
-  // Fonction pour envoyer une question
-  /* const handleSendQuestion = (question: string) => {
-    append({ role: "user", content: question }); // Ajouter la question comme message utilisateur
-    handleSubmit(undefined, {
-      body: { customKey: customValue },
-    }); // Envoyer la question
-  };*/
   const addUserHistoricData = (
     userId: string,
     historic: string,
@@ -843,7 +836,7 @@ export default function Dashboard() {
     if (firstcheck.current < 3) {
       if (youtubeUrl.slice(0, 13) === "https://youtu") {
         //check if long youtube video
-        checkVideoYoutube(youtubeUrl, Number(remainingTime));
+        checkVideoYoutube(youtubeUrl, Number(userAccountData[0].Time));
       } else {
         toast({
           variant: "destructive",
@@ -874,7 +867,18 @@ export default function Dashboard() {
         console.log(error);
       });
   }
-
+  const cancelSubscription = async () => {
+    await axios
+      .post("/api/cancelsub", {
+        subscriptionId: userAccountData?.stripeSubscriptionId,
+      })
+      .then((value) => {
+        toast({
+          variant: "default",
+          description: "subscription will be canceled at the end of the month",
+        });
+      });
+  };
   useEffect(() => {
     if (youtubeUrl) {
       handleActiveButton();
@@ -908,7 +912,7 @@ export default function Dashboard() {
           );
           media.src = URL.createObjectURL(file);
           media.onloadedmetadata = () => {
-            const durationAllowed = parseInt(remainingTime, 10);
+            const durationAllowed = parseInt(userAccountData?.Time, 10);
             if (media.duration < durationAllowed) {
               durationUploaded.current = media.duration;
               setUploadLoaded(true);
@@ -998,16 +1002,16 @@ export default function Dashboard() {
         setUserid(result.$id);
 
         //ajoute 20 min si le doc est inexistant cela veut dire que le compte vient d'etre cree
-        const res = await getDocument(result.$id);
-        if (res !== "error") {
-          setRemainingTime(res);
+        const res: any = await getDocument(result.$id);
+        if (res.error !== "error") {
+          setUserAccountData(res);
           console.log(res);
         } else {
           //add doc
           await addUserAccount(result.$id);
 
-          const res1 = await getDocument(result.$id);
-          setRemainingTime(res1);
+          const res1: any = await getDocument(result.$id);
+          setUserAccountData(res1);
         }
       }
     } catch (error) {
@@ -1361,7 +1365,7 @@ export default function Dashboard() {
           description: "Process finished... ",
         });
         //actualise puis update
-        const res1Value = parseInt(remainingTime, 10); // Convertit res1 en entier
+        const res1Value = parseInt(userAccountData?.Time, 10); // Convertit res1 en entier
         const durationValue = Math.round(durationUploaded.current); // Garantit un entier pour durationUploaded
 
         if (!isNaN(res1Value) && !isNaN(durationValue)) {
@@ -1372,8 +1376,8 @@ export default function Dashboard() {
 
           updateUsedTime(userId, validTime);
           setTimeout(async () => {
-            const res1: string = await getDocument(userId);
-            setRemainingTime(res1);
+            const res1: any = await getDocument(userId);
+            setUserAccountData(res1);
           }, 3000);
         } else {
           console.log("erreur de conversion string to Int");
@@ -1382,7 +1386,7 @@ export default function Dashboard() {
     } catch (error) {
       //actualise puis update
 
-      const res1Value = parseInt(remainingTime, 10); // Convertit res1 en entier
+      const res1Value = parseInt(userAccountData?.Time, 10); // Convertit res1 en entier
       const durationValue = Math.round(durationUploaded.current); // Garantit un entier pour durationUploaded
 
       if (!isNaN(res1Value) && !isNaN(durationValue)) {
@@ -1393,8 +1397,8 @@ export default function Dashboard() {
 
         updateUsedTime(userId, validTime);
         setTimeout(async () => {
-          const res1: string = await getDocument(userId);
-          setRemainingTime(res1);
+          const res1: any = await getDocument(userId);
+          setUserAccountData(res1);
         }, 3000);
       } else {
         console.log("erreur de conversion string to Int");
@@ -1475,7 +1479,9 @@ export default function Dashboard() {
 
               <p className="text-center">
                 <span className="text-slate-400"> remaining:</span>
-                <span>{convertirDuree(parseInt(remainingTime, 10))}</span>
+                <span>
+                  {convertirDuree(parseInt(userAccountData?.Time, 10))}
+                </span>
               </p>
 
               <Dialog
@@ -1921,6 +1927,9 @@ export default function Dashboard() {
                         <DropdownMenuSeparator />
 
                         <DropdownMenuItem>Support</DropdownMenuItem>
+                        <DropdownMenuItem onClick={cancelSubscription}>
+                          Cancel subscription
+                        </DropdownMenuItem>
                         <DropdownMenuItem disabled>API</DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={logOut}>
@@ -2373,6 +2382,9 @@ export default function Dashboard() {
               <DropdownMenuSeparator />
 
               <DropdownMenuItem>Support</DropdownMenuItem>
+              <DropdownMenuItem onClick={cancelSubscription}>
+                Cancel subscription
+              </DropdownMenuItem>
               <DropdownMenuItem disabled>API</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={logOut}>
@@ -2386,7 +2398,7 @@ export default function Dashboard() {
           <div className="grid gap-3">
             <p className="text-center">
               <span className="text-slate-400"> remaining:</span>
-              <span>{convertirDuree(parseInt(remainingTime, 10))}</span>
+              <span>{convertirDuree(parseInt(userAccountData?.Time, 10))}</span>
             </p>
             <Dialog
               open={openMobileDialogAddCredits}

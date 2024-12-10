@@ -9,7 +9,10 @@ const addUserAccount = async (documentId) => {
     USER_ACCOUNT_COLLECTION_ID,
     documentId,
     {
+      isPro: false,
       Time: 1200,
+      stripeSubscriptionId: "",
+      stripeCustomerId: "",
     },
     [
       Permission.write(Role.any()),
@@ -36,9 +39,16 @@ const getDocument = async (documentId) => {
       documentId // documentId
     );
 
-    return result.Time;
+    return {
+      isPro: result.isPro,
+      Time: result.Time,
+      stripeSubscriptionId: result.stripeSubscriptionId,
+      stripeCustomerId: result.stripeCustomerId,
+    };
   } catch (error) {
-    return "error";
+    return {
+      error: "error",
+    };
   }
 };
 

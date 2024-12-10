@@ -63,7 +63,7 @@ export async function POST(req) {
       credits: credits,
       email: `${customer_Email}`,
     },
-    mode: "payment",
+    mode: "subscription",
     success_url: "https://natural-voice.vercel.app/checkout/success",
     cancel_url: "https://natural-voice.vercel.app/checkout/cancel",
     customer_email: customer_Email,
