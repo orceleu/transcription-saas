@@ -126,6 +126,9 @@ export default function Home() {
                 <p className="text-center">
                   <span className="text-2xl">📝</span> edit and export
                 </p>
+                <p className="text-center">
+                  <span className="text-2xl">🤖</span> AI tools
+                </p>
               </div>
             </div>
             <div className="relative z-[-1] flex place-items-center before:absolute before:h-[500px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-violet-100 after:via-blue-300 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-blue-900 after:dark:via-[#6201ff] after:dark:opacity-40 sm:before:w-[580px] sm:after:w-[340px] before:lg:h-[460px]"></div>
@@ -158,8 +161,7 @@ export default function Home() {
                     <p>
                       <span className="font-bold underline">Student</span>__{" "}
                       <span className=" text-[10px] md:text-[14px] text-gray-600">
-                        Convert audio/video in PDF and you can use it in other
-                        AI tools like{" "}
+                        Upload your audio and start asking AI question about it.
                         <a
                           title="go to chatPdf."
                           href="https://www.chatpdf.com"
@@ -193,9 +195,8 @@ export default function Home() {
                     <p>
                       <span className="font-bold underline">Researsher</span>__{" "}
                       <span className=" text-[10px] md:text-[14px] text-gray-600">
-                        Search and locate specific keywords within audio or
-                        video files, saving time and enhancing the ability to
-                        analyze data and retrieve relevant information
+                        Locate specific keywords within audio or video files,
+                        saving time and enhancing the ability to analyze data
                         effortlessly.
                       </span>{" "}
                     </p>
@@ -224,7 +225,7 @@ export default function Home() {
               textColor2="#4b5563"
             />
             <p className="my-2 text-center text-gray-500">
-              20mn transcription for free --- No CreditCard required
+              20min transcription for free --- No CreditCard required
             </p>
             <div className="grid gap-5 md:gap-10 my-[80px]">
               <div className="grid gap-2">
@@ -320,17 +321,11 @@ export default function Home() {
             />
             <Separator className="my-[100px]" />{" "}
             <p
-              className="text-center text-3xl lg:text-5xl font-bold  "
+              className="text-center my-[90px] text-3xl lg:text-5xl font-bold  "
               id="pricing"
             >
               Simple and affordable pricing
             </p>
-            <p className="text-gray-600 text-center lg:text-xl my-5 md:my-10">
-              Our easy, pay-as-you-transcribe pricing allows you to top-up your
-              credit whenever you need it. The more transcription hours you
-              top-up on your account, the more you will save. No plans, no
-              packages, no commitments required.
-            </p>{" "}
             <div className="grid gap-5 grid-cols-1 lg:grid-cols-2">
               <div>
                 <div className="grid gap-3 ">
@@ -338,11 +333,37 @@ export default function Home() {
                     <p className="text-center text-3xl text-white my-2">
                       Try Audiscribe Free
                     </p>
-                    <Separator className="my-2" />
+                    <Separator className="mb-[60px]" />
                     <div className="flex justify-center">
-                      <div className="grid gap-2 ">
-                        <p>20mn /month</p>
-                        <div className="flex justify-center mt-10">
+                      <div className="grid gap-2  ">
+                        <div className="flex items-center gap-2">
+                          <CheckIcon className="text-white" />
+                          <p className=" text-white">20min/month.</p>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <CheckIcon className="text-white" />
+                          <p className=" text-white">15MB/upload.</p>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <CheckIcon className="text-white" />
+                          <p className=" text-white">
+                            AI Query,AI meeting assistant records, transcribes
+                            and summarizes.
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <CheckIcon className="text-white" />
+                          <p className=" text-white">Powerfull Editor.</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <CheckIcon className="text-white" />
+                          <p className=" text-white">Export in any format.</p>
+                        </div>
+
+                        <div className="flex justify-center mt-5">
                           <div className="grid gap-2">
                             <AuthButton
                               buttonColor="#ffffff"
@@ -363,35 +384,37 @@ export default function Home() {
                     Audiscribe Pro
                     <span className="text-amber-500 font-bold">10$/month</span>
                   </p>
-                  <Separator className="my-2" />
+                  <Separator className="mb-[60px]" />
                   <div className="flex justify-center">
                     <div className="grid gap-2  ">
-                      <div className="flex justify-center">
-                        <div className="flex items-center gap-2">
-                          <CheckIcon className="text-white" />
-                          <p className=" text-white">20Hours /month.</p>
-                        </div>
-                      </div>
-                      <div className="flex justify-center">
-                        <div className="flex items-center gap-2">
-                          <CheckIcon className="text-white" />
-                          <p className=" text-white">5GB upload.</p>
-                        </div>
-                      </div>
-                      <div className="flex justify-center">
-                        <div className="flex items-center gap-2">
-                          <CheckIcon className="text-white" />
-                          <p className=" text-white">AI Query.</p>
-                        </div>
-                      </div>
-                      <div className="flex justify-center">
-                        <div className="flex items-center gap-2">
-                          <CheckIcon className="text-white" />
-                          <p className=" text-white">AI Query.</p>
-                        </div>
+                      <div className="flex items-center gap-2">
+                        <CheckIcon className="text-white" />
+                        <p className=" text-white">20Hours /month.</p>
                       </div>
 
-                      <div className="flex justify-center mt-10">
+                      <div className="flex items-center gap-2">
+                        <CheckIcon className="text-white" />
+                        <p className=" text-white">5GB upload.</p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <CheckIcon className="text-white" />
+                        <p className=" text-white">
+                          AI Query,AI meeting assistant records, transcribes and
+                          summarizes
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <CheckIcon className="text-white" />
+                        <p className=" text-white">Powerfull Editor.</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckIcon className="text-white" />
+                        <p className=" text-white">Export in any format.</p>
+                      </div>
+
+                      <div className="flex justify-center mt-5">
                         <div className="grid gap-2">
                           <AuthButton
                             buttonColor="#ffffff"
@@ -536,7 +559,7 @@ export default function Home() {
             </p>
             <Separator className="my-10" />
             <div className="grid lg:grid-cols-2  gap-5 lg:gap-10 ">
-              <div className="bg-white border-[2px] border-blue-100 rounded-md w-full p-5 md:p-10">
+              <div className="bg-white border-[2px] shadow-2xl border-blue-100 rounded-2xl w-full p-5 md:p-10">
                 <div className="flex justify-between my-3 ">
                   <p className=" text-xl font-semibold">Good.</p>
                   <div className="flex items-center gap-2">
@@ -551,10 +574,10 @@ export default function Home() {
 
                 <p>
                   Good services. No ads and transcripts are accurate than other
-                  app like this .Also i like the fact there is no subscription.
+                  app like this,resonnable price with a bunch of fonctionnality.
                 </p>
               </div>
-              <div className="bg-white border-[2px] border-blue-100 rounded-md w-full p-5 md:p-10">
+              <div className="bg-white border-[2px] shadow-2xl border-emerald-100 rounded-2xl w-full p-5 md:p-10">
                 <div className="flex justify-between my-3 ">
                   <p className=" text-xl font-semibold">Indispensable.</p>
                   <div className="flex items-center gap-2">
@@ -574,7 +597,7 @@ export default function Home() {
                   A must-have for anyone looking to optimize their productivity!
                 </p>
               </div>{" "}
-              <div className="bg-white border-[2px] border-blue-100 rounded-md w-full p-5 md:p-10">
+              <div className="bg-white border-[2px] shadow-2xl border-amber-100 rounded-2xl w-full p-5 md:p-10">
                 <div className="flex justify-between my-3 ">
                   <p className=" text-xl font-semibold">Great.</p>
                   <div className="flex items-center gap-2">
@@ -589,7 +612,7 @@ export default function Home() {
 
                 <p>GREAT. FAST ACCURATE REASONABLE PRICE</p>
               </div>{" "}
-              <div className="bg-white border-[2px] border-blue-100 rounded-md w-full p-5 md:p-10">
+              <div className="bg-white border-[2px] shadow-2xl border-green-100 rounded-2xl w-full p-5 md:p-10">
                 <div className="flex justify-between my-3 ">
                   <p className=" text-xl font-semibold">Simple.</p>
                   <div className="flex items-center gap-2">
@@ -647,7 +670,7 @@ export default function Home() {
                   How much file size can i upload?
                 </AccordionTrigger>
                 <AccordionContent className="3 lg:text-xl text-gray-600">
-                  You can upload at most 5GB .
+                  You can upload at most 5GB.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-1">

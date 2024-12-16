@@ -93,7 +93,7 @@ const AuthButton: React.FC<ChildProps> = ({
         <FcGoogle className="mx-3 " />
         <p style={{ color: textColor }}>{text}</p>
       </Button>
-      <p className="text-center text-gray-400">___Or___</p>
+      <p className="text-center text-blue-400">___Or___</p>
       <Dialog>
         <DialogTrigger asChild>
           <Button variant="link" className="text-gray-600 font-bold">
