@@ -48,6 +48,8 @@ import {
 import logo from "../public/logo.jpg";
 import dynamic from "next/dynamic";
 import { EMAIL_ADDRESS } from "./constKey/key";
+import { RiRobot2Fill } from "react-icons/ri";
+import { FaRobot } from "react-icons/fa6";
 export default function Home() {
   const NavBar = dynamic(() => import("./clientComponent/navBar"), {
     ssr: false,
@@ -75,7 +77,7 @@ export default function Home() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  to text converter
+                  transcription software.
                 </a>
               </h1>
 
@@ -232,40 +234,44 @@ export default function Home() {
                 <p className="text-3xl lg:text-5xl font-bold text-center">
                   Online Transcription Made Easy.
                 </p>
-                <p className="text-gray-600 text-center">
+                <p className="text-gray-600 md:text-xl text-center">
                   All tools you need to transcribe your audio and video file.
                 </p>
               </div>
               <div className="grid gap-2">
                 <div className="flex justify-center">
                   <div className="p-4 rounded-full bg-slate-100">
-                    <LanguagesIcon className="text-blue-300 " />
+                    <LanguagesIcon className="text-blue-300 md:size-[50px]" />
                   </div>
                 </div>
-                <p className="text-2xl text-center">100+ Languages.</p>
-                <p className="text-gray-600 text-center">
+                <p className="text-2xl  md:text-4xl text-center">
+                  100+ Languages.
+                </p>
+                <p className="text-gray-600 md:text-xl text-center">
                   Supporting many languages with the option to translante.
                 </p>
               </div>
               <div className="grid gap-2">
                 <div className="flex justify-center">
                   <div className="p-4 rounded-full bg-slate-100">
-                    <FileIcon className="text-red-300 " />
+                    <FileIcon className="text-red-300 md:size-[50px]" />
                   </div>
                 </div>
-                <p className="text-2xl text-center">Export.</p>
-                <p className="text-gray-600 text-center">
+                <p className="text-2xl  md:text-4xl text-center">Export.</p>
+                <p className="text-gray-600 md:text-xl text-center">
                   Export your transcriptions in many format (PDF,DOCX,TXT,SRT).
                 </p>
               </div>
               <div className="grid gap-2">
                 <div className="flex justify-center">
                   <div className="p-4 rounded-full bg-slate-100">
-                    <UploadCloud className="text-lime-300 " />
+                    <UploadCloud className="text-lime-300 md:size-[50px]" />
                   </div>
                 </div>
-                <p className="text-2xl text-center">Upload any format.</p>
-                <p className="text-gray-600 text-center">
+                <p className="text-2xl  md:text-4xl text-center">
+                  Upload any format.
+                </p>
+                <p className="text-gray-600 md:text-xl text-center">
                   Upload files in all popular formats, including MP3, MP4, M4A,
                   MOV, AAC, WAV, OGG, OPUS, MPEG, YouTube, and more.
                 </p>
@@ -273,13 +279,13 @@ export default function Home() {
               <div className="grid gap-2">
                 <div className="flex justify-center">
                   <div className="p-4 rounded-full bg-slate-100">
-                    <TimerIcon className="text-amber-300 " />
+                    <TimerIcon className="text-amber-300 md:size-[50px] " />
                   </div>
                 </div>
-                <p className="text-2xl text-center">
+                <p className="text-2xl  md:text-4xl text-center">
                   Get transcribe in Seconds.
                 </p>
-                <p className="text-gray-600 text-center">
+                <p className="text-gray-600 md:text-xl text-center">
                   Recieve accurate transcriptions within seconds of uploading
                   your files.
                 </p>
@@ -287,12 +293,23 @@ export default function Home() {
               <div className="grid gap-2">
                 <div className="flex justify-center">
                   <div className="p-4 rounded-full bg-slate-100">
-                    <EditIcon className="text-violet-300 " />
+                    <EditIcon className="text-blue-300 md:size-[50px]" />
                   </div>
                 </div>
-                <p className="text-2xl text-center">Edit.</p>
-                <p className="text-gray-600 text-center">
+                <p className="text-2xl md:text-4xl text-center">Edit.</p>
+                <p className="text-gray-600 md:text-xl text-center">
                   Edit your transcribed text.
+                </p>
+              </div>
+              <div className="grid gap-2">
+                <div className="flex justify-center">
+                  <div className="p-4 rounded-full bg-slate-100">
+                    <FaRobot className="text-violet-300 md:size-[50px]" />
+                  </div>
+                </div>
+                <p className="text-2xl  md:text-4xl text-center">AI.</p>
+                <p className="text-gray-600 md:text-xl text-center">
+                  AI query about your audio powered by Gemini.
                 </p>
               </div>
             </div>
@@ -307,10 +324,10 @@ export default function Home() {
               </span>
             </p>
             <div className="flex items-center gap-5 md:gap-10 my-10">
-              <ArrowBigDown className="size-[50px] md:size-[100px]" />
-              <ArrowBigDown className="size-[50px] md:size-[100px]" />
-              <ArrowBigDown className="size-[50px] md:size-[100px]" />
-              <ArrowBigDown className="size-[50px] md:size-[100px]" />
+              <ArrowBigDown className="size-[50px] md:size-[100px] text-blue-100" />
+              <ArrowBigDown className="size-[50px] md:size-[100px] text-blue-100" />
+              <ArrowBigDown className="size-[50px] md:size-[100px] text-blue-100" />
+              <ArrowBigDown className="size-[50px] md:size-[100px] text-blue-100" />
             </div>{" "}
             <Image
               alt="capture"
@@ -362,6 +379,12 @@ export default function Home() {
                           <CheckIcon className="text-white" />
                           <p className=" text-white">Export in any format.</p>
                         </div>
+                        <div className="flex items-center gap-2">
+                          <CheckIcon className="text-white" />
+                          <p className=" text-white">
+                            Chat with PDF(coming soon).
+                          </p>
+                        </div>
 
                         <div className="flex justify-center mt-5">
                           <div className="grid gap-2">
@@ -394,7 +417,7 @@ export default function Home() {
 
                       <div className="flex items-center gap-2">
                         <CheckIcon className="text-white" />
-                        <p className=" text-white">5GB upload.</p>
+                        <p className=" text-white">5GB/upload.</p>
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -412,6 +435,12 @@ export default function Home() {
                       <div className="flex items-center gap-2">
                         <CheckIcon className="text-white" />
                         <p className=" text-white">Export in any format.</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckIcon className="text-white" />
+                        <p className=" text-white">
+                          Chat with PDF(coming soon).
+                        </p>
                       </div>
 
                       <div className="flex justify-center mt-5">

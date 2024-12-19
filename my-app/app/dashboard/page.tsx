@@ -89,9 +89,10 @@ import {
   listAll,
   deleteObject,
 } from "firebase/storage";
+import { MdWorkspacePremium } from "react-icons/md";
 import { storage } from "@/app/firebase/config";
 import { jsPDF } from "jspdf";
-import { RiChat1Line, RiRobot2Fill } from "react-icons/ri";
+import { RiChat1Line, RiHonorOfKingsFill, RiRobot2Fill } from "react-icons/ri";
 import {
   Dialog,
   DialogContent,
@@ -386,7 +387,8 @@ export default function Dashboard() {
     const deletedTable = userData.filter((value) => value.$id !== id);
     setUserData(deletedTable);
   };
-  const priceId = "price_1QHrUJHMq3uIqhfs2SDnMlJW";
+  const priceId = "price_1QXnieHMq3uIqhfsieLz1caB";
+  const selectedCredits = 72000;
   const fileSizeAllowedToUpload = 5000000000; //5000MB
   const durationUploaded = useRef(0);
   const [fileNameSelected, setfileNameSelected] = useState("");
@@ -415,31 +417,6 @@ export default function Dashboard() {
         size: size,
       },
     ]);
-  };
-  // Liste des options disponibles
-  const plans: Plan[] = [
-    { id: "price_1QHrUJHMq3uIqhfs2SDnMlJW", credits: 7200, price: "5$" },
-    { id: "plan2", credits: 20, price: "10$" },
-    { id: "plan3", credits: 30, price: "10$" },
-    { id: "plan4", credits: 40, price: "10$" },
-    { id: "plan5", credits: 50, price: "10$" },
-    { id: "plan6", credits: 60, price: "10$" },
-  ];
-
-  // useRef pour stocker les valeurs du plan sélectionné
-  const selectedPlanId = useRef("");
-  const selectedCredits = useRef(0);
-  const [selectedPlan, setSelectedPlan] = useState<Plan>({
-    id: plans[0].id,
-    credits: plans[0].credits,
-    price: plans[0].price,
-  });
-
-  // Fonction pour gérer le changement de sélection
-  const handleSelection = (plan: Plan) => {
-    setSelectedPlan(plan);
-    selectedPlanId.current = plan.id;
-    selectedCredits.current = plan.credits;
   };
 
   const addSpeaker = (newItem: string) => {
@@ -1473,8 +1450,15 @@ export default function Dashboard() {
           <br />
           <div className="flex justify-center mt-8">
             <div className="grid gap-1 w-[200px] p-3">
-              <div className="flex items-start h-[70px] w-1/5 bg-white fixed top-0 start-0">
-                <SidebarClose className="text-gray-500 size-[35px] ml-3 mt-5 " />
+              <div className="flex  h-[70px] w-1/5 bg-white fixed top-0 start-0">
+                <div className="flex  w-full justify-between mt-5 mx-3">
+                  <SidebarClose className="text-gray-500 size-[35px] " />
+                  {userAccountData?.isPro ? (
+                    <MdWorkspacePremium className="text-amber-500 size-[35px]" />
+                  ) : (
+                    <p className=" text-gray-500 font-bold mr-2">Free</p>
+                  )}
+                </div>
               </div>
 
               <p className="text-center">
@@ -1483,78 +1467,32 @@ export default function Dashboard() {
                   {convertirDuree(parseInt(userAccountData?.Time, 10))}
                 </span>
               </p>
-
-              <Dialog
-                open={openDesktopDialogAddCredits}
-                onOpenChange={setOpenDesktopDialogAddCredits}
-              >
-                <DialogTrigger asChild>
-                  <Button variant="outline">
-                    {" "}
-                    <Infinity />
-                    add credits
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>Add Credits.</DialogTitle>
-                    <DialogDescription>
-                      add:{" "}
-                      <span className="text-green-600">
-                        {convertirDuree(selectedPlan.credits)}
-                      </span>{" "}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid grid-cols-2 gap-4">
-                    {plans.map((plan) => (
-                      <button
-                        key={plan.id}
-                        className="px-4 py-2 border rounded hover:bg-blue-100"
-                        onClick={() => {
-                          handleSelection(plan);
-                        }}
-                      >
-                        <div className="grid gap-2">
-                          <p className="text-green-600">
-                            add:{convertirDuree(plan.credits)}
-                          </p>
-                          <p className="font-bold">{plan.price}</p>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                  <Button
-                    className="bg-blue-600 hover:bg-blue-500"
-                    onClick={() => {
-                      if (userEmail !== null && userEmail !== "") {
-                        setAddButtonPlan(true);
-                        selectPlan(
-                          selectedPlanId.current,
-                          userEmail,
-                          userId,
-                          selectedCredits.current
-                        );
-                      } else {
-                        console.log("no session!");
-                      }
-                      console.log(`${selectedPlanId.current}`);
-                    }}
-                  >
-                    {addButtonPlan ? (
-                      <LoaderIcon className="animate-spin size-5" />
-                    ) : (
-                      <div className="flex items-center gap-3">
-                        <CreditCard />
-                        add:{" "}
-                        <span className="text-green-600">
-                          {selectedPlan.credits}
-                        </span>{" "}
-                        credits.
-                      </div>
-                    )}
-                  </Button>
-                </DialogContent>
-              </Dialog>
+              {/* affiche s'il n'y a pas de plan*/}
+              {userAccountData?.isPro ? null : (
+                <Button
+                  className="my-5"
+                  variant="outline"
+                  onClick={() => {
+                    if (userEmail !== null && userEmail !== "") {
+                      setAddButtonPlan(true);
+                      selectPlan(priceId, userEmail, userId, selectedCredits);
+                    } else {
+                      console.log("no session!");
+                    }
+                    console.log(`${priceId}`);
+                  }}
+                >
+                  {addButtonPlan ? (
+                    <LoaderIcon className="animate-spin size-5" />
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      <MdWorkspacePremium className="text-amber-500 " />
+                      Go pro
+                      <span className="text-green-600">20h/mo</span>.
+                    </div>
+                  )}
+                </Button>
+              )}
             </div>
           </div>
           <Tabs defaultValue="password" className="w-full">
@@ -2231,7 +2169,7 @@ export default function Dashboard() {
               <Sheet>
                 <SheetTrigger asChild>
                   <Button variant="ghost" className="mb-10 mr-10">
-                    <RiRobot2Fill className="text-violet-500 size-[60px] " />
+                    <FaRobot className="text-violet-500 size-[60px] " />
                   </Button>
                 </SheetTrigger>
                 <SheetContent>
@@ -2267,7 +2205,7 @@ export default function Dashboard() {
                             </div>
                           ) : (
                             <div className="grid gap-1">
-                              <RiRobot2Fill className="size-[30px] text-violet-500" />
+                              <FaRobot className="size-[30px] text-violet-500" />
                               <div className="flex items-center p-3  ">
                                 <FormattedText text={m.content} />
                               </div>
@@ -2371,28 +2309,36 @@ export default function Dashboard() {
       <div className="lg:hidden p-3 bg-gray-50">
         <div className="flex justify-between  top-2 end-2 m-2">
           <Image src={logo} alt="logo" className="size-[40px] rounded-full" />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost">
-                <MdAccountCircle className="size-[30px] text-gray-500" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>{userEmail}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
+          <div className="flex items-center gap-2">
+            {userAccountData?.isPro ? (
+              <MdWorkspacePremium className="text-amber-500 size-[35px]" />
+            ) : (
+              <p className=" text-gray-500 font-bold mr-2">Free</p>
+            )}
 
-              <DropdownMenuItem>Support</DropdownMenuItem>
-              <DropdownMenuItem onClick={cancelSubscription}>
-                Cancel subscription
-              </DropdownMenuItem>
-              <DropdownMenuItem disabled>API</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logOut}>
-                Log out
-                <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost">
+                  <MdAccountCircle className="size-[30px] text-gray-500" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel>{userEmail}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem>Support</DropdownMenuItem>
+                <DropdownMenuItem onClick={cancelSubscription}>
+                  Cancel subscription
+                </DropdownMenuItem>
+                <DropdownMenuItem disabled>API</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logOut}>
+                  Log out
+                  <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         <div className="flex justify-center my-5 bg-slate-100 rounded-md p-4">
           <div className="grid gap-3">
@@ -2400,76 +2346,32 @@ export default function Dashboard() {
               <span className="text-slate-400"> remaining:</span>
               <span>{convertirDuree(parseInt(userAccountData?.Time, 10))}</span>
             </p>
-            <Dialog
-              open={openMobileDialogAddCredits}
-              onOpenChange={setOpenMobileDialogAddCredits}
-            >
-              <DialogTrigger asChild>
-                <Button variant="outline">
-                  <Infinity />
-                  add credits
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Add Credits.</DialogTitle>
-                  <DialogDescription>
-                    add:{" "}
-                    <span className="text-green-600">
-                      {convertirDuree(selectedPlan.credits)}
-                    </span>{" "}
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid grid-cols-2 gap-4">
-                  {plans.map((plan) => (
-                    <button
-                      key={plan.id}
-                      className="px-4 py-2 border rounded hover:bg-blue-100"
-                      onClick={() => {
-                        handleSelection(plan);
-                      }}
-                    >
-                      <div className="grid gap-2">
-                        <p className="text-green-600">
-                          add:{convertirDuree(plan.credits)}
-                        </p>
-                        <p className="font-bold">{plan.price}</p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-                <Button
-                  className="bg-blue-600 hover:bg-blue-500"
-                  onClick={() => {
-                    if (userEmail !== null && userEmail !== "") {
-                      setAddButtonPlan(true);
-                      selectPlan(
-                        selectedPlanId.current,
-                        userEmail,
-                        userId,
-                        selectedCredits.current
-                      );
-                    } else {
-                      console.log("no session!");
-                    }
-                    console.log(`${selectedPlanId.current}`);
-                  }}
-                >
-                  {addButtonPlan ? (
-                    <LoaderIcon className="animate-spin size-5" />
-                  ) : (
-                    <div className="flex items-center gap-1">
-                      <CreditCard />
-                      add:{" "}
-                      <span className="text-green-600">
-                        {selectedPlan.credits}
-                      </span>{" "}
-                      credits.
-                    </div>
-                  )}
-                </Button>
-              </DialogContent>
-            </Dialog>
+            {/* affiche s'il n'y a pas de plan*/}
+            {userAccountData?.isPro ? null : (
+              <Button
+                className="my-5"
+                variant="outline"
+                onClick={() => {
+                  if (userEmail !== null && userEmail !== "") {
+                    setAddButtonPlan(true);
+                    selectPlan(priceId, userEmail, userId, selectedCredits);
+                  } else {
+                    console.log("no session!");
+                  }
+                  console.log(`${priceId}`);
+                }}
+              >
+                {addButtonPlan ? (
+                  <LoaderIcon className="animate-spin size-5" />
+                ) : (
+                  <div className="flex items-center gap-1">
+                    <MdWorkspacePremium className="text-amber-500 " />
+                    Go pro
+                    <span className="text-green-600">20h/mo</span>.
+                  </div>
+                )}
+              </Button>
+            )}
           </div>
         </div>
 
@@ -3246,7 +3148,7 @@ export default function Dashboard() {
                 <Sheet>
                   <SheetTrigger asChild>
                     <Button variant="ghost" size="lg" className="mb-5 mr-5">
-                      <RiRobot2Fill className="text-violet-500 size-[40px]" />
+                      <FaRobot className="text-violet-500 size-[40px]" />
                     </Button>
                   </SheetTrigger>
                   <SheetContent>
@@ -3282,7 +3184,7 @@ export default function Dashboard() {
                               </div>
                             ) : (
                               <div className="grid gap-1 mt-2">
-                                <RiRobot2Fill className="size-[30px] text-violet-500" />
+                                <FaRobot className="size-[30px] text-violet-500" />
 
                                 <div className="flex items-center  p-3  ">
                                   <FormattedText text={m.content} />
