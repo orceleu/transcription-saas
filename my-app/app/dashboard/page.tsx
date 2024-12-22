@@ -321,10 +321,6 @@ export default function Dashboard() {
   const [openForMobileExport, setOpenForMobileExport] = useState(false);
   const [openLanguage, setOpenLanguage] = useState(false);
   const [openLanguageMobile, setOpenLanguageMobile] = useState(false);
-  const [openDesktopDialogAddCredits, setOpenDesktopDialogAddCredits] =
-    useState(false);
-  const [openMobileDialogAddCredits, setOpenMobileDialogAddCredits] =
-    useState(false);
 
   const [openDesktopDialogYoutubemp3, setOpenDesktopDialogYoutubemp3] =
     useState(false);
@@ -383,6 +379,7 @@ export default function Dashboard() {
   const falRequestId = useRef("");
   const [userData, setUserData] = useState<UserDataHistoric[]>([]);
   const [userAccountData, setUserAccountData] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const deleteItemUserHistoric = (id: string) => {
     const deletedTable = userData.filter((value) => value.$id !== id);
     setUserData(deletedTable);
@@ -393,7 +390,8 @@ export default function Dashboard() {
   const durationUploaded = useRef(0);
   const [fileNameSelected, setfileNameSelected] = useState("");
   const [addButtonPlan, setAddButtonPlan] = useState(false);
-
+  const textCreditInsuffisant =
+    "Your credit balance is insufficient. Please add credits to continue";
   const addUserHistoricData = (
     userId: string,
     historic: string,
@@ -669,7 +667,7 @@ export default function Dashboard() {
       const blob = await Packer.toBlob(doc);
 
       // Télécharger le fichier .docx
-      saveAs(blob, "audiScribe_.docx");
+      saveAs(blob, "auddai_.docx");
     } else {
       toast({
         variant: "destructive",
@@ -687,7 +685,7 @@ export default function Dashboard() {
       // Créer un élément <a> pour télécharger le fichier
       const link = document.createElement("a");
       link.href = url;
-      link.download = "audiScribe_.txt";
+      link.download = "auddai_.txt";
 
       // Ajouter le lien au DOM, cliquer dessus, puis le supprimer
       document.body.appendChild(link);
@@ -705,7 +703,7 @@ export default function Dashboard() {
   };
   const creatPDF = (text: string) => {
     if (text) {
-      const finalText = ` GENERATED WITH AudiSribe AI \n ${text}  `;
+      const finalText = ` GENERATED WITH Auddai \n ${text}  `;
       const doc = new jsPDF();
       const pageHeight = doc.internal.pageSize.height; // Hauteur d'une page
       const marginTop = 10; // Marge en haut de la page
@@ -730,7 +728,7 @@ export default function Dashboard() {
       doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
       // Télécharger le fichier PDF
-      doc.save("audiScribe_.pdf");
+      doc.save("auddai_.pdf");
     } else {
       toast({
         variant: "destructive",
@@ -813,7 +811,7 @@ export default function Dashboard() {
     if (firstcheck.current < 3) {
       if (youtubeUrl.slice(0, 13) === "https://youtu") {
         //check if long youtube video
-        checkVideoYoutube(youtubeUrl, Number(userAccountData[0].Time));
+        checkVideoYoutube(youtubeUrl, Number(userAccountData?.Time));
       } else {
         toast({
           variant: "destructive",
@@ -861,6 +859,11 @@ export default function Dashboard() {
       handleActiveButton();
     }
   }, [youtubeUrl]);
+
+  // Fonction pour filtrer les données
+  const filteredData = userData.filter((data) =>
+    data.associedFileName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   //upload audio
   const handleSubmitToUpload = (file: any) => {
@@ -952,8 +955,7 @@ export default function Dashboard() {
             } else {
               toast({
                 variant: "destructive",
-                title:
-                  "Your credit balance is insufficient. Please add credits to continue.",
+                title: textCreditInsuffisant,
               });
             }
           };
@@ -1020,6 +1022,34 @@ export default function Dashboard() {
       );
     }
   };
+  useEffect(() => {
+    if (userAccountData?.Time > 10) {
+      if (!error) {
+        //actualise puis update
+        const res1Value = parseInt(userAccountData?.Time, 10); // Convertit res1 en entier
+        const durationValue = 120; // Garantit un entier pour durationUploaded
+
+        if (!isNaN(res1Value) && !isNaN(durationValue)) {
+          const timeToUpdate = res1Value - durationValue;
+
+          // Assurez-vous que la valeur est un entier
+          const validTime = Math.round(timeToUpdate); // Utilisez Math.floor ou Math.ceil si nécessaire
+
+          updateUsedTime(userId, validTime);
+          setTimeout(async () => {
+            const res1: any = await getDocument(userId);
+            setUserAccountData(res1);
+          }, 3000);
+        } else {
+          console.log("erreur de conversion string to Int");
+        }
+      } else console.log("error in chatbot!");
+    } else
+      toast({
+        variant: "destructive",
+        title: textCreditInsuffisant,
+      });
+  }, [isLoading]);
   useEffect(() => {
     if (progresspercent == 100) {
       setTimeout(() => {
@@ -1275,7 +1305,26 @@ export default function Dashboard() {
       handleAddConvertedSrtInText(resultInSrt);
     }
   };
+  const actualiserTimeUsed = () => {
+    //actualise puis update
+    const res1Value = parseInt(userAccountData?.Time, 10); // Convertit res1 en entier
+    const durationValue = Math.round(durationUploaded.current); // Garantit un entier pour durationUploaded
 
+    if (!isNaN(res1Value) && !isNaN(durationValue)) {
+      const timeToUpdate = res1Value - durationValue;
+
+      // Assurez-vous que la valeur est un entier
+      const validTime = Math.round(timeToUpdate); // Utilisez Math.floor ou Math.ceil si nécessaire
+
+      updateUsedTime(userId, validTime);
+      setTimeout(async () => {
+        const res1: any = await getDocument(userId);
+        setUserAccountData(res1);
+      }, 3000);
+    } else {
+      console.log("erreur de conversion string to Int");
+    }
+  };
   const submitSpeech = async () => {
     setSubmitted(true);
     try {
@@ -1329,57 +1378,23 @@ export default function Dashboard() {
           );
           handleAddConvertedSrtInText(resultInSrt);
         }
-        setSubmitted(false);
-        setUserData([]);
-        //attend avant de liste les donnees historique de l'user
-        setTimeout(() => {
-          listUserDATA();
-        }, 5000);
 
         toast({
           variant: "default",
           title: "Note.",
           description: "Process finished... ",
         });
-        //actualise puis update
-        const res1Value = parseInt(userAccountData?.Time, 10); // Convertit res1 en entier
-        const durationValue = Math.round(durationUploaded.current); // Garantit un entier pour durationUploaded
+        actualiserTimeUsed();
 
-        if (!isNaN(res1Value) && !isNaN(durationValue)) {
-          const timeToUpdate = res1Value - durationValue;
-
-          // Assurez-vous que la valeur est un entier
-          const validTime = Math.round(timeToUpdate); // Utilisez Math.floor ou Math.ceil si nécessaire
-
-          updateUsedTime(userId, validTime);
-          setTimeout(async () => {
-            const res1: any = await getDocument(userId);
-            setUserAccountData(res1);
-          }, 3000);
-        } else {
-          console.log("erreur de conversion string to Int");
-        }
+        setSubmitted(false);
+        setUserData([]);
+        //attend avant de liste les donnees historique de l'user
+        setTimeout(() => {
+          listUserDATA();
+        }, 3000);
       }
     } catch (error) {
-      //actualise puis update
-
-      const res1Value = parseInt(userAccountData?.Time, 10); // Convertit res1 en entier
-      const durationValue = Math.round(durationUploaded.current); // Garantit un entier pour durationUploaded
-
-      if (!isNaN(res1Value) && !isNaN(durationValue)) {
-        const timeToUpdate = res1Value - durationValue;
-
-        // Assurez-vous que la valeur est un entier
-        const validTime = Math.round(timeToUpdate); // Utilisez Math.floor ou Math.ceil si nécessaire
-
-        updateUsedTime(userId, validTime);
-        setTimeout(async () => {
-          const res1: any = await getDocument(userId);
-          setUserAccountData(res1);
-        }, 3000);
-      } else {
-        console.log("erreur de conversion string to Int");
-      }
+      actualiserTimeUsed();
       console.log(error);
       setSubmitted(false);
       console.log("userdata reset! ");
@@ -1388,7 +1403,7 @@ export default function Dashboard() {
       setTimeout(() => {
         console.log("userdata refresh");
         listUserDATA();
-      }, 5000);
+      }, 3000);
     }
   };
   //"5111ca19-1af7-48b6-a2a9-fcd6da066eb9"
@@ -1778,9 +1793,18 @@ export default function Dashboard() {
               </div>
             </TabsContent>
             <TabsContent value="password">
+              <div className="w-full p-2">
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)} // Mettre à jour la requête de recherche
+                  placeholder="Search by name..."
+                  className="w-full "
+                />
+              </div>
+
               {userData.length !== 0 ? (
                 <div className="p-2">
-                  {userData.map((data, index) => (
+                  {filteredData.map((data, index) => (
                     <div
                       key={index}
                       className="grid gap-1  rounded-md p-3 bg-gray-50 hover:bg-slate-100 my-2"
@@ -1836,6 +1860,12 @@ export default function Dashboard() {
                   <ImFilesEmpty className="mt-10 text-blue-300" size={60} />
                 </div>
               )}
+              {/* Message si aucun résultat */}
+              {filteredData.length === 0 && (
+                <p className="text-gray-500 text-center mt-4">
+                  No results found.
+                </p>
+              )}
             </TabsContent>
           </Tabs>
         </ScrollArea>
@@ -1851,7 +1881,7 @@ export default function Dashboard() {
               <div className="grid gap-5">
                 <div className="flex justify-between  h-[70px] w-4/5 bg-white fixed top-0 ">
                   <p className="text-3xl font-bold ml-10 mt-5 text-gray-500 underline   text-center ">
-                    AudiScribe
+                    Auddai
                   </p>
                   <div className="mr-10 mt-5">
                     <DropdownMenu>
@@ -2174,13 +2204,14 @@ export default function Dashboard() {
                 </SheetTrigger>
                 <SheetContent>
                   <SheetHeader>
-                    <SheetTitle>
+                    <SheetTitle className="text-center">
                       Ai Query.
                       <span className="text-sm text-gray-400 ">
                         (Powered by Gemini)
                       </span>
+                      <span className="text-sm text-amber-200 ">-2min/req</span>
                     </SheetTitle>
-                    <SheetDescription>
+                    <SheetDescription className="text-center">
                       Ask AI about your selected audio:
                       <span className="text-violet-500 font-bold">
                         {fileNameSelected}
@@ -2708,7 +2739,7 @@ export default function Dashboard() {
                                         <Separator />
                                         <Button
                                           variant="outline"
-                                          className="hover:bg-violet-100"
+                                          className="hover:bg-blue-100"
                                           onClick={() => {
                                             const result =
                                               convertSubtitlesToString(
@@ -2724,7 +2755,7 @@ export default function Dashboard() {
                                         </Button>
                                         <Button
                                           variant="outline"
-                                          className="hover:bg-violet-100"
+                                          className="hover:bg-blue-100"
                                           onClick={() => {
                                             const result =
                                               convertSubtitlesToString(
@@ -2756,7 +2787,7 @@ export default function Dashboard() {
                                         </Button>
                                         <Button
                                           variant="outline"
-                                          className="hover:bg-violet-100"
+                                          className="hover:bg-blue-100"
                                           onClick={() => {
                                             const result =
                                               convertSubtitlesToSRT(subtitles);
@@ -2812,9 +2843,17 @@ export default function Dashboard() {
                         </TabsContent>
                         <TabsContent value="historic">
                           <ScrollArea className="h-[400px]">
+                            <div className="w-full p-2">
+                              <Input
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)} // Mettre à jour la requête de recherche
+                                placeholder="Search by name..."
+                                className="w-full "
+                              />
+                            </div>
                             {userData.length !== 0 ? (
                               <div className="p-2">
-                                {userData.map((data, index) => (
+                                {filteredData.map((data, index) => (
                                   <div
                                     key={index}
                                     className="grid gap-1 rounded-md p-3 bg-white hover:bg-slate-100 my-2"
@@ -3153,13 +3192,16 @@ export default function Dashboard() {
                   </SheetTrigger>
                   <SheetContent>
                     <SheetHeader>
-                      <SheetTitle>
+                      <SheetTitle className="text-center">
                         Ai query
                         <span className="text-sm text-gray-400 ">
                           (Powered by Gemini)
                         </span>
+                        <span className="text-sm text-amber-200 ">
+                          -2min/req
+                        </span>
                       </SheetTitle>
-                      <SheetDescription>
+                      <SheetDescription className="text-center">
                         Ask ai about your selected audio:
                         <span className="text-violet-500">
                           {fileNameSelected}
@@ -3281,7 +3323,7 @@ export default function Dashboard() {
               )}
             </div>
 
-            <div className="flex justify-center fixed bottom-1">
+            <div className="flex justify-center fixed bottom-0 start-2">
               {isAudioUrlDispo && isVideo && !youtubePlayerUrl && (
                 <div className=" w-4/5  p-1  rounded-t-md bg-slate-50">
                   <div className="flex justify-center m-3">
@@ -3314,7 +3356,7 @@ export default function Dashboard() {
           </div>
           <div className="flex justify-center">
             {isAudioUrlDispo && isVideo && youtubePlayerUrl && (
-              <div className="bg-gray-100 p-2 rounded-md fixed bottom-0">
+              <div className="bg-gray-100 p-2 rounded-md fixed bottom-0 start-2">
                 <YouTubePlayer
                   width={350}
                   height={200}

@@ -163,7 +163,8 @@ export default function Home() {
                     <p>
                       <span className="font-bold underline">Student</span>__{" "}
                       <span className=" text-[10px] md:text-[14px] text-gray-600">
-                        Upload your audio and start asking AI question about it.
+                        Upload your audio and start asking AI question about it
+                        like:
                         <a
                           title="go to chatPdf."
                           href="https://www.chatpdf.com"
@@ -348,7 +349,7 @@ export default function Home() {
                 <div className="grid gap-3 ">
                   <div className="w-full p-10   shadow-2xl  max-w-[700px] bg-slate-400 rounded-md">
                     <p className="text-center text-3xl text-white my-2">
-                      Try Audiscribe Free
+                      Try Auddai Free
                     </p>
                     <Separator className="mb-[60px]" />
                     <div className="flex justify-center">
@@ -366,8 +367,8 @@ export default function Home() {
                         <div className="flex items-center gap-2">
                           <CheckIcon className="text-white" />
                           <p className=" text-white">
-                            AI Query,AI meeting assistant records, transcribes
-                            and summarizes.
+                            AI Query,AI meeting assistant records,
+                            transcribes,translante and summarizes.
                           </p>
                         </div>
 
@@ -404,7 +405,7 @@ export default function Home() {
               <div className="grid gap-3 ">
                 <div className="w-full p-10 my-[100px]  md:mt-[50px] shadow-2xl  max-w-[700px] bg-violet-700 rounded-md">
                   <p className="text-center text-3xl text-white my-2">
-                    Audiscribe Pro
+                    Auddai Pro
                     <span className="text-amber-500 font-bold">10$/month</span>
                   </p>
                   <Separator className="mb-[60px]" />
@@ -423,8 +424,8 @@ export default function Home() {
                       <div className="flex items-center gap-2">
                         <CheckIcon className="text-white" />
                         <p className=" text-white">
-                          AI Query,AI meeting assistant records, transcribes and
-                          summarizes
+                          AI Query,AI meeting assistant records,
+                          transcribes,translante and summarizes
                         </p>
                       </div>
 
@@ -667,10 +668,10 @@ export default function Home() {
             <Accordion type="single" collapsible className="w-full mb-[100px]">
               <AccordionItem value="item-1">
                 <AccordionTrigger className=" lg:text-xl font-bold">
-                  What is AudiScribe?
+                  What is Auddai?
                 </AccordionTrigger>
                 <AccordionContent className=" lg:text-xl text-gray-600">
-                  Audiscribe is an{" "}
+                  Auddai is an{" "}
                   <a
                     title="go to wikipedia."
                     href="https://en.wikipedia.org/wiki/Transcription_(linguistics)"
@@ -680,13 +681,14 @@ export default function Home() {
                   >
                     audio-to-text transcription
                   </a>
-                  platform designed to automatically convert audio or video
-                  files into text. Using advanced speech recognition algorithms,
-                  Audiscribe enables users to easily turn interviews, lectures,
-                  meetings, podcasts, and more into written documents.
+                  platform whith a bunch of fonctionnality, designed to
+                  automatically convert audio or video files into text. Using
+                  advanced speech recognition algorithms, Auddai enables users
+                  to easily turn interviews, lectures, meetings, podcasts, and
+                  more into written documents.
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="item-1">
+              <AccordionItem value="item-2">
                 <AccordionTrigger className=" lg:text-xl font-bold">
                   How long are my credits available?
                 </AccordionTrigger>
@@ -694,27 +696,27 @@ export default function Home() {
                   Your credits have lifetime availability.
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="item-1">
+              <AccordionItem value="item-3">
                 <AccordionTrigger className=" lg:text-xl font-bold">
                   How much file size can i upload?
                 </AccordionTrigger>
-                <AccordionContent className="3 lg:text-xl text-gray-600">
+                <AccordionContent className="lg:text-xl text-gray-600">
                   You can upload at most 5GB.
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="item-1">
+              <AccordionItem value="item-4">
                 <AccordionTrigger className=" lg:text-xl font-bold">
                   Which audio / video formats do you support?
                 </AccordionTrigger>
                 <AccordionContent className="lg:text-xl text-gray-600">
-                  AudiScribe supports the vast majority of common audio and
-                  video formats, including MP3, M4A, MP4, MOV, AAC, WAV, OGG,
-                  OPUS and MPEG
+                  Auddai supports the vast majority of common audio and video
+                  formats, including MP3, M4A, MP4, MOV, AAC, WAV, OGG, OPUS and
+                  MPEG
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="item-1">
+              <AccordionItem value="item-5">
                 <AccordionTrigger className=" lg:text-xl font-bold">
-                  Is AudiScribe secure?
+                  Is Auddai secure?
                 </AccordionTrigger>
                 <AccordionContent className=" lg:text-xl text-gray-600">
                   Yes. Your transcripts, uploaded files, and account information
@@ -723,7 +725,7 @@ export default function Home() {
                   and we don&apos;t store your credit card number.
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="item-1">
+              <AccordionItem value="item-6">
                 <AccordionTrigger className=" lg:text-xl font-bold">
                   What about accents, background noise, and poor audio quality?
                 </AccordionTrigger>

@@ -32,7 +32,7 @@ export default function NavBar() {
           className="size-[40px] md:size-[50px] rounded-full"
         />
 
-        <p className="text-xl font-semibold">AudiScribe</p>
+        <p className="text-xl font-semibold">Auddai</p>
       </div>
 
       <div className="hidden lg:flex items-center gap-5">
