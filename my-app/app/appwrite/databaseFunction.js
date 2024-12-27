@@ -1,8 +1,11 @@
+import {
+  DATABASE_ID,
+  USER_ACCOUNT_COLLECTION_ID,
+  USER_AI_CHAT,
+  USER_DATA_COLLECTION_ID,
+} from "../constKey/key";
 import { databases, ID } from "./appwrite";
 import { Permission, Query, Role } from "appwrite";
-const DATABASE_ID = "6722601a0008810208ab";
-const USER_ACCOUNT_COLLECTION_ID = "6726475d0002a67892f2";
-const USER_DATA_COLLECTION_ID = "67264810000766295f35";
 const addUserAccount = async (documentId) => {
   const promise = databases.createDocument(
     DATABASE_ID,
@@ -51,6 +54,48 @@ const getDocument = async (documentId) => {
     };
   }
 };
+const getAiConversation = async (documentId) => {
+  try {
+    const result = await databases.getDocument(
+      DATABASE_ID, // databaseId
+      USER_AI_CHAT, // collectionId
+      documentId // documentId
+    );
+
+    return {
+      messages: result.messages,
+    };
+  } catch (error) {
+    return {
+      error: "error",
+    };
+  }
+};
+async function CreateAiConversation(conversationId_docId, messages) {
+  const promise = databases.createDocument(
+    DATABASE_ID,
+    USER_AI_CHAT,
+    conversationId_docId,
+    {
+      messages: messages,
+    },
+    [
+      Permission.write(Role.any()),
+      Permission.read(Role.any()),
+      Permission.update(Role.any()),
+      Permission.delete(Role.any()),
+    ]
+  );
+
+  promise.then(
+    function (response) {
+      console.log(response);
+    },
+    function (error) {
+      console.log(error);
+    }
+  );
+}
 
 const updateUsedTime = async (documentId, usedTime) => {
   const result = await databases.updateDocument(
@@ -127,6 +172,8 @@ export {
   listUserData,
   deleteItemUserData,
   getDocument,
+  CreateAiConversation,
+  getAiConversation,
 };
 /*
 

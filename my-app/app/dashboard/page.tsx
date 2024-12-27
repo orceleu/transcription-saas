@@ -17,11 +17,8 @@ import {
   FaToolbox,
 } from "react-icons/fa6";
 import { TbFileTypeDocx, TbZodiacGemini } from "react-icons/tb";
-import { SiGooglegemini } from "react-icons/si";
 import { GrAddCircle, GrDocumentTxt, GrEmptyCircle } from "react-icons/gr";
 import { useDropzone } from "react-dropzone";
-import { signOut, onAuthStateChanged, User } from "firebase/auth";
-import { auth, db } from "@/app/firebase/config";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Accordion,
@@ -82,17 +79,8 @@ import { fal } from "@fal-ai/client";
 
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import {
-  ref,
-  getDownloadURL,
-  uploadBytesResumable,
-  listAll,
-  deleteObject,
-} from "firebase/storage";
 import { MdWorkspacePremium } from "react-icons/md";
-import { storage } from "@/app/firebase/config";
 import { jsPDF } from "jspdf";
-import { RiChat1Line, RiHonorOfKingsFill, RiRobot2Fill } from "react-icons/ri";
 import {
   Dialog,
   DialogContent,
@@ -101,7 +89,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { AudioRecorder } from "react-audio-voice-recorder";
 import { ImFilesEmpty } from "react-icons/im";
 import {
   Drawer,
@@ -162,7 +149,6 @@ import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import YouTubePlayer from "react-player/youtube";
 import {
   addAudioElement,
@@ -177,13 +163,15 @@ import { account, ID } from "../appwrite/appwrite";
 import {
   addUserAccount,
   addUserData,
+  CreateAiConversation,
   deleteItemUserData,
+  getAiConversation,
   getDocument,
   listUserData,
   updateUsedTime,
 } from "../appwrite/databaseFunction";
 import { FcAddImage } from "react-icons/fc";
-import { useChat } from "ai/react";
+import { Message, useChat } from "ai/react";
 import FormattedText from "../clientComponent/formattedTextAi";
 import { AiFillCloseCircle } from "react-icons/ai";
 interface Item {
@@ -294,6 +282,7 @@ interface ModelUserData {
 export default function Dashboard() {
   const {
     messages,
+    setMessages,
     input,
     handleInputChange,
     handleSubmit,
@@ -306,6 +295,7 @@ export default function Dashboard() {
     api: "/api/aichat",
     streamProtocol: "text",
   });
+  const [conversationId, setConversationId] = useState<string | null>(null);
 
   const [uploadedFile, setUploadedFile] = useState<any>(null);
   const [isAudioUrlDispo, setAudioUrlDispo] = useState(false);
@@ -333,7 +323,6 @@ export default function Dashboard() {
   const selectedCurrentTask = useRef("transcribe");
   const [selectedLanguage, setSelectedLanguage] = useState("en");
   const [isTranslanteMode, setTranslanteMode] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState<string | null>("");
   const [videoIsplaying, setVideoPlaying] = useState(false);
@@ -392,6 +381,72 @@ export default function Dashboard() {
   const [addButtonPlan, setAddButtonPlan] = useState(false);
   const textCreditInsuffisant =
     "Your credit balance is insufficient. Please add credits to continue";
+
+  const messagge: Message[] = [
+    { id: "jhjhjhj", role: "user", content: "salut" },
+    { id: "ihhjjjhjhj", role: "assistant", content: "Bonjour!  Comment " },
+    { id: "jndknd", role: "user", content: "ca va" },
+  ];
+  // Récupérer une conversation existante
+  /*const loadConversation = async (id: string) => {
+    try {
+      const response = await axios.get("/api/get-conversation", {
+        params: { conversationId: id },
+      });
+      setMessages(response.data.messages);
+      setConversationId(id);
+    } catch (error) {
+      console.error("Error loading conversation:", error);
+    }
+  };*/
+  const parseJsonArray = (stringArray: string[]): Message[] => {
+    try {
+      return stringArray.map((item) => JSON.parse(item));
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+      return []; // Retourne un tableau vide en cas d'erreur
+    }
+  };
+  const loadConversation = async (id: string) => {
+    const res = await getAiConversation(id);
+    setMessages(parseJsonArray(res.messages));
+
+    //console.log(parseJsonArray(res.messages));
+  };
+
+  const formatMessagesForAppwrite = (messages: Message[]) => {
+    return messages.map((msg) => {
+      // Sérialisez le message complet en une chaîne JSON
+      return JSON.stringify({
+        id: msg.id,
+        role: msg.role,
+        content: msg.content,
+      });
+    });
+  };
+
+  // Sauvegarder la conversation
+  const saveConversation = async () => {
+    const msg = formatMessagesForAppwrite(messages);
+    console.log(msg);
+    try {
+      await axios.post("/api/save-conversation", {
+        conversationId,
+        msg,
+      });
+    } catch (error) {
+      console.error("Error saving conversation:", error);
+    }
+  };
+
+  //un doc exclusivement pour le sauvegarde des chats
+
+  /* useEffect(() => {
+      // Charger une conversation existante si l'ID est fourni
+      if (initialConversationId) loadConversation(initialConversationId);
+  }, [initialConversationId]);
+
+  */
   const addUserHistoricData = (
     userId: string,
     historic: string,
@@ -933,6 +988,8 @@ export default function Dashboard() {
 
                   submitSpeech();
                   setAudioUrlDispo(true);
+
+                  CreateAiConversation(fileId.current, []);
                   if (file.type.startsWith("video")) {
                     setIsVideo(true);
                   } else {
@@ -1025,6 +1082,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (userAccountData?.Time > 10) {
       if (!error) {
+        saveConversation();
         //actualise puis update
         const res1Value = parseInt(userAccountData?.Time, 10); // Convertit res1 en entier
         const durationValue = 120; // Garantit un entier pour durationUploaded
@@ -1280,7 +1338,7 @@ export default function Dashboard() {
     const parts = text.split(regex);
     return parts.map((part, index) =>
       part.toLowerCase() === term.toLowerCase() ? (
-        <span key={index} className="bg-green-200 rounded-md">
+        <span key={index} className="bg-amber-600 rounded-md">
           {part}
         </span>
       ) : (
@@ -1813,10 +1871,12 @@ export default function Dashboard() {
                         const parsedSubtitles = parseSRT(data.historic);
                         // console.log(transcriptionResultInSrt.current)
                         setSubtitles(parsedSubtitles);
-                        //setTextLanguageDetected("fr");
+                        setTextLanguageDetected("fr");
                         audioUrl.current = getFileUrl(data.$id);
+                        loadConversation(data.$id);
+                        setConversationId(data.$id);
                         setAudioUrlDispo(true);
-
+                        //setMessages(messagge);
                         setIsVideo(data.type.startsWith("video/"));
                         setfileNameSelected(data.associedFileName);
                         // retrieveRequestResult(data.requestId);
@@ -2001,7 +2061,7 @@ export default function Dashboard() {
                       </div>
                       <div className="flex items-center gap-5 ">
                         <Button variant="outline" onClick={handleCopy}>
-                          <CopyIcon className="text-blue-600" />
+                          <CopyIcon className="text-blue-400" />
                         </Button>
 
                         <Input
@@ -2044,7 +2104,7 @@ export default function Dashboard() {
                                   <p
                                     className={`cursor-pointer ${
                                       currentSubtitleDesktop === sub
-                                        ? "bg-amber-100 rounded-xl"
+                                        ? "bg-blue-100 rounded-xl"
                                         : ""
                                     }`}
                                     onClick={() =>
@@ -2865,7 +2925,8 @@ export default function Dashboard() {
                                       setSubtitles(parsedSubtitles);
                                       setTextLanguageDetected("fr");
                                       audioUrl.current = getFileUrl(data.$id);
-
+                                      loadConversation(data.$id);
+                                      setConversationId(data.$id);
                                       setAudioUrlDispo(true);
                                       setIsVideo(
                                         data.type.startsWith("video/")

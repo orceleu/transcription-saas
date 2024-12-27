@@ -8,6 +8,7 @@ import {
   ArrowDownNarrowWide,
   ArrowLeftCircle,
   Check,
+  CheckCircle,
   CheckIcon,
   DeleteIcon,
   EditIcon,
@@ -36,6 +37,7 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import {
   DashboardIcon,
+  EnterFullScreenIcon,
   LightningBoltIcon,
   StarFilledIcon,
 } from "@radix-ui/react-icons";
@@ -50,6 +52,7 @@ import dynamic from "next/dynamic";
 import { EMAIL_ADDRESS } from "./constKey/key";
 import { RiRobot2Fill } from "react-icons/ri";
 import { FaRobot } from "react-icons/fa6";
+import { FcSynchronize } from "react-icons/fc";
 export default function Home() {
   const NavBar = dynamic(() => import("./clientComponent/navBar"), {
     ssr: false,
@@ -111,25 +114,25 @@ export default function Home() {
             <div className="relative w-full p-1 my-10 rounded-lg bg-gradient-to-r from-purple-500 via-purple-300 to-transparent">
               <div className=" grid gap-5 md:grid-cols-2 w-full   p-5 max-w-[900px] bg-gray-50 rounded-md">
                 <p className="text-center">
-                  <span className="text-2xl">🎯</span> Accuracy 98%
+                  <span className="text-2xl">🎯</span> Accuracy 98%.
                 </p>
                 <p className="text-center">
-                  <span className="text-2xl">🌍</span>100+ languages
+                  <span className="text-2xl">🌍</span>100+ languages.
                 </p>
                 <p className="text-center">
-                  <span className="text-2xl">🤯</span>upload 10hours
+                  <span className="text-2xl">🤯</span>upload 10hours.
                 </p>
                 <p className="text-center">
-                  <span className="text-2xl">👥</span>speaker recognition
+                  <span className="text-2xl">👥</span>speaker recognition.
                 </p>
                 <p className="text-center">
-                  <span className="text-2xl">🔒</span> private and secure
+                  <span className="text-2xl">🔒</span> private and secure.
                 </p>
                 <p className="text-center">
-                  <span className="text-2xl">📝</span> edit and export
+                  <span className="text-2xl">📝</span> edit and export.
                 </p>
                 <p className="text-center">
-                  <span className="text-2xl">🤖</span> AI tools
+                  <span className="text-2xl">🤖</span> AI tools.
                 </p>
               </div>
             </div>
@@ -163,8 +166,8 @@ export default function Home() {
                     <p>
                       <span className="font-bold underline">Student</span>__{" "}
                       <span className=" text-[10px] md:text-[14px] text-gray-600">
-                        Upload your audio and start asking AI question about it
-                        like:
+                        Easily transcribe recorded lectures into organized
+                        outlines for study purposes. See:
                         <a
                           title="go to chatPdf."
                           href="https://www.chatpdf.com"
@@ -198,9 +201,7 @@ export default function Home() {
                     <p>
                       <span className="font-bold underline">Researsher</span>__{" "}
                       <span className=" text-[10px] md:text-[14px] text-gray-600">
-                        Locate specific keywords within audio or video files,
-                        saving time and enhancing the ability to analyze data
-                        effortlessly.
+                        Use Auddai to transcribe interviews for data analysis.
                       </span>{" "}
                     </p>
                     <p>
@@ -310,7 +311,7 @@ export default function Home() {
                 </div>
                 <p className="text-2xl  md:text-4xl text-center">AI.</p>
                 <p className="text-gray-600 md:text-xl text-center">
-                  AI query about your audio powered by Gemini.
+                  AI query about your audio, (powered by Gemini).
                 </p>
               </div>
             </div>
@@ -367,8 +368,8 @@ export default function Home() {
                         <div className="flex items-center gap-2">
                           <CheckIcon className="text-white" />
                           <p className=" text-white">
-                            AI Query,AI meeting assistant records,
-                            transcribes,translante and summarizes.
+                            AI Query,AI assistant, transcribes,translante and
+                            summarizes.
                           </p>
                         </div>
 
@@ -386,7 +387,12 @@ export default function Home() {
                             Chat with PDF(coming soon).
                           </p>
                         </div>
-
+                        <div className="flex items-center mt-10 gap-2">
+                          <CheckCircle className="text-white" />
+                          <p className=" text-white text-xl">
+                            Cancel anytime(no question asked).
+                          </p>
+                        </div>
                         <div className="flex justify-center mt-5">
                           <div className="grid gap-2">
                             <AuthButton
@@ -424,8 +430,8 @@ export default function Home() {
                       <div className="flex items-center gap-2">
                         <CheckIcon className="text-white" />
                         <p className=" text-white">
-                          AI Query,AI meeting assistant records,
-                          transcribes,translante and summarizes
+                          AI Query,AI assistant, transcribes,translante and
+                          summarizes
                         </p>
                       </div>
 
@@ -441,6 +447,13 @@ export default function Home() {
                         <CheckIcon className="text-white" />
                         <p className=" text-white">
                           Chat with PDF(coming soon).
+                        </p>
+                      </div>
+
+                      <div className="flex items-center mt-10 gap-2">
+                        <CheckCircle className="text-white" />
+                        <p className=" text-white text-xl">
+                          Cancel anytime(no question asked).
                         </p>
                       </div>
 
@@ -575,6 +588,54 @@ export default function Home() {
                       </p>
                       <p className="text-center  ">
                         Easily manage all of your transcriptions in one place.
+                      </p>{" "}
+                    </div>
+                  </div>
+                </div>
+                <div className=" flex justify-center w-full  bg-white rounded-lg ">
+                  <div>
+                    <Separator />
+                    <div className="grid gap-3 p-10">
+                      <div className="flex justify-center">
+                        <FcSynchronize className="text-violet-500 size-[40px]" />
+                      </div>
+                      <p className="text-center text-2xl font-bold">
+                        Sync with Audio/Video.
+                      </p>
+                      <p className="text-center  ">
+                        Synchronization of transcripts with video or audio
+                        enables quick navigation.
+                      </p>{" "}
+                    </div>
+                  </div>
+                </div>
+                <div className=" flex justify-center w-full  bg-white rounded-lg ">
+                  <div>
+                    <Separator />
+                    <div className="grid gap-3 p-10">
+                      <div className="flex justify-center">
+                        <EnterFullScreenIcon className="text-violet-500 size-[40px]" />
+                      </div>
+                      <p className="text-center text-2xl font-bold">
+                        Fully Responsive Interface.
+                      </p>
+                      <p className="text-center  ">
+                        Our interface supports tablets phones, desktops,and
+                        smart TVs.
+                      </p>{" "}
+                    </div>
+                  </div>
+                </div>
+                <div className=" flex justify-center w-full  bg-white rounded-lg ">
+                  <div>
+                    <Separator />
+                    <div className="grid gap-3 p-10">
+                      <div className="flex justify-center">
+                        <FaRobot className="text-violet-500 size-[40px]" />
+                      </div>
+                      <p className="text-center text-2xl font-bold">AI .</p>
+                      <p className="text-center  ">
+                        Ask AI gemini powered anything about your audio/video.
                       </p>{" "}
                     </div>
                   </div>
@@ -730,9 +791,18 @@ export default function Home() {
                   What about accents, background noise, and poor audio quality?
                 </AccordionTrigger>
                 <AccordionContent className=" lg:text-xl text-gray-600">
-                  While clean and clear audio produces the best results,
-                  AudiScribe generally does well with accents, background noise,
-                  and lower audio quality.{" "}
+                  While clean and clear audio produces the best results, Auddai
+                  generally does well with accents, background noise, and lower
+                  audio quality.{" "}
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-7">
+                <AccordionTrigger className=" lg:text-xl font-bold">
+                  How do i cancel my plan?
+                </AccordionTrigger>
+                <AccordionContent className=" lg:text-xl text-gray-600">
+                  You can cancel your plan at anytime, just click on top right
+                  dashboard and click cancel subscription.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

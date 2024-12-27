@@ -10,9 +10,9 @@ const genAI = new GoogleGenerativeAI(apiKey);
 export async function POST(req) {
   const { messages, customKey } = await req.json();
   console.log(messages);
-  console.log(customKey);
+  //console.log(customKey);
   const lastMessage = messages[messages.length - 1].content;
-  console.log(lastMessage);
+  // console.log(lastMessage);
   const model = genAI.getGenerativeModel({
     model: "gemini-1.5-flash-8b",
     systemInstruction: `You are a polite, friendly, and helpful assistant designed 
@@ -50,7 +50,7 @@ Objective: Ensure your responses are accurate, helpful, and strictly
     generationConfig,
     history: hist,
   });
-
+  //update historic database
   const result = await chatSession.sendMessage(lastMessage);
   console.log(result);
 

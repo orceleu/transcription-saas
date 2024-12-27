@@ -7,12 +7,11 @@ import { PREVIEW_IMG_META } from "./constKey/key";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AudiScribe - #1,High precision Audio & Video transcription software.",
+  title: "Auddai - #1,High precision Audio & Video to text converter.",
   description:
-    "transcribe any audio or video with 98% accuracy to text in few seconds,upload your audio/video and transcription starts automatically.",
+    "transcribe any audio or video with 98% accuracy to text in a few minutes,upload your audio/video and transcription starts automatically.",
   openGraph: {
-    description:
-      "transcribe any audio or video  with 98% accuracy to text in few seconds,upload your audio/video and transcription starts automatically.",
+    description: "transcribe any audio or video to text in a few minutes.",
     siteName: "AudiScribe",
     type: "website",
     images: [
