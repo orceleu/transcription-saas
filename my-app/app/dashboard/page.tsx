@@ -164,6 +164,7 @@ import {
   addUserAccount,
   addUserData,
   CreateAiConversation,
+  deleteAiChat,
   deleteItemUserData,
   getAiConversation,
   getDocument,
@@ -382,11 +383,6 @@ export default function Dashboard() {
   const textCreditInsuffisant =
     "Your credit balance is insufficient. Please add credits to continue";
 
-  const messagge: Message[] = [
-    { id: "jhjhjhj", role: "user", content: "salut" },
-    { id: "ihhjjjhjhj", role: "assistant", content: "Bonjour!  Comment " },
-    { id: "jndknd", role: "user", content: "ca va" },
-  ];
   // Récupérer une conversation existante
   /*const loadConversation = async (id: string) => {
     try {
@@ -428,12 +424,13 @@ export default function Dashboard() {
   // Sauvegarder la conversation
   const saveConversation = async () => {
     const msg = formatMessagesForAppwrite(messages);
-    console.log(msg);
+    //console.log(msg);
     try {
       await axios.post("/api/save-conversation", {
         conversationId,
         msg,
       });
+      console.log("ai chat saved");
     } catch (error) {
       console.error("Error saving conversation:", error);
     }
@@ -988,7 +985,7 @@ export default function Dashboard() {
 
                   submitSpeech();
                   setAudioUrlDispo(true);
-
+                  setConversationId(fileId.current);
                   CreateAiConversation(fileId.current, []);
                   if (file.type.startsWith("video")) {
                     setIsVideo(true);
@@ -1474,6 +1471,7 @@ export default function Dashboard() {
   };
   const deleteItemUser_data = async (id: string) => {
     const result = await deleteItemUserData(id);
+    deleteAiChat(id);
     await deleteFileItem(id);
     if (result) {
       deleteItemUserHistoric(id);

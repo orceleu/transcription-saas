@@ -1,6 +1,5 @@
 import { DATABASE_ID, USER_AI_CHAT } from "@/app/constKey/key";
 import { databases, ID } from "../../appwrite/appwrite";
-import { Permission, Query, Role } from "appwrite";
 export async function POST(req) {
   const { conversationId, msg } = await req.json();
 

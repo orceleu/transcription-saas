@@ -156,6 +156,15 @@ const deleteItemUserData = async (documentId) => {
 
   return result;
 };
+const deleteAiChat = async (documentId) => {
+  const result = await databases.deleteDocument(
+    DATABASE_ID,
+    USER_AI_CHAT,
+    documentId // documentId
+  );
+
+  console.log(result);
+};
 const listUserData = async (userId) => {
   const result = await databases.listDocuments(
     DATABASE_ID,
@@ -174,6 +183,7 @@ export {
   getDocument,
   CreateAiConversation,
   getAiConversation,
+  deleteAiChat,
 };
 /*
 
