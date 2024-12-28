@@ -11,8 +11,8 @@ export const metadata: Metadata = {
   description:
     "transcribe any audio or video with 98% accuracy to text in a few minutes,upload your audio/video and transcription starts automatically.",
   openGraph: {
-    description: "transcribe any audio or video to text in a few minutes.",
-    siteName: "AudiScribe",
+    description: "AI service for transcribing audio and video to text.",
+    siteName: "Auddai",
     type: "website",
     images: [
       {

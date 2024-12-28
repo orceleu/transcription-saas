@@ -670,9 +670,10 @@ export default function Dashboard() {
   const handleclickUserDataHistoric = (data: any) => {
     //transcriptionResultInSrt.current = data.historic;
     const parsedSubtitles = parseSRT(data.historic);
+    console.log(parsedSubtitles);
     // console.log(transcriptionResultInSrt.current)
     setSubtitles(parsedSubtitles);
-    setTextLanguageDetected(data.lang || null);
+    setTextLanguageDetected(data.lang || "fr");
     audioUrl.current = getFileUrl(data.$id);
     loadConversation(data.$id);
     setConversationId(data.$id);
@@ -1083,8 +1084,10 @@ export default function Dashboard() {
         data.documents[i].lang
       );
     }
-    const res = parseSRT(data.documents[0].historic);
+    /*const res = parseSRT(userData[0].historic);
     setSubtitles(res);
+    setTextLanguageDetected("en")*/
+    handleclickUserDataHistoric(data.documents[0]);
   };
   useEffect(() => {
     if (userAccountData?.Time > 10) {
@@ -1300,22 +1303,6 @@ export default function Dashboard() {
     };
   }, [subtitles]);
 
-  const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTime =
-      (parseFloat(e.target.value) / 100) * (audioRef.current?.duration || 0);
-    if (audioRef.current) {
-      audioRef.current.currentTime = newTime;
-    }
-  };
-
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newVolume = parseFloat(e.target.value);
-    if (audioRef.current) {
-      audioRef.current.volume = newVolume;
-    }
-    setVolume(newVolume);
-  };
-
   const handleSubtitleClick = (startTime: number) => {
     if (audioRef.current) {
       audioRef.current.currentTime = startTime;
@@ -1345,7 +1332,7 @@ export default function Dashboard() {
     const parts = text.split(regex);
     return parts.map((part, index) =>
       part.toLowerCase() === term.toLowerCase() ? (
-        <span key={index} className="bg-amber-600 rounded-md">
+        <span key={index} className="bg-amber-400 rounded-md">
           {part}
         </span>
       ) : (
@@ -2129,13 +2116,6 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   <>
-                    {!textLanguageDetected ? (
-                      <div>
-                        <p className="text-center text-xl text-red-500 font-semibold">
-                          transcription failed
-                        </p>
-                      </div>
-                    ) : null}
                     {isSubmitted ? (
                       <div className="flex justify-center">
                         <LoaderIcon className="h-5 w-5 animate-spin" />
@@ -3170,13 +3150,6 @@ export default function Dashboard() {
               </div>
             ) : (
               <>
-                {!textLanguageDetected ? (
-                  <div>
-                    <p className="text-center text-xl text-red-500 font-semibold">
-                      transcription failed
-                    </p>
-                  </div>
-                ) : null}
                 {isSubmitted ? (
                   <div className="flex justify-center">
                     <LoaderIcon className="h-5 w-5 animate-spin" />
