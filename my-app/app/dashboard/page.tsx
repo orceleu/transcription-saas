@@ -268,17 +268,7 @@ interface UserDataHistoric {
   associedFileName: string;
   type: string;
   size: string;
-}
-interface Plan {
-  id: string;
-  credits: number;
-  price: string;
-}
-interface ModelUserData {
-  isPro: boolean;
-  Time: string;
-  stripeSubscriptionId: string;
-  stripeCustomerId: string;
+  lang: string;
 }
 export default function Dashboard() {
   const {
@@ -452,7 +442,8 @@ export default function Dashboard() {
     createdAt: string,
     associedFileName: string,
     type: string,
-    size: string
+    size: string,
+    lang: string
   ) => {
     setUserData((prev) => [
       ...prev,
@@ -465,6 +456,7 @@ export default function Dashboard() {
         associedFileName: associedFileName,
         type: type,
         size: size,
+        lang: lang,
       },
     ]);
   };
@@ -675,6 +667,21 @@ export default function Dashboard() {
     { value: "zh", label: "Chinese (中文)" },
   ];
 
+  const handleclickUserDataHistoric = (data: any) => {
+    //transcriptionResultInSrt.current = data.historic;
+    const parsedSubtitles = parseSRT(data.historic);
+    // console.log(transcriptionResultInSrt.current)
+    setSubtitles(parsedSubtitles);
+    setTextLanguageDetected(data.lang || null);
+    audioUrl.current = getFileUrl(data.$id);
+    loadConversation(data.$id);
+    setConversationId(data.$id);
+    setAudioUrlDispo(true);
+    //setMessages(messagge);
+    setIsVideo(data.type.startsWith("video/"));
+    setfileNameSelected(data.associedFileName);
+    // retrieveRequestResult(data.requestId);
+  };
   // Fonction pour télécharger le fichier
   const handleDownloadSrt = (content: string, filename: string) => {
     if (content) {
@@ -1072,9 +1079,12 @@ export default function Dashboard() {
         data.documents[i].$createdAt,
         data.documents[i].associedFileName,
         data.documents[i].type,
-        data.documents[i].size
+        data.documents[i].size,
+        data.documents[i].lang
       );
     }
+    const res = parseSRT(data.documents[0].historic);
+    setSubtitles(res);
   };
   useEffect(() => {
     if (userAccountData?.Time > 10) {
@@ -1865,21 +1875,7 @@ export default function Dashboard() {
                       key={index}
                       className="grid gap-1  rounded-md p-3 bg-gray-50 hover:bg-slate-100 my-2"
                       onClick={() => {
-                        //transcriptionResultInSrt.current = data.historic;
-                        const parsedSubtitles = parseSRT(data.historic);
-                        // console.log(transcriptionResultInSrt.current)
-                        setSubtitles(parsedSubtitles);
-                        setTextLanguageDetected("fr");
-                        audioUrl.current = getFileUrl(data.$id);
-                        loadConversation(data.$id);
-                        setConversationId(data.$id);
-                        setAudioUrlDispo(true);
-                        //setMessages(messagge);
-                        setIsVideo(data.type.startsWith("video/"));
-                        setfileNameSelected(data.associedFileName);
-                        // retrieveRequestResult(data.requestId);
-
-                        // language,name ,type(mp3),size to added
+                        handleclickUserDataHistoric(data);
                       }}
                     >
                       <div className="flex justify-between gap-2">
@@ -2133,6 +2129,13 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   <>
+                    {!textLanguageDetected ? (
+                      <div>
+                        <p className="text-center text-xl text-red-500 font-semibold">
+                          transcription failed
+                        </p>
+                      </div>
+                    ) : null}
                     {isSubmitted ? (
                       <div className="flex justify-center">
                         <LoaderIcon className="h-5 w-5 animate-spin" />
@@ -2223,24 +2226,6 @@ export default function Dashboard() {
               <br />
               <div className="grid gap-3 my-10">
                 <p className="text-center">2024 AudiScribe </p>
-                <div className="flex justify-center">
-                  <div className="flex items-center gap-3">
-                    <p>Home</p>
-                    <p>Blog</p>
-                    <p>Pricing</p>
-                    <p>FAQs</p>
-                    <p>Support</p>
-                  </div>
-                </div>
-                <div className="flex justify-center">
-                  <div className="flex items-center gap-3">
-                    <p>Youtube downloader</p>
-                    <p>WhatsApp</p>
-                    <p>Terms</p>
-                  </div>
-                </div>
-
-                <p className="text-center">Privacy</p>
               </div>
               <br />
               <br />
@@ -2916,24 +2901,7 @@ export default function Dashboard() {
                                     key={index}
                                     className="grid gap-1 rounded-md p-3 bg-white hover:bg-slate-100 my-2"
                                     onClick={() => {
-                                      //transcriptionResultInSrt.current = data.historic;
-                                      const parsedSubtitles = parseSRT(
-                                        data.historic
-                                      );
-                                      setSubtitles(parsedSubtitles);
-                                      setTextLanguageDetected("fr");
-                                      audioUrl.current = getFileUrl(data.$id);
-                                      loadConversation(data.$id);
-                                      setConversationId(data.$id);
-                                      setAudioUrlDispo(true);
-                                      setIsVideo(
-                                        data.type.startsWith("video/")
-                                      );
-                                      setfileNameSelected(
-                                        data.associedFileName
-                                      );
-
-                                      // language,name ,type(mp3),size to added
+                                      handleclickUserDataHistoric(data);
                                     }}
                                   >
                                     <div className="flex justify-between gap-1">
@@ -3202,6 +3170,13 @@ export default function Dashboard() {
               </div>
             ) : (
               <>
+                {!textLanguageDetected ? (
+                  <div>
+                    <p className="text-center text-xl text-red-500 font-semibold">
+                      transcription failed
+                    </p>
+                  </div>
+                ) : null}
                 {isSubmitted ? (
                   <div className="flex justify-center">
                     <LoaderIcon className="h-5 w-5 animate-spin" />
@@ -3252,10 +3227,7 @@ export default function Dashboard() {
                   <SheetContent>
                     <SheetHeader>
                       <SheetTitle className="text-center">
-                        Ai query
-                        <span className="text-sm text-gray-400 ">
-                          (Powered by Gemini)
-                        </span>
+                        Ai query.
                         <span className="text-sm text-amber-200 ">
                           -2min/req
                         </span>
@@ -3361,6 +3333,9 @@ export default function Dashboard() {
                         <br />
                         <br />
                         <br />
+                        <br />
+                        <br />
+                        <br />
                       </div>
                     </ScrollArea>
                   </SheetContent>
@@ -3388,8 +3363,8 @@ export default function Dashboard() {
                   <div className="flex justify-center m-3">
                     <ReactPlayer
                       ref={videoPlayerRef1}
-                      width="100%"
-                      height="100%"
+                      width={300}
+                      height={150}
                       playing={videoIsplaying}
                       light={false}
                       url={audioUrl.current}
@@ -3415,10 +3390,10 @@ export default function Dashboard() {
           </div>
           <div className="flex justify-center">
             {isAudioUrlDispo && isVideo && youtubePlayerUrl && (
-              <div className="bg-gray-100 p-2 rounded-md fixed bottom-0 start-2">
+              <div className="bg-gray-100 p-2 rounded-md fixed bottom-0 start-0">
                 <YouTubePlayer
-                  width={350}
-                  height={200}
+                  width={300}
+                  height={150}
                   ref={playerRef}
                   url={youtubeUrl}
                   controls={true}
@@ -3434,24 +3409,6 @@ export default function Dashboard() {
             <p className="text-center text-sm text-gray-600 ">
               2024 AudiScribe{" "}
             </p>
-            <div className="flex justify-center">
-              <div className="flex items-center gap-3">
-                <p className="text-sm text-gray-600">Home</p>
-                <p className="text-sm text-gray-600">Blog</p>
-                <p className="text-sm text-gray-600">Pricing</p>
-                <p className="text-sm text-gray-600">FAQs</p>
-                <p className="text-sm text-gray-600">Support</p>
-              </div>
-            </div>
-            <div className="flex justify-center">
-              <div className="flex items-center gap-3">
-                <p className="text-sm text-gray-600">Youtube downloader</p>
-                <p className="text-sm text-gray-600">WhatsApp</p>
-                <p className="text-sm text-gray-600">Terms</p>
-              </div>
-            </div>
-
-            <p className="text-center text-sm text-gray-600">Privacy</p>
           </div>
           <br />
           <br />

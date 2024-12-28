@@ -46,6 +46,8 @@ const returnTypeIcon = (type: string) => {
       return <FileAudioIcon className="text-yellow-400" />;
     case "video/mp4":
       return <FileVideo className="text-violet-400" />;
+    case "video/wave":
+      return <FileVideo className="text-red-400" />;
 
     default:
       <TbFileUnknown className="text-gray-400" />;
