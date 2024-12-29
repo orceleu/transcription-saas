@@ -3,6 +3,7 @@ import React from "react";
 import { MdAccountCircle } from "react-icons/md";
 import { TbFileUnknown } from "react-icons/tb";
 import axios from "axios";
+import { FaYoutube } from "react-icons/fa6";
 const returnIconSpeaker = (speaker: string) => {
   switch (speaker) {
     case "(SPEAKER_00)":
@@ -47,7 +48,9 @@ const returnTypeIcon = (type: string) => {
     case "video/mp4":
       return <FileVideo className="text-violet-400" />;
     case "video/wave":
-      return <FileVideo className="text-red-400" />;
+      return <FileVideo className="text-purple-500" />;
+    case "ytb":
+      return <FaYoutube className="text-red-500" />;
 
     default:
       <TbFileUnknown className="text-gray-400" />;

@@ -3,13 +3,12 @@ import {
   HarmCategory,
   HarmBlockThreshold,
 } from "@google/generative-ai";
-
-const apiKey = "AIzaSyAzyIwCBstZ2THIErRE4_CTShzWsO6orB4";
+const apiKey = "AIzaSyAFoetSKsMrw8JrmSuIdtGEA8zyhAa-wR8";
 const genAI = new GoogleGenerativeAI(apiKey);
 
 export async function POST(req) {
   const { messages, customKey } = await req.json();
-  console.log(messages);
+  //console.log(messages);
   //console.log(customKey);
   const lastMessage = messages[messages.length - 1].content;
   // console.log(lastMessage);
@@ -52,7 +51,7 @@ Objective: Ensure your responses are accurate, helpful, and strictly
   });
   //update historic database
   const result = await chatSession.sendMessage(lastMessage);
-  console.log(result);
+  // console.log(result);
 
   /*let text = "";
   for await (const chunk of result.stream) {

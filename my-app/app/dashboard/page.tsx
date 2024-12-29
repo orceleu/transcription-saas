@@ -269,6 +269,7 @@ interface UserDataHistoric {
   type: string;
   size: string;
   lang: string;
+  audioUrl: string;
 }
 export default function Dashboard() {
   const {
@@ -317,6 +318,7 @@ export default function Dashboard() {
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState<string | null>("");
   const [videoIsplaying, setVideoPlaying] = useState(false);
+  const [videoIsplayingDesktop, setVideoPlayingDesktop] = useState(false);
   const [userId, setUserid] = useState("");
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -356,6 +358,7 @@ export default function Dashboard() {
   const associedFileName = useRef("");
   const type = useRef("");
   const size = useRef("");
+  const audioUrlSaved = useRef("");
   const falRequestId = useRef("");
   const [userData, setUserData] = useState<UserDataHistoric[]>([]);
   const [userAccountData, setUserAccountData] = useState<any>(null);
@@ -443,7 +446,8 @@ export default function Dashboard() {
     associedFileName: string,
     type: string,
     size: string,
-    lang: string
+    lang: string,
+    audioUrlSaved: string
   ) => {
     setUserData((prev) => [
       ...prev,
@@ -457,6 +461,7 @@ export default function Dashboard() {
         type: type,
         size: size,
         lang: lang,
+        audioUrl: audioUrlSaved,
       },
     ]);
   };
@@ -673,7 +678,7 @@ export default function Dashboard() {
     console.log(parsedSubtitles);
     // console.log(transcriptionResultInSrt.current)
     setSubtitles(parsedSubtitles);
-    setTextLanguageDetected(data.lang || "fr");
+    setTextLanguageDetected(data.lang || "NaN");
     audioUrl.current = getFileUrl(data.$id);
     loadConversation(data.$id);
     setConversationId(data.$id);
@@ -834,6 +839,10 @@ export default function Dashboard() {
     setCurrentSubtitleDesktop(currentSub || null);
   };
   const checkVideoYoutube = async (url: string, remainingTime: number) => {
+    setCheckingYoutubeUrl(true);
+    setYoutubePlayerUrl(true);
+    setIsVideo(true);
+    setAudioUrlDispo(true);
     const data = url.slice(17, 28);
     console.log(data);
 
@@ -855,15 +864,28 @@ export default function Dashboard() {
 
       if (response.data.lengthSeconds < remainingTime) {
         durationUploaded.current = response.data.lengthSeconds;
-        convertYoutubeMp3();
+        const audioUrl = response.data.audios.items[0].url;
+        const title = response.data.title;
+        console.log(audioUrl);
+        console.log(title);
+        convertYoutubeMp3(audioUrl, title, youtubeUrl);
+        setCheckingYoutubeUrl(false);
       } else {
         toast({
           variant: "destructive",
           title: "Youtube video too long,please add credit.",
         });
+        setCheckingYoutubeUrl(false);
+        setYoutubePlayerUrl(false);
+        setIsVideo(false);
+        setAudioUrlDispo(false);
       }
     } catch (error) {
       console.error(error);
+      setCheckingYoutubeUrl(true);
+      setYoutubePlayerUrl(true);
+      setIsVideo(true);
+      setAudioUrlDispo(true);
     }
   };
   const handleActiveButton = () => {
@@ -1081,17 +1103,16 @@ export default function Dashboard() {
         data.documents[i].associedFileName,
         data.documents[i].type,
         data.documents[i].size,
-        data.documents[i].lang
+        data.documents[i].lang,
+        data.documents[i].audioUrl
       );
     }
-    /*const res = parseSRT(userData[0].historic);
-    setSubtitles(res);
-    setTextLanguageDetected("en")*/
+
     handleclickUserDataHistoric(data.documents[0]);
   };
   useEffect(() => {
     if (userAccountData?.Time > 10) {
-      if (!error) {
+      if (!error && !isLoading) {
         saveConversation();
         //actualise puis update
         const res1Value = parseInt(userAccountData?.Time, 10); // Convertit res1 en entier
@@ -1141,25 +1162,25 @@ export default function Dashboard() {
       "x-rapidapi-host": "youtube-mp3-downloader2.p.rapidapi.com",
     },
   };
-  const convertYoutubeMp3 = async () => {
-    setCheckingYoutubeUrl(true);
-    setYoutubePlayerUrl(true);
-    setIsVideo(true);
-    setAudioUrlDispo(true);
-    try {
-      const response = await axios.request(options);
-      console.log(response.data.dlink);
-      if (response) {
-        setCheckingYoutubeUrl(false);
-        audioUrl.current = response.data.dlink;
-        submitSpeech();
-      }
-    } catch (error) {
+  const convertYoutubeMp3 = async (
+    audiourl: string,
+    title: string,
+    audiourlsaved: string
+  ) => {
+    if (audiourl) {
       setCheckingYoutubeUrl(false);
-      setYoutubePlayerUrl(false);
-      setIsVideo(false);
-      setAudioUrlDispo(false);
-      console.error(error);
+      audioUrl.current = audiourl;
+      fileId.current = ID.unique();
+      // userId,
+      //transcriptionResultInSrt.current,
+      //falRequestId.current,
+      associedFileName.current = title;
+      type.current = "ytb";
+      size.current = "";
+      audioUrlSaved.current = audiourlsaved;
+      //textLanguageDetected
+      transcriptionResultInSrt.current = "data";
+      submitSpeech();
     }
   };
   const options2 = {
@@ -1243,7 +1264,17 @@ export default function Dashboard() {
     // Joindre les paragraphes avec deux sauts de ligne pour les séparer
     return paragraphs.join("\n\n");
   }
-
+  /* pour l'url youtube une fonction qui genere 
+ fileId.current,
+        userId,
+        transcriptionResultInSrt.current,
+        falRequestId.current,
+        associedFileName.current,
+        type.current,
+        size.current,
+        textLanguageDetected  
+        
+*/
   useEffect(() => {
     const parsedSubtitles = parseSRT(transcriptionResultInSrt.current);
     setSubtitles(parsedSubtitles);
@@ -1255,8 +1286,11 @@ export default function Dashboard() {
         falRequestId.current,
         associedFileName.current,
         type.current,
-        size.current
+        size.current,
+        textLanguageDetected,
+        audioUrlSaved.current
       );
+      console.log("userData added!");
     } else {
       console.log("No fileId found!");
     }
@@ -1563,6 +1597,7 @@ export default function Dashboard() {
               )}
             </div>
           </div>
+
           <Tabs defaultValue="password" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="account">
@@ -1867,15 +1902,24 @@ export default function Dashboard() {
                     >
                       <div className="flex justify-between gap-2">
                         <strong className="text-gray-500" key={index + 1}>
-                          {data.associedFileName}
+                          {data.associedFileName.slice(0, 25)}
                         </strong>
                         {returnTypeIcon(data.type)}
                       </div>
 
-                      <p className="text-[11px]" key={index + 3}>
-                        <span className="font-bold">Size:</span>{" "}
-                        {bytesToMB(Number(data.size))}
-                      </p>
+                      <div key={index + 3}>
+                        {data.size !== "" ? (
+                          <p className="text-[11px]">
+                            <span className="font-bold">Size:</span>
+                            {bytesToMB(Number(data.size))}
+                          </p>
+                        ) : (
+                          <p className="text-[11px]">
+                            <span className="  font-bold">Url:</span>
+                            {data.audioUrl}
+                          </p>
+                        )}
+                      </div>
 
                       <div className="flex items-center" key={index + 5}>
                         <p className="w-3/4 text-[11px]" key={index + 6}>
@@ -2138,7 +2182,6 @@ export default function Dashboard() {
                     className="m-4"
                     onClick={() => {
                       if (uploadedFile) {
-                        //handleSubmit(uploadedFile);
                         submitSpeech();
                       } else {
                         alert("file not found!");
@@ -2156,40 +2199,44 @@ export default function Dashboard() {
                     )}
                   </Button>
                 )}
-
+                <div className=" p-1   fixed bottom-1 ">
+                  {isAudioUrlDispo && isVideo && !youtubePlayerUrl && (
+                    <div className=" w-[400px] bg-slate-100 rounded-t-md end-[120px]">
+                      <div className="flex justify-center ">
+                        {" "}
+                        <ReactPlayer
+                          ref={videoPlayerRef}
+                          width="100%"
+                          height="100%"
+                          playing={videoIsplayingDesktop}
+                          light={false}
+                          url={audioUrl.current}
+                          onDuration={(e) => console.log(`duration:${e}`)}
+                          onSeek={(e) => console.log("onSeek", e)}
+                          onProgress={handleProgressDesktop}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className=" p-1   fixed bottom-1 end-[120px]">
                 {isAudioUrlDispo && isVideo && !youtubePlayerUrl && (
-                  <div className=" w-[400px]  p-1  rounded-t-md bg-slate-100 lg:fixed bottom-1 end-1">
-                    <div className="flex justify-center ">
-                      {" "}
-                      <ReactPlayer
-                        ref={videoPlayerRef}
-                        width="100%"
-                        height="100%"
-                        playing={videoIsplaying}
-                        light={true}
-                        url={audioUrl.current}
-                        onDuration={(e) => console.log(`duration:${e}`)}
-                        onSeek={(e) => console.log("onSeek", e)}
-                        onProgress={handleProgressDesktop}
-                      />
-                    </div>
-
-                    <div className="flex justify-center m-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setVideoPlaying(!videoIsplaying);
-                        }}
-                      >
-                        {videoIsplaying ? <PauseIcon /> : <PlayIcon />}
-                      </Button>
-                    </div>
+                  <div className="flex justify-center m-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setVideoPlayingDesktop(!videoIsplayingDesktop);
+                      }}
+                    >
+                      {videoIsplayingDesktop ? <PauseIcon /> : <PlayIcon />}
+                    </Button>
                   </div>
                 )}
               </div>
-              <div className="flex justify-center">
+              <div className="flex justify-center end-[120px]">
                 {isAudioUrlDispo && isVideo && youtubePlayerUrl && (
-                  <div className="bg-gray-100 p-2 rounded-md fixed bottom-0 end-1">
+                  <div className="bg-gray-100 p-2 rounded-md fixed bottom-0 ">
                     <YouTubePlayer
                       width={400}
                       height={200}
@@ -3343,7 +3390,7 @@ export default function Dashboard() {
                       url={audioUrl.current}
                       onDuration={(e) => console.log(`duration:${e}`)}
                       onSeek={(e) => console.log("onSeek", e)}
-                      onProgress={handleProgressDesktop}
+                      onProgress={handleProgress}
                     />
                   </div>
 

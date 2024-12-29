@@ -116,7 +116,9 @@ const addUserData = async (
   requestId,
   associedFileName,
   type,
-  size
+  size,
+  lang,
+  audioUrl
 ) => {
   const promise = databases.createDocument(
     DATABASE_ID,
@@ -130,6 +132,8 @@ const addUserData = async (
       associedFileName: associedFileName,
       type: type,
       size: size,
+      lang: lang,
+      audioUrl: audioUrl,
     },
     [
       Permission.write(Role.any()),
