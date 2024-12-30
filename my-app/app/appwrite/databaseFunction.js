@@ -118,7 +118,8 @@ const addUserData = async (
   type,
   size,
   lang,
-  audioUrl
+  audioUrl,
+  duration
 ) => {
   const promise = databases.createDocument(
     DATABASE_ID,
@@ -134,6 +135,7 @@ const addUserData = async (
       size: size,
       lang: lang,
       audioUrl: audioUrl,
+      duration: duration,
     },
     [
       Permission.write(Role.any()),

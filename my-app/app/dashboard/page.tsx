@@ -270,6 +270,7 @@ interface UserDataHistoric {
   size: string;
   lang: string;
   audioUrl: string;
+  duration: string;
 }
 export default function Dashboard() {
   const {
@@ -360,6 +361,7 @@ export default function Dashboard() {
   const size = useRef("");
   const audioUrlSaved = useRef("");
   const falRequestId = useRef("");
+  const youtubeUrlFinal = useRef("");
   const [userData, setUserData] = useState<UserDataHistoric[]>([]);
   const [userAccountData, setUserAccountData] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -447,7 +449,8 @@ export default function Dashboard() {
     type: string,
     size: string,
     lang: string,
-    audioUrlSaved: string
+    audioUrlSaved: string,
+    duration: string
   ) => {
     setUserData((prev) => [
       ...prev,
@@ -462,6 +465,7 @@ export default function Dashboard() {
         size: size,
         lang: lang,
         audioUrl: audioUrlSaved,
+        duration: duration,
       },
     ]);
   };
@@ -673,19 +677,27 @@ export default function Dashboard() {
   ];
 
   const handleclickUserDataHistoric = (data: any) => {
-    //transcriptionResultInSrt.current = data.historic;
     const parsedSubtitles = parseSRT(data.historic);
     console.log(parsedSubtitles);
-    // console.log(transcriptionResultInSrt.current)
     setSubtitles(parsedSubtitles);
     setTextLanguageDetected(data.lang || "NaN");
     audioUrl.current = getFileUrl(data.$id);
     loadConversation(data.$id);
     setConversationId(data.$id);
     setAudioUrlDispo(true);
-    //setMessages(messagge);
-    setIsVideo(data.type.startsWith("video/"));
-    setfileNameSelected(data.associedFileName);
+    //distinguer les differents fichier,YB,Audio,Video
+    if (data.type.startsWith("ytb")) {
+      setIsVideo(true);
+      setYoutubePlayerUrl(true);
+      setfileNameSelected(data.associedFileName);
+      youtubeUrlFinal.current = data.audioUrl;
+      youtubeUrl;
+    } else {
+      setYoutubePlayerUrl(false);
+      setIsVideo(data.type.startsWith("video/"));
+      setfileNameSelected(data.associedFileName);
+    }
+
     // retrieveRequestResult(data.requestId);
   };
   // Fonction pour télécharger le fichier
@@ -839,6 +851,7 @@ export default function Dashboard() {
     setCurrentSubtitleDesktop(currentSub || null);
   };
   const checkVideoYoutube = async (url: string, remainingTime: number) => {
+    youtubeUrlFinal.current = url; // ajoute l'url yb a partir de l'input,(evite de renvoyer une nouvelle requete)
     setCheckingYoutubeUrl(true);
     setYoutubePlayerUrl(true);
     setIsVideo(true);
@@ -882,10 +895,10 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error(error);
-      setCheckingYoutubeUrl(true);
-      setYoutubePlayerUrl(true);
-      setIsVideo(true);
-      setAudioUrlDispo(true);
+      setCheckingYoutubeUrl(false);
+      setYoutubePlayerUrl(false);
+      setIsVideo(false);
+      setAudioUrlDispo(false);
     }
   };
   const handleActiveButton = () => {
@@ -1104,11 +1117,12 @@ export default function Dashboard() {
         data.documents[i].type,
         data.documents[i].size,
         data.documents[i].lang,
-        data.documents[i].audioUrl
+        data.documents[i].audioUrl,
+        data.documents[i].duration
       );
     }
-
-    handleclickUserDataHistoric(data.documents[0]);
+    //pour selectionner la donnee userHistoric [0] lors du premier render
+    handleclickUserDataHistoric(data.documents[data.total - 1]);
   };
   useEffect(() => {
     if (userAccountData?.Time > 10) {
@@ -1132,7 +1146,7 @@ export default function Dashboard() {
         } else {
           console.log("erreur de conversion string to Int");
         }
-      } else console.log("error in chatbot!");
+      } else console.log("chatbot is loading, or error !");
     } else
       toast({
         variant: "destructive",
@@ -1179,7 +1193,8 @@ export default function Dashboard() {
       size.current = "";
       audioUrlSaved.current = audiourlsaved;
       //textLanguageDetected
-      transcriptionResultInSrt.current = "data";
+      CreateAiConversation(fileId.current, []);
+      transcriptionResultInSrt.current = "data"; // pour ajouter les donnees userData
       submitSpeech();
     }
   };
@@ -1288,7 +1303,8 @@ export default function Dashboard() {
         type.current,
         size.current,
         textLanguageDetected,
-        audioUrlSaved.current
+        audioUrlSaved.current,
+        durationUploaded.current.toString()
       );
       console.log("userData added!");
     } else {
@@ -1433,22 +1449,7 @@ export default function Dashboard() {
         },*/
         // webhookUrl: "",
       });
-
       falRequestId.current = requestId;
-
-      /*if (falRequestId.current && fileId.current) {
-        addUserData(
-          fileId.current,
-          userId,
-          transcriptionResultInSrt.current,
-          requestId,
-          associedFileName.current,
-          type.current,
-          size.current
-        );
-      } else {
-        console.log("error: if (requestId && fileId.current) 1212");
-      }*/
       if (data) {
         setLoading(false);
         setText(data.text as string);
@@ -1907,29 +1908,32 @@ export default function Dashboard() {
                         {returnTypeIcon(data.type)}
                       </div>
 
-                      <div key={index + 3}>
-                        {data.size !== "" ? (
-                          <p className="text-[11px]">
+                      <div className="grid " key={index + 3}>
+                        {data.size !== "" && (
+                          <p className="text-[11px] text-gray-400">
                             <span className="font-bold">Size:</span>
                             {bytesToMB(Number(data.size))}
                           </p>
-                        ) : (
-                          <p className="text-[11px]">
-                            <span className="  font-bold">Url:</span>
-                            {data.audioUrl}
-                          </p>
                         )}
+
+                        <p className="text-[11px] text-gray-400">
+                          <span className="  font-bold">Duration:</span>
+                          {convertirDuree(Number(data.duration))}
+                        </p>
                       </div>
 
                       <div className="flex items-center" key={index + 5}>
-                        <p className="w-3/4 text-[11px]" key={index + 6}>
+                        <p
+                          className="w-3/4 text-[11px] text-gray-400"
+                          key={index + 6}
+                        >
                           <span className="font-bold">Created at :</span>
                           {formatDate(data.$createdAt)}
                         </p>
                         <Button
                           key={index + 7}
-                          className="w-1/4 hover:bg-red-500"
-                          variant="ghost"
+                          className="w-1/4 "
+                          variant="outline"
                           onClick={() => {
                             deleteItemUser_data(data.$id);
                           }}
@@ -2241,7 +2245,7 @@ export default function Dashboard() {
                       width={400}
                       height={200}
                       ref={playerRef1}
-                      url={youtubeUrl}
+                      url={youtubeUrlFinal.current}
                       controls={true}
                       onProgress={handleProgressDesktop}
                     />
@@ -2282,7 +2286,7 @@ export default function Dashboard() {
                       <span className="text-sm text-amber-200 ">-2min/req</span>
                     </SheetTitle>
                     <SheetDescription className="text-center">
-                      Ask AI about your selected audio:
+                      Ask AI about your selected file:
                       <span className="text-violet-500 font-bold">
                         {fileNameSelected}
                       </span>
@@ -2926,12 +2930,12 @@ export default function Dashboard() {
                                 {filteredData.map((data, index) => (
                                   <div
                                     key={index}
-                                    className="grid gap-1 rounded-md p-3 bg-white hover:bg-slate-100 my-2"
+                                    className="grid  rounded-md p-3 bg-white hover:bg-slate-100 my-2"
                                     onClick={() => {
                                       handleclickUserDataHistoric(data);
                                     }}
                                   >
-                                    <div className="flex justify-between gap-1">
+                                    <div className="flex justify-between ">
                                       <strong
                                         className="text-gray-500"
                                         key={index + 1}
@@ -2940,16 +2944,30 @@ export default function Dashboard() {
                                       </strong>
                                       {returnTypeIcon(data.type)}
                                     </div>
-                                    <p className="text-[11px]" key={index + 3}>
-                                      <span className="font-bold">Size:</span>{" "}
-                                      {bytesToMB(Number(data.size))}
-                                    </p>
+                                    <div className="grid " key={index + 3}>
+                                      {data.size !== "" && (
+                                        <p className="text-[11px] text-gray-400">
+                                          <span className="font-bold">
+                                            Size:
+                                          </span>
+                                          {bytesToMB(Number(data.size))}
+                                        </p>
+                                      )}
+
+                                      <p className="text-[11px] text-gray-400">
+                                        <span className="  font-bold">
+                                          Duration:
+                                        </span>
+                                        {convertirDuree(Number(data.duration))}
+                                      </p>
+                                    </div>
+
                                     <div
                                       className="flex items-center gap-2"
                                       key={index + 5}
                                     >
                                       <p
-                                        className="w-3/4 text-[11px]"
+                                        className="w-3/4 text-[11px] text-gray-400"
                                         key={index + 6}
                                       >
                                         <span className="font-bold">
@@ -2960,8 +2978,8 @@ export default function Dashboard() {
                                       </p>
                                       <Button
                                         key={index + 7}
-                                        className="w-1/4 hover:bg-red-300"
-                                        variant="ghost"
+                                        className="w-1/4 "
+                                        variant="outline"
                                         onClick={() => {
                                           deleteItemUser_data(data.$id);
                                         }}
@@ -3253,7 +3271,7 @@ export default function Dashboard() {
                         </span>
                       </SheetTitle>
                       <SheetDescription className="text-center">
-                        Ask ai about your selected audio:
+                        Ask ai about your selected file:
                         <span className="text-violet-500">
                           {fileNameSelected}
                         </span>
@@ -3415,7 +3433,7 @@ export default function Dashboard() {
                   width={300}
                   height={150}
                   ref={playerRef}
-                  url={youtubeUrl}
+                  url={youtubeUrlFinal.current}
                   controls={true}
                   onProgress={handleProgress}
                 />
@@ -3438,19 +3456,3 @@ export default function Dashboard() {
     );
   }
 }
-
-/*
- <div className="space-y-2">
-                        <p className="font-semibold">Choose a question:</p>
-                        {suggestedQuestions.map((question, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleSendQuestion(question)} // Envoie automatique au clic
-                            className="block w-full p-2 rounded-md text-left border bg-gray-100 hover:bg-gray-200"
-                          >
-                            {question}
-                          </button>
-                        ))}
-                      </div>
-
-*/
