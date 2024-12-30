@@ -71,7 +71,7 @@ const getAiConversation = async (documentId) => {
     };
   }
 };
-async function CreateAiConversation(conversationId_docId, messages) {
+async function createAiConversation(conversationId_docId, messages) {
   const promise = databases.createDocument(
     DATABASE_ID,
     USER_AI_CHAT,
@@ -106,7 +106,19 @@ const updateUsedTime = async (documentId, usedTime) => {
       Time: usedTime,
     }
   );
-  console.log(result);
+  //console.log(result);
+};
+// le document devais etre update ici ,apres l avoir cree lors d'un upload
+const saveAIConversation = async (conversationId_docId, messages) => {
+  const promise = await databases.updateDocument(
+    DATABASE_ID,
+    USER_AI_CHAT,
+    conversationId_docId,
+    {
+      messages: messages,
+    }
+  );
+  //console.log(promise);
 };
 
 const addUserData = async (
@@ -169,7 +181,7 @@ const deleteAiChat = async (documentId) => {
     documentId // documentId
   );
 
-  console.log(result);
+  // console.log(result);
 };
 const listUserData = async (userId) => {
   const result = await databases.listDocuments(
@@ -187,9 +199,10 @@ export {
   listUserData,
   deleteItemUserData,
   getDocument,
-  CreateAiConversation,
+  createAiConversation,
   getAiConversation,
   deleteAiChat,
+  saveAIConversation,
 };
 /*
 

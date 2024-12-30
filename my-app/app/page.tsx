@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import capturetranscriptionapp from "../public/capture1.jpg";
-import { IoCloudUpload } from "react-icons/io5";
+import { IoCloudUpload, IoSyncCircle } from "react-icons/io5";
 import { AiOutlineTranslation } from "react-icons/ai";
 import {
   ArrowBigDown,
@@ -138,7 +138,7 @@ export default function Home() {
             </div>
             <div className="relative z-[-1] flex place-items-center before:absolute before:h-[500px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-violet-100 after:via-blue-300 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-blue-900 after:dark:via-[#6201ff] after:dark:opacity-40 sm:before:w-[580px] sm:after:w-[340px] before:lg:h-[460px]"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 md:mt-[40px] gap-3">
-              <div className="w-full md:w-[500px]  shadow-md shadow-blue-200 rounded-md p-2">
+              <div className="w-full md:w-[500px] max-h-[400px]  shadow-md shadow-blue-200 rounded-md p-2">
                 <div className="grid gap-2 my-10 p-5 rounded-md border-black border-[1px]">
                   <p className="text-center my-4">
                     Upload file to transcribe them
@@ -352,7 +352,10 @@ export default function Home() {
                     <p className="text-center text-3xl text-white my-2">
                       Try Auddai Free
                     </p>
-                    <Separator className="mb-[60px]" />
+                    <Separator />
+                    <p className="my-[30px] text-gray-100 text-xl">
+                      Key Features.
+                    </p>
                     <div className="flex justify-center">
                       <div className="grid gap-2  ">
                         <div className="flex items-center gap-2">
@@ -414,7 +417,10 @@ export default function Home() {
                     Auddai Pro
                     <span className="text-amber-500 font-bold">10$/month</span>
                   </p>
-                  <Separator className="mb-[60px]" />
+                  <Separator />
+                  <p className="my-[30px] text-gray-100 text-xl">
+                    Key Features.
+                  </p>
                   <div className="flex justify-center">
                     <div className="grid gap-2  ">
                       <div className="flex items-center gap-2">
@@ -502,7 +508,7 @@ export default function Home() {
                         <ArrowDownNarrowWide className="text-violet-500 size-[40px]" />
                       </div>
                       <p className="text-center text-2xl font-bold">Accuracy</p>
-                      <p className="text-center  ">
+                      <p className="text-center  text-gray-600 ">
                         Get accurate language transcriptions, even if your video
                         or audio contains multiple languages.
                       </p>{" "}
@@ -519,7 +525,7 @@ export default function Home() {
                       <p className="text-center text-2xl font-bold">
                         Transcribe in over 100 Languages.
                       </p>
-                      <p className="text-center  ">
+                      <p className="text-center text-gray-600  ">
                         Transcribe in any language you need.
                       </p>{" "}
                     </div>
@@ -536,7 +542,7 @@ export default function Home() {
                         {" "}
                         Speaker Identification.
                       </p>
-                      <p className="text-center  ">
+                      <p className="text-center text-gray-600  ">
                         Utilise Speaker Identification for precise speaker
                         labelling in your audios and videos.
                       </p>{" "}
@@ -551,7 +557,7 @@ export default function Home() {
                         <EditIcon className="text-violet-500 size-[40px]" />
                       </div>
                       <p className="text-center text-2xl font-bold">Editor.</p>
-                      <p className="text-center  ">
+                      <p className="text-center  text-gray-600 ">
                         Use our text Editor for customized transcription
                         formatting.
                       </p>{" "}
@@ -568,7 +574,7 @@ export default function Home() {
                       <p className="text-center text-2xl font-bold">
                         Multi-format Files.
                       </p>
-                      <p className="text-center  ">
+                      <p className="text-center  text-gray-600 ">
                         Upload files in popular formats and download
                         transcriptions in various layouts, including
                         timestamped.
@@ -586,7 +592,7 @@ export default function Home() {
                       <p className="text-center text-2xl font-bold">
                         Dashboard.
                       </p>
-                      <p className="text-center  ">
+                      <p className="text-center text-gray-600  ">
                         Easily manage all of your transcriptions in one place.
                       </p>{" "}
                     </div>
@@ -597,12 +603,12 @@ export default function Home() {
                     <Separator />
                     <div className="grid gap-3 p-10">
                       <div className="flex justify-center">
-                        <FcSynchronize className="text-violet-500 size-[40px]" />
+                        <IoSyncCircle className="text-violet-500 size-[40px]" />
                       </div>
                       <p className="text-center text-2xl font-bold">
                         Sync with Audio/Video.
                       </p>
-                      <p className="text-center  ">
+                      <p className="text-center text-gray-600 ">
                         Synchronization of transcripts with video or audio
                         enables quick navigation.
                       </p>{" "}
@@ -619,7 +625,7 @@ export default function Home() {
                       <p className="text-center text-2xl font-bold">
                         Fully Responsive Interface.
                       </p>
-                      <p className="text-center  ">
+                      <p className="text-center  text-gray-600 ">
                         Our interface supports tablets phones, desktops,and
                         smart TVs.
                       </p>{" "}
@@ -634,7 +640,7 @@ export default function Home() {
                         <FaRobot className="text-violet-500 size-[40px]" />
                       </div>
                       <p className="text-center text-2xl font-bold">AI .</p>
-                      <p className="text-center  ">
+                      <p className="text-center text-gray-600  ">
                         Ask AI gemini powered anything about your audio/video.
                       </p>{" "}
                     </div>
@@ -645,7 +651,7 @@ export default function Home() {
             <p className="text-center my-10 text-3xl lg:text-5xl font-bold lg:mt-[200px]">
               Customer review
             </p>
-            <p className="text-center ">
+            <p className="text-center text-gray-600  ">
               Rated Excellent 4.8/5 based on 450+ reviews
             </p>
             <Separator className="my-10" />
@@ -663,7 +669,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <p>
+                <p className="text-gray-600 ">
                   Good services. No ads and transcripts are accurate than other
                   app like this,resonnable price with a bunch of fonctionnality.
                 </p>
@@ -680,7 +686,7 @@ export default function Home() {
                     <StarFilledIcon className="text-yellow-600" />
                   </div>
                 </div>
-                <p>
+                <p className="text-gray-600 ">
                   I use this platform to transcribe my meetings, and it has
                   saved me so much time. The accuracy of the transcriptions is
                   impressive, even with different accents. In just a few
@@ -715,7 +721,7 @@ export default function Home() {
                     <StarFilledIcon className="text-yellow-600" />
                   </div>
                 </div>
-                <p>
+                <p className="text-gray-600 ">
                   The platform is incredibly easy to use. I just upload my file,
                   and within minutes, I have an accurate transcription. It has
                   allowed me to get my transcriptions done in no time, and
@@ -728,10 +734,10 @@ export default function Home() {
             </p>
             <Accordion type="single" collapsible className="w-full mb-[100px]">
               <AccordionItem value="item-1">
-                <AccordionTrigger className=" lg:text-xl font-bold">
+                <AccordionTrigger className=" lg:text-xl font-bold text-gray-600 ">
                   What is Auddai?
                 </AccordionTrigger>
-                <AccordionContent className=" lg:text-xl text-gray-600">
+                <AccordionContent className=" lg:text-xl text-gray-500">
                   Auddai is an{" "}
                   <a
                     title="go to wikipedia."
@@ -750,36 +756,36 @@ export default function Home() {
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-2">
-                <AccordionTrigger className=" lg:text-xl font-bold">
+                <AccordionTrigger className=" lg:text-xl font-bold text-gray-600 ">
                   How long are my credits available?
                 </AccordionTrigger>
-                <AccordionContent className=" lg:text-xl text-gray-600">
+                <AccordionContent className=" lg:text-xl text-gray-500">
                   Your credits have lifetime availability.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-3">
-                <AccordionTrigger className=" lg:text-xl font-bold">
+                <AccordionTrigger className=" lg:text-xl font-bold text-gray-600 ">
                   How much file size can i upload?
                 </AccordionTrigger>
-                <AccordionContent className="lg:text-xl text-gray-600">
+                <AccordionContent className="lg:text-xl text-gray-500">
                   You can upload at most 5GB.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-4">
-                <AccordionTrigger className=" lg:text-xl font-bold">
+                <AccordionTrigger className=" lg:text-xl font-bold text-gray-600 ">
                   Which audio / video formats do you support?
                 </AccordionTrigger>
-                <AccordionContent className="lg:text-xl text-gray-600">
+                <AccordionContent className="lg:text-xl text-gray-500">
                   Auddai supports the vast majority of common audio and video
                   formats, including MP3, M4A, MP4, MOV, AAC, WAV, OGG, OPUS and
                   MPEG
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-5">
-                <AccordionTrigger className=" lg:text-xl font-bold">
+                <AccordionTrigger className=" lg:text-xl font-bold text-gray-600 ">
                   Is Auddai secure?
                 </AccordionTrigger>
-                <AccordionContent className=" lg:text-xl text-gray-600">
+                <AccordionContent className=" lg:text-xl text-gray-500">
                   Yes. Your transcripts, uploaded files, and account information
                   are encrypted and only you can access them. You can delete
                   them at any time. We use Stripe to securely process payments
@@ -787,20 +793,20 @@ export default function Home() {
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-6">
-                <AccordionTrigger className=" lg:text-xl font-bold">
+                <AccordionTrigger className=" lg:text-xl font-bold text-gray-600 ">
                   What about accents, background noise, and poor audio quality?
                 </AccordionTrigger>
-                <AccordionContent className=" lg:text-xl text-gray-600">
+                <AccordionContent className=" lg:text-xl text-gray-500">
                   While clean and clear audio produces the best results, Auddai
                   generally does well with accents, background noise, and lower
                   audio quality.{" "}
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-7">
-                <AccordionTrigger className=" lg:text-xl font-bold">
+                <AccordionTrigger className=" lg:text-xl font-bold text-gray-600 ">
                   How do i cancel my plan?
                 </AccordionTrigger>
-                <AccordionContent className=" lg:text-xl text-gray-600">
+                <AccordionContent className=" lg:text-xl text-gray-500">
                   You can cancel your plan at anytime, just click on top right
                   dashboard and click cancel subscription.
                 </AccordionContent>

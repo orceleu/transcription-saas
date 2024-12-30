@@ -163,12 +163,13 @@ import { account, ID } from "../appwrite/appwrite";
 import {
   addUserAccount,
   addUserData,
-  CreateAiConversation,
+  createAiConversation,
   deleteAiChat,
   deleteItemUserData,
   getAiConversation,
   getDocument,
   listUserData,
+  saveAIConversation,
   updateUsedTime,
 } from "../appwrite/databaseFunction";
 import { FcAddImage } from "react-icons/fc";
@@ -287,6 +288,13 @@ export default function Dashboard() {
   } = useChat({
     api: "/api/aichat",
     streamProtocol: "text",
+    onResponse(response) {
+      console.log("generating response");
+    },
+    onFinish(message, options) {
+      updateChatAiUsedQuery();
+      console.log(message);
+    },
   });
   const [conversationId, setConversationId] = useState<string | null>(null);
 
@@ -312,11 +320,6 @@ export default function Dashboard() {
   const [inputYoutubeMp3Download, setinputYoutubeMp3Download] = useState("");
   const [isyoutubeMp3Submitted, setisyoutubeMp3Submitted] = useState(false);
   const [progresspercent, setProgresspercent] = useState(0);
-  const [selectedTask, setSelectedTask] = useState("transcribe");
-  const selectedCurrentTask = useRef("transcribe");
-  const [selectedLanguage, setSelectedLanguage] = useState("en");
-  const [isTranslanteMode, setTranslanteMode] = useState(false);
-  const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState<string | null>("");
   const [videoIsplaying, setVideoPlaying] = useState(false);
   const [videoIsplayingDesktop, setVideoPlayingDesktop] = useState(false);
@@ -378,18 +381,6 @@ export default function Dashboard() {
   const textCreditInsuffisant =
     "Your credit balance is insufficient. Please add credits to continue";
 
-  // Récupérer une conversation existante
-  /*const loadConversation = async (id: string) => {
-    try {
-      const response = await axios.get("/api/get-conversation", {
-        params: { conversationId: id },
-      });
-      setMessages(response.data.messages);
-      setConversationId(id);
-    } catch (error) {
-      console.error("Error loading conversation:", error);
-    }
-  };*/
   const parseJsonArray = (stringArray: string[]): Message[] => {
     try {
       return stringArray.map((item) => JSON.parse(item));
@@ -419,26 +410,10 @@ export default function Dashboard() {
   // Sauvegarder la conversation
   const saveConversation = async () => {
     const msg = formatMessagesForAppwrite(messages);
-    //console.log(msg);
-    try {
-      await axios.post("/api/save-conversation", {
-        conversationId,
-        msg,
-      });
-      console.log("ai chat saved");
-    } catch (error) {
-      console.error("Error saving conversation:", error);
-    }
+
+    await saveAIConversation(conversationId, msg);
   };
 
-  //un doc exclusivement pour le sauvegarde des chats
-
-  /* useEffect(() => {
-      // Charger une conversation existante si l'ID est fourni
-      if (initialConversationId) loadConversation(initialConversationId);
-  }, [initialConversationId]);
-
-  */
   const addUserHistoricData = (
     userId: string,
     historic: string,
@@ -1029,7 +1004,7 @@ export default function Dashboard() {
                   submitSpeech();
                   setAudioUrlDispo(true);
                   setConversationId(fileId.current);
-                  CreateAiConversation(fileId.current, []);
+                  createAiConversation(fileId.current, []);
                   if (file.type.startsWith("video")) {
                     setIsVideo(true);
                   } else {
@@ -1124,13 +1099,14 @@ export default function Dashboard() {
     //pour selectionner la donnee userHistoric [0] lors du premier render
     handleclickUserDataHistoric(data.documents[data.total - 1]);
   };
-  useEffect(() => {
+
+  const updateChatAiUsedQuery = () => {
     if (userAccountData?.Time > 10) {
       if (!error && !isLoading) {
         saveConversation();
         //actualise puis update
         const res1Value = parseInt(userAccountData?.Time, 10); // Convertit res1 en entier
-        const durationValue = 120; // Garantit un entier pour durationUploaded
+        const durationValue = 120; // - sec/req
 
         if (!isNaN(res1Value) && !isNaN(durationValue)) {
           const timeToUpdate = res1Value - durationValue;
@@ -1152,7 +1128,8 @@ export default function Dashboard() {
         variant: "destructive",
         title: textCreditInsuffisant,
       });
-  }, [isLoading]);
+  };
+
   useEffect(() => {
     if (progresspercent == 100) {
       setTimeout(() => {
@@ -1193,7 +1170,7 @@ export default function Dashboard() {
       size.current = "";
       audioUrlSaved.current = audiourlsaved;
       //textLanguageDetected
-      CreateAiConversation(fileId.current, []);
+      createAiConversation(fileId.current, []);
       transcriptionResultInSrt.current = "data"; // pour ajouter les donnees userData
       submitSpeech();
     }
@@ -2256,7 +2233,7 @@ export default function Dashboard() {
               <Separator />
               <br />
               <div className="grid gap-3 my-10">
-                <p className="text-center">2024 AudiScribe </p>
+                <p className="text-center">2024 Auddai </p>
               </div>
               <br />
               <br />
@@ -3444,9 +3421,7 @@ export default function Dashboard() {
           <Separator />
           <br />
           <div className="grid gap-3 my-10">
-            <p className="text-center text-sm text-gray-600 ">
-              2024 AudiScribe{" "}
-            </p>
+            <p className="text-center text-sm text-gray-600 ">2024 Auddai</p>
           </div>
           <br />
           <br />
