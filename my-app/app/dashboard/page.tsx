@@ -826,6 +826,8 @@ export default function Dashboard() {
     setCurrentSubtitleDesktop(currentSub || null);
   };
   const checkVideoYoutube = async (url: string, remainingTime: number) => {
+    //fileId.current = ID.unique();
+
     youtubeUrlFinal.current = url; // ajoute l'url yb a partir de l'input,(evite de renvoyer une nouvelle requete)
     setCheckingYoutubeUrl(true);
     setYoutubePlayerUrl(true);
@@ -927,6 +929,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (youtubeUrl) {
       handleActiveButton();
+      fileId.current = ID.unique();
     }
   }, [youtubeUrl]);
 
@@ -999,7 +1002,7 @@ export default function Dashboard() {
                 if (xhr.status >= 200 && xhr.status < 300) {
                   console.log("Fichier uploadé avec succès", xhr.response);
                   audioUrl.current = getFileUrl(fileId.current);
-                  transcriptionResultInSrt.current = "data"; //pour ajouter les donnees userdata
+                  //transcriptionResultInSrt.current = "data"; //pour ajouter les donnees userdata
 
                   submitSpeech();
                   setAudioUrlDispo(true);
@@ -1159,20 +1162,27 @@ export default function Dashboard() {
     audiourlsaved: string
   ) => {
     if (audiourl) {
-      setCheckingYoutubeUrl(false);
-      audioUrl.current = audiourl;
-      fileId.current = ID.unique();
-      // userId,
-      //transcriptionResultInSrt.current,
-      //falRequestId.current,
-      associedFileName.current = title;
-      type.current = "ytb";
-      size.current = "";
-      audioUrlSaved.current = audiourlsaved;
-      //textLanguageDetected
-      createAiConversation(fileId.current, []);
-      transcriptionResultInSrt.current = "data"; // pour ajouter les donnees userData
-      submitSpeech();
+      const response = await axios.request(options);
+
+      if (response) {
+        //console.log(response.data.dlink);
+        //router.push(response.data.dlink);
+        setCheckingYoutubeUrl(false);
+        audioUrl.current = response.data.dlink;
+        // userId,
+        //transcriptionResultInSrt.current,
+        //falRequestId.current,
+        associedFileName.current = title;
+        type.current = "ytb";
+        size.current = "";
+        audioUrlSaved.current = audiourlsaved;
+        //textLanguageDetected
+        //createAiConversation(fileId.current, []);
+        // transcriptionResultInSrt.current = "data"; // pour ajouter les donnees userData
+        submitSpeech();
+      } else {
+        console.log(response);
+      }
     }
   };
   const options2 = {
@@ -1271,6 +1281,7 @@ export default function Dashboard() {
     const parsedSubtitles = parseSRT(transcriptionResultInSrt.current);
     setSubtitles(parsedSubtitles);
     if (fileId.current) {
+      console.log(`file ID: ${fileId.current}`);
       addUserData(
         fileId.current,
         userId,
@@ -1283,6 +1294,7 @@ export default function Dashboard() {
         audioUrlSaved.current,
         durationUploaded.current.toString()
       );
+      createAiConversation(fileId.current, []);
       console.log("userData added!");
     } else {
       console.log("No fileId found!");
@@ -1451,13 +1463,14 @@ export default function Dashboard() {
         actualiserTimeUsed();
 
         setSubmitted(false);
-        setUserData([]);
+        //setUserData([]);
         //attend avant de liste les donnees historique de l'user
         setTimeout(() => {
           listUserDATA();
         }, 3000);
       }
     } catch (error) {
+      /*a modifier
       actualiserTimeUsed();
       console.log(error);
       setSubmitted(false);
@@ -1467,7 +1480,9 @@ export default function Dashboard() {
       setTimeout(() => {
         console.log("userdata refresh");
         listUserDATA();
-      }, 3000);
+      }, 3000);*/
+      setSubmitted(false);
+      console.log(error);
     }
   };
   //"5111ca19-1af7-48b6-a2a9-fcd6da066eb9"
@@ -2215,9 +2230,9 @@ export default function Dashboard() {
                   </div>
                 )}
               </div>
-              <div className="flex justify-center end-[120px]">
+              <div className="flex justify-center ">
                 {isAudioUrlDispo && isVideo && youtubePlayerUrl && (
-                  <div className="bg-gray-100 p-2 rounded-md fixed bottom-0 ">
+                  <div className="bg-gray-100 p-2 rounded-md fixed bottom-0 end-[120px] ">
                     <YouTubePlayer
                       width={400}
                       height={200}
