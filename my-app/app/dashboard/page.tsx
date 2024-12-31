@@ -42,6 +42,7 @@ import {
   Edit2Icon,
   HistoryIcon,
   Infinity,
+  Loader,
   LoaderIcon,
   MoreHorizontal,
   PauseIcon,
@@ -940,13 +941,13 @@ export default function Dashboard() {
 
   //upload audio
   const handleSubmitToUpload = (file: any) => {
+    fileId.current = ID.unique();
     if (!file) {
       toast({
         variant: "destructive",
         title: "No file found.",
       });
     } else {
-      fileId.current = ID.unique();
       if (
         (file && file.type.startsWith("audio/")) ||
         file.type.startsWith("video/")
@@ -1007,7 +1008,7 @@ export default function Dashboard() {
                   submitSpeech();
                   setAudioUrlDispo(true);
                   setConversationId(fileId.current);
-                  createAiConversation(fileId.current, []);
+                  //createAiConversation(fileId.current, []);
                   if (file.type.startsWith("video")) {
                     setIsVideo(true);
                   } else {
@@ -1165,7 +1166,7 @@ export default function Dashboard() {
       const response = await axios.request(options);
 
       if (response) {
-        //console.log(response.data.dlink);
+        console.log(`submitted speech: ${response}`);
         //router.push(response.data.dlink);
         setCheckingYoutubeUrl(false);
         audioUrl.current = response.data.dlink;
@@ -1463,7 +1464,8 @@ export default function Dashboard() {
         actualiserTimeUsed();
 
         setSubmitted(false);
-        //setUserData([]);
+        setUserData([]);
+        setSubtitles([]);
         //attend avant de liste les donnees historique de l'user
         setTimeout(() => {
           listUserDATA();
@@ -1514,7 +1516,7 @@ export default function Dashboard() {
     setUploadedFile(acceptedFiles[0]);
     handleSubmitToUpload(acceptedFiles[0]);
 
-    transcriptionResultInSrt.current = "";
+    //transcriptionResultInSrt.current = "";
   };
   const { getRootProps, getInputProps, isFocused, isDragAccept, isDragReject } =
     useDropzone({ accept: { "audio/*": [], "video/*": [] }, onDrop });
@@ -2055,6 +2057,16 @@ export default function Dashboard() {
                         </div>
                       </div>
                     </div>
+                    <div className="flex justify-center my-5">
+                      {isSubmitted ? (
+                        <div className="flex items-center gap-2">
+                          <Loader className="animate-spin" />
+                          <p className="text-center text-xl text-gray-500">
+                            Processing your request, it can take a few minutes.
+                          </p>
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
 
@@ -2535,6 +2547,16 @@ export default function Dashboard() {
                       )}
                     </div>
                   </div>
+                </div>
+                <div className="flex justify-center my-5">
+                  {isSubmitted ? (
+                    <div className="flex items-center gap-2">
+                      <Loader className="animate-spin" />
+                      <p className="text-center text-xl text-gray-500">
+                        Processing your request, it can take a few minutes.
+                      </p>
+                    </div>
+                  ) : null}
                 </div>
               </div>{" "}
               <div className="mb-4 mt-1 ">
