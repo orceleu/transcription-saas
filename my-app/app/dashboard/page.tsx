@@ -274,6 +274,14 @@ interface UserDataHistoric {
   audioUrl: string;
   duration: string;
 }
+type Log = {
+  message: string;
+};
+
+type QueueUpdate = {
+  status: "IN_PROGRESS" | "COMPLETED" | "FAILED";
+  logs: Log[];
+};
 export default function Dashboard() {
   const {
     messages,
@@ -298,6 +306,12 @@ export default function Dashboard() {
     },
   });
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [progressTranscription, setProgressTranscription] = useState<number>(0);
+  const [messagesTranscription, setMessagesTranscription] = useState<string[]>(
+    []
+  );
+  const [isLoadingTranscription, setIsLoadingTranscription] =
+    useState<boolean>(false);
 
   const [uploadedFile, setUploadedFile] = useState<any>(null);
   const [isAudioUrlDispo, setAudioUrlDispo] = useState(false);
@@ -407,7 +421,12 @@ export default function Dashboard() {
       });
     });
   };
-
+  const handleQueueUpdate = (update: QueueUpdate) => {
+    if (update.status === "IN_PROGRESS") {
+      const newLogs = update.logs.map((log) => log.message);
+      setMessagesTranscription((prev) => [...prev, ...newLogs]);
+    }
+  };
   // Sauvegarder la conversation
   const saveConversation = async () => {
     const msg = formatMessagesForAppwrite(messages);
@@ -1431,12 +1450,24 @@ export default function Dashboard() {
           diarize: true,
           language: selectedCurrentLanguage.current,
         },
-        logs: false,
-        /* onQueueUpdate: (update) => {
+        logs: true,
+        onQueueUpdate: (update) => {
           if (update.status === "IN_PROGRESS") {
-            update.logs.map((log) => log.message).forEach(console.log);
+            const newLogs = update.logs.map((log) => log.message);
+            // setMessagesTranscription((prev) => [...prev, ...newLogs]);
+            setProgressTranscription((prev) => Math.min(prev + 10, 100)); // Simulez la progression
+          } else if (update.status === "COMPLETED") {
+            setProgressTranscription(100);
+            // setMessagesTranscription((prev) => [...prev, "Transcription completed."]);
+            setTimeout(() => {
+              setProgressTranscription(0);
+            }, 2000);
+            setIsLoadingTranscription(false);
+          } else {
+            // setMessagesTranscription((prev) => [...prev, "Transcription failed."]);
+            setIsLoadingTranscription(false);
           }
-        },*/
+        },
         // webhookUrl: "",
       });
       falRequestId.current = requestId;
@@ -1547,11 +1578,11 @@ export default function Dashboard() {
           <br />
           <div className="flex justify-center mt-8">
             <div className="grid gap-1 w-[200px] p-3">
-              <div className="flex  h-[70px] w-1/5 bg-white fixed top-0 start-0">
+              <div className="flex  h-[50px] w-1/5 bg-white fixed top-0 shadow-sm start-0">
                 <div className="flex  w-full justify-between mt-5 mx-3">
-                  <SidebarClose className="text-gray-500 size-[35px] " />
+                  <SidebarClose className="text-gray-500 size-[20px] " />
                   {userAccountData?.isPro ? (
-                    <MdWorkspacePremium className="text-amber-500 size-[35px]" />
+                    <MdWorkspacePremium className="text-amber-500 size-[20px]" />
                   ) : (
                     <p className=" text-gray-500 font-bold mr-2">Free</p>
                   )}
@@ -1962,11 +1993,11 @@ export default function Dashboard() {
             <br />
             <div className="w-full ">
               <div className="grid gap-5">
-                <div className="flex justify-between  h-[70px] w-4/5 bg-white fixed top-0 ">
-                  <p className="text-3xl font-bold ml-10 mt-5 text-gray-500 underline   text-center ">
+                <div className="flex justify-between  h-[50px] w-4/5 bg-white fixed top-0 shadow-sm">
+                  <p className="text-xl font-bold ml-10 mt-3 text-gray-500 underline   text-center ">
                     Auddai
                   </p>
-                  <div className="mr-10 mt-5">
+                  <div className="mr-10 mt-2">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="outline">
@@ -2057,12 +2088,16 @@ export default function Dashboard() {
                         </div>
                       </div>
                     </div>
+
                     <div className="flex justify-center my-5">
                       {isSubmitted ? (
                         <div className="flex items-center gap-2">
                           <Loader className="animate-spin" />
                           <p className="text-center text-xl text-gray-500">
                             Processing your request, it can take a few minutes.
+                          </p>
+                          <p className=" text-sm font-bold md:text-xl text-gray-500">
+                            Processing...: {progressTranscription}%
                           </p>
                         </div>
                       ) : null}
@@ -2396,7 +2431,7 @@ export default function Dashboard() {
             </div>
 
             {isAudioUrlDispo && !isVideo && (
-              <div className="grid gap-3 w-full   bg-slate-200 p-3 rounded-t-md">
+              <div className="grid gap-1 w-full   bg-slate-200 p-1 rounded-t-md">
                 <strong className="text-center text-gray-500">
                   {fileNameSelected}
                 </strong>
@@ -2554,6 +2589,9 @@ export default function Dashboard() {
                       <Loader className="animate-spin" />
                       <p className="text-center text-xl text-gray-500">
                         Processing your request, it can take a few minutes.
+                      </p>
+                      <p className=" text-sm font-bold md:text-xl text-gray-500">
+                        Processing...: {progressTranscription}%
                       </p>
                     </div>
                   ) : null}
@@ -3169,11 +3207,11 @@ export default function Dashboard() {
 
                   <Separator className="my-3" />
                   <div className="shadow-md rounded-xl p-3 bg-white">
-                    <ScrollArea className="h-[400px]">
+                    <ScrollArea className="h-[500px]">
                       {subtitles.map((sub, index) => (
-                        <div key={index} className="my-2">
+                        <div key={index} className="my-1">
                           {editingIndex === index ? (
-                            <div className="flex gap-2">
+                            <div className="flex gap-1">
                               <Textarea
                                 value={editedText}
                                 onChange={handleEditChange}
@@ -3202,7 +3240,7 @@ export default function Dashboard() {
                                   currentSubtitle === sub
                                     ? "bg-blue-100 rounded-xl "
                                     : ""
-                                }`}
+                                } text-sm font-semibold`}
                                 onClick={() => handleSubtitleClick(sub.start)}
                               >
                                 {showTime && (
@@ -3395,7 +3433,7 @@ export default function Dashboard() {
               </div>
 
               {isAudioUrlDispo && !isVideo && (
-                <div className="grid gap-2 w-full bg-slate-200 p-2 rounded-t-md">
+                <div className="grid gap-1 w-full bg-slate-200 p-1 rounded-t-md">
                   <p className="text-gray-500 text-center">
                     {fileNameSelected}
                   </p>
