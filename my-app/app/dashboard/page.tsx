@@ -183,6 +183,7 @@ interface Item {
   url: string;
 }
 interface Subtitle {
+  speaker: string;
   start: number;
   end: number;
   text: string;
@@ -193,7 +194,7 @@ interface AudioPlayerProps {
   srtString: string;
 }
 
-const parseSRT = (srt: string): Subtitle[] => {
+/*const parseSRT = (srt: string): Subtitle[] => {
   const regex =
     /(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n([\s\S]*?)(?=\n{2}|\n*$)/g;
   const subtitles: Subtitle[] = [];
@@ -209,6 +210,55 @@ const parseSRT = (srt: string): Subtitle[] => {
   }
   return subtitles;
 };
+*/
+
+const parseSRT = (srt: string): Subtitle[] => {
+  const regex =
+    /(\d+)\n([^\n]+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n([\s\S]*?)(?=\n{2}|\n*$)/g;
+
+  const subtitles: Subtitle[] = [];
+  let match;
+
+  while ((match = regex.exec(srt)) !== null) {
+    const speaker = match[2]; // Locuteur ajouté dans la deuxième ligne
+    const start = parseSrtTime(match[3]);
+    const end = parseSrtTime(match[4]);
+    const text = match[5];
+
+    subtitles.push({
+      speaker,
+      start,
+      end,
+      text,
+    });
+  }
+
+  return subtitles;
+};
+/*export function parseSubtitleString(input: string): Subtitle[] {
+  const subtitles: Subtitle[] = [];
+
+  // Diviser les blocs par double saut de ligne
+  const blocks = input.split("\n\n");
+
+  for (const block of blocks) {
+    const lines = block.split("\n");
+    if (lines.length < 3) continue;
+
+    const speaker = lines[1];
+    const [start, end] = lines[2].split(" -->");
+    const text = lines.slice(3).join("\n");
+
+    subtitles.push({
+      speaker: speaker.trim(),
+      start: start.trim(),
+      end: end.trim(),
+      text: text.trim(),
+    });
+  }
+
+  return subtitles;
+}*/
 
 const parseSrtTime = (srtTime: string): number => {
   const [hours, minutes, seconds] = srtTime.split(":");
@@ -421,6 +471,18 @@ export default function Dashboard() {
       });
     });
   };
+  const updateSpeakers = (
+    subtitles: Subtitle[],
+    oldSpeaker: string,
+    newSpeaker: string
+  ): Subtitle[] => {
+    return subtitles.map((subtitle) => {
+      if (subtitle.speaker === oldSpeaker) {
+        return { ...subtitle, speaker: newSpeaker };
+      }
+      return subtitle;
+    });
+  };
   const handleQueueUpdate = (update: QueueUpdate) => {
     if (update.status === "IN_PROGRESS") {
       const newLogs = update.logs.map((log) => log.message);
@@ -498,11 +560,16 @@ export default function Dashboard() {
       .toString()
       .padStart(3, "0")}`;
   };
-  const convertToSRT = (index: number, time: string, text: string) => {
+  const convertToSRTWithSpeakerName = (
+    index: number,
+    speaker: string,
+    time: string,
+    text: string
+  ) => {
     const [start, end] = time.replace(/[()]/g, "").split(",").map(Number);
     const startTime = convertDecimalToSRTTime(start);
     const endTime = convertDecimalToSRTTime(end);
-    return `${index + 1}\n${startTime} --> ${endTime}\n${text}\n`;
+    return `${index + 1}\n${speaker}\n${startTime} --> ${endTime}\n${text}\n`;
   };
 
   const convertSubtitlesToString = (
@@ -515,7 +582,7 @@ export default function Dashboard() {
         const timeString = includeTimestamps
           ? `(${formatTime(sub.start)}) `
           : "";
-        const speakerString = speaker ? `${speakerArray.current[index]}: ` : "";
+        const speakerString = speaker ? `${sub.speaker}: ` : "";
 
         return `${speakerString}${timeString}\n${sub.text}`;
       })
@@ -1408,8 +1475,9 @@ export default function Dashboard() {
     for (let i = 0; i < data.chunks.length; i++) {
       speakerArray.current.push(`(${data.chunks[i].speaker})`);
       addSpeaker(`(${data.chunks[i].speaker})`);
-      let resultInSrt = convertToSRT(
+      let resultInSrt = convertToSRTWithSpeakerName(
         i,
+        `(${data.chunks[i].speaker})`,
         `(${data.chunks[i].timestamp})`,
         `${data.chunks[i].text}`
       );
@@ -1479,12 +1547,13 @@ export default function Dashboard() {
         for (let i = 0; i < data.chunks.length; i++) {
           speakerArray.current.push(`(${data.chunks[i].speaker})`);
           addSpeaker(`(${data.chunks[i].speaker})`);
-          let resultInSrt = convertToSRT(
+          let result = convertToSRTWithSpeakerName(
             i,
+            `(${data.chunks[i].speaker})`,
             `(${data.chunks[i].timestamp})`,
             `${data.chunks[i].text}`
           );
-          handleAddConvertedSrtInText(resultInSrt);
+          handleAddConvertedSrtInText(result);
         }
 
         toast({
@@ -2107,16 +2176,8 @@ export default function Dashboard() {
 
                 {textLanguageDetected ? (
                   <div className="m-4">
-                    <p className=" ml-4  text-gray-600">
-                      Language:(
-                      <span className="text-blue-400">
-                        {textLanguageDetected}
-                      </span>
-                      )
-                    </p>
-
                     <div className="p-4">
-                      <div className="mb-4">
+                      <div className="mb-4 flex  items-center gap-3">
                         <Checkbox
                           id="terms1"
                           onCheckedChange={(e: boolean) => {
@@ -2125,7 +2186,28 @@ export default function Dashboard() {
                           defaultChecked={true}
                           checked={showTime}
                         />
-                        <p>Show timeStamp & speaker?</p>
+                        <p className="text-gray-600">
+                          Show timeStamp & speaker?
+                        </p>
+                        <p>|</p>
+                        <p className="  text-gray-600">
+                          Language:(
+                          <span className="text-blue-400">
+                            {textLanguageDetected}
+                          </span>
+                          )
+                        </p>
+                        <p>|</p>
+                        <Button
+                          variant="ghost"
+                          onClick={() => {
+                            setSubtitles(
+                              updateSpeakers(subtitles, "(SPEAKER_00)", "Linda")
+                            );
+                          }}
+                        >
+                          update speaker
+                        </Button>
                       </div>
                       <div className="flex items-center gap-5 ">
                         <Button variant="outline" onClick={handleCopy}>
@@ -2160,11 +2242,9 @@ export default function Dashboard() {
                                 <div className="my-2">
                                   {showTime && (
                                     <div>
-                                      {returnIconSpeaker(
-                                        speakerArrayShow[index]
-                                      )}
+                                      {returnIconSpeaker(sub.speaker)}
                                       <p className="text-gray-500">
-                                        {speakerArrayShow[index]}
+                                        {sub.speaker}
                                       </p>
                                     </div>
                                   )}
@@ -2174,7 +2254,7 @@ export default function Dashboard() {
                                       currentSubtitleDesktop === sub
                                         ? "bg-blue-100 rounded-xl"
                                         : ""
-                                    }`}
+                                    } hover:bg-gray-100 rounded-xl`}
                                     onClick={() =>
                                       handleSubtitleClickdesktop(sub.start)
                                     }
@@ -2189,6 +2269,7 @@ export default function Dashboard() {
                                       onClick={() => handleEditClick(index)}
                                       variant="ghost"
                                       size="sm"
+                                      className="hover:bg-slate-200"
                                     >
                                       <Edit2Icon className="size-[12px] text-gray-500" />
                                     </Button>
@@ -3060,12 +3141,8 @@ export default function Dashboard() {
             </div>
             {textLanguageDetected ? (
               <div className="m-1">
-                <p className="text-[10px] mb-3 text-gray-600">
-                  Language:(
-                  <span className="text-blue-400">{textLanguageDetected}</span>)
-                </p>
                 <div>
-                  <div className="mb-4">
+                  <div className="mb-4 flex items-center gap-3">
                     <Checkbox
                       id="terms1"
                       onCheckedChange={(e: boolean) => {
@@ -3074,7 +3151,26 @@ export default function Dashboard() {
                       defaultChecked={true}
                       checked={showTime}
                     />
-                    <p>Show timeStamp?</p>
+                    <p className="text-[10px] text-gray-600">Show timeStamp?</p>
+                    <p>|</p>
+                    <p className="text-[10px] text-gray-600">
+                      Language:(
+                      <span className="text-blue-400">
+                        {textLanguageDetected}
+                      </span>
+                      )
+                    </p>
+                    <p>|</p>
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setSubtitles(
+                          updateSpeakers(subtitles, "(SPEAKER_00)", "Linda")
+                        );
+                      }}
+                    >
+                      update speaker
+                    </Button>
                   </div>
 
                   <div className="flex items-center gap-5 ">
@@ -3229,10 +3325,8 @@ export default function Dashboard() {
                             <div className="my-1">
                               {showTime && (
                                 <div>
-                                  {returnIconSpeaker(speakerArrayShow[index])}
-                                  <p className="text-gray-500">
-                                    {speakerArrayShow[index]}
-                                  </p>
+                                  {returnIconSpeaker(sub.speaker)}
+                                  <p className="text-gray-500">{sub.speaker}</p>
                                 </div>
                               )}
                               <p

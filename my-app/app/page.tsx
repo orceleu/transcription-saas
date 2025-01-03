@@ -199,7 +199,7 @@ export default function Home() {
                       </span>{" "}
                     </p>
                     <p>
-                      <span className="font-bold underline">Researsher</span>__{" "}
+                      <span className="font-bold underline">Researcher</span>__{" "}
                       <span className=" text-[10px] md:text-[14px] text-gray-600">
                         Use Auddai to transcribe interviews for data analysis.
                       </span>{" "}
@@ -288,7 +288,7 @@ export default function Home() {
                   Get transcribe in Seconds.
                 </p>
                 <p className="text-gray-600 md:text-xl text-center">
-                  Recieve accurate transcriptions within seconds of uploading
+                  Receive accurate transcriptions within seconds of uploading
                   your files.
                 </p>
               </div>
@@ -387,7 +387,7 @@ export default function Home() {
                         <div className="flex items-center gap-2">
                           <CheckIcon className="text-white" />
                           <p className=" text-white">
-                            Chat with PDF(coming soon).
+                            Text to speech(coming soon).
                           </p>
                         </div>
                         <div className="flex items-center mt-10 gap-2">
@@ -452,7 +452,7 @@ export default function Home() {
                       <div className="flex items-center gap-2">
                         <CheckIcon className="text-white" />
                         <p className=" text-white">
-                          Chat with PDF(coming soon).
+                          Text to speech(coming soon).
                         </p>
                       </div>
 
@@ -748,7 +748,7 @@ export default function Home() {
                   >
                     audio-to-text transcription
                   </a>
-                  platform whith a bunch of fonctionnality, designed to
+                  platform whith a bunch of fonctionality, designed to
                   automatically convert audio or video files into text. Using
                   advanced speech recognition algorithms, Auddai enables users
                   to easily turn interviews, lectures, meetings, podcasts, and
